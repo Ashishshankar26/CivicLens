@@ -54,7 +54,7 @@ export default function SpotdexScreen() {
   }, [user, myReports, issues]);
 
   const loadReputationData = async () => {
-    const rep = await getUserReputation(user?.uid);
+    const rep = await getUserReputation(user?.uid, myReports);
     setReputation(rep);
   };
 

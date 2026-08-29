@@ -2,19 +2,21 @@ import {
   getLiveUserReputation,
   saveLiveUserReputation,
   processCitizenAction,
+  crossVerifyBadgesWithUserActivity,
   INITIAL_REPUTATION,
   DEMO_REPUTATION,
   createNewUserReputation,
 } from './badgeEngine';
 import { UserReputation, Badge, CitizenLevel, UserActivityLog, UserPrivacySettings, LeaderboardUser } from '@/types/gamification';
+import { CivicIssue } from '@/types/issue';
 
-export { INITIAL_REPUTATION, DEMO_REPUTATION, createNewUserReputation };
+export { INITIAL_REPUTATION, DEMO_REPUTATION, createNewUserReputation, crossVerifyBadgesWithUserActivity };
 
 /**
- * Load user reputation state scoped per user
+ * Load user reputation state scoped per user with automatic database cross-verification
  */
-export async function getUserReputation(userId?: string): Promise<UserReputation> {
-  return getLiveUserReputation(userId);
+export async function getUserReputation(userId?: string, userReports?: CivicIssue[]): Promise<UserReputation> {
+  return getLiveUserReputation(userId, userReports);
 }
 
 /**

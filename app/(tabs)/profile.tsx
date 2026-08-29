@@ -65,7 +65,7 @@ export default function ModernYouScreen() {
   }, [user, myReports]);
 
   const loadUserData = async () => {
-    const rep = await getUserReputation(user?.uid);
+    const rep = await getUserReputation(user?.uid, myReports);
     setReputation(rep);
   };
 

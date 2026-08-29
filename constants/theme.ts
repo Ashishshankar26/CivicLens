@@ -92,6 +92,20 @@ export const RADIUS = {
 };
 
 export const SHADOWS = {
+  card: {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  button: {
+    shadowColor: '#0066FF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 10,
+    elevation: 4,
+  },
   subtle: {
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },

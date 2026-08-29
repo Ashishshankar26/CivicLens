@@ -21,6 +21,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { IssueTimeline } from '@/components/issue/IssueTimeline';
 import { AchievementModal } from '@/components/gamification/AchievementModal';
 import { ResolutionPhotoModal } from '@/components/issue/ResolutionPhotoModal';
+import { ResolutionComparisonCard } from '@/components/cards/ResolutionComparisonCard';
 import { ModernAlertModal, ModernAlertConfig } from '@/components/ui/ModernAlertModal';
 import { logUserCivicAction } from '@/services/gamification/gamificationService';
 import {
@@ -559,15 +560,24 @@ export default function IssueDetailsScreen() {
             </View>
           </View>
         ) : (
-          <View style={styles.resolvedBannerCard}>
-            <View style={styles.resolvedBannerIcon}>
-              <CheckCircle2 size={24} color="#FFFFFF" strokeWidth={2.8} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.resolvedBannerTitle}>ISSUE RESOLVED</Text>
-              <Text style={styles.resolvedBannerSub}>
-                Hazard marked as resolved on {liveIssue.resolvedAt ? new Date(liveIssue.resolvedAt).toLocaleDateString() : 'recently'}. Verified by community evidence.
-              </Text>
+          <View style={{ gap: 12 }}>
+            <ResolutionComparisonCard
+              beforeImageUrl={liveIssue.imageUrl}
+              afterImageUrl={liveIssue.resolvedImageUrl || liveIssue.imageUrl}
+              resolvedAt={liveIssue.resolvedAt}
+              resolvedBy={liveIssue.resolvedBy}
+              resolutionProofNote="Verified community repair on site."
+            />
+            <View style={styles.resolvedBannerCard}>
+              <View style={styles.resolvedBannerIcon}>
+                <CheckCircle2 size={24} color="#FFFFFF" strokeWidth={2.8} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.resolvedBannerTitle}>ISSUE RESOLVED</Text>
+                <Text style={styles.resolvedBannerSub}>
+                  Hazard marked as resolved on {liveIssue.resolvedAt ? new Date(liveIssue.resolvedAt).toLocaleDateString() : 'recently'}. Verified by community evidence.
+                </Text>
+              </View>
             </View>
           </View>
         )}

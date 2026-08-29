@@ -68,6 +68,23 @@ export const CivicMapView: React.FC<CivicMapViewProps> = ({
     }
   }, [recenterTrigger]);
 
+  useEffect(() => {
+    if (selectedIssueId && mapRef.current) {
+      const targetIssue = issues.find((i) => i.id === selectedIssueId);
+      if (targetIssue) {
+        mapRef.current.animateToRegion(
+          {
+            latitude: targetIssue.latitude,
+            longitude: targetIssue.longitude,
+            latitudeDelta: 0.012,
+            longitudeDelta: 0.012,
+          },
+          450
+        );
+      }
+    }
+  }, [selectedIssueId]);
+
   const handleRegionChangeComplete = (region: Region) => {
     const delta = region.latitudeDelta;
     if (delta < 0.012) {

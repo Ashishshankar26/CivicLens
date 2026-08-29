@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,19 @@ import {
   TouchableOpacity,
   TextInput,
   Platform,
+  Dimensions,
+  FlatList,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext';
 import { useIssues } from '@/contexts/IssuesContext';
 import { CivicMapView } from '@/components/map/CivicMapView';
-import { IssueBottomSheet } from '@/components/map/IssueBottomSheet';
+import { MapIssueCarousel, MapIssueCarouselRef } from '@/components/map/MapIssueCarousel';
+import { CivicIssueCard } from '@/components/cards/CivicIssueCard';
+import { CivicPulseWidget } from '@/components/widgets/CivicPulseWidget';
+import { QuickReportWidget } from '@/components/widgets/QuickReportWidget';
+import { ActivityStreamWidget } from '@/components/widgets/ActivityStreamWidget';
 import { CATEGORY_LIST } from '@/constants/categories';
 import { getCurrentLocation, getLastKnownLocation, LocationResult } from '@/services/location/locationService';
 import { CivicIssue } from '@/types/issue';
@@ -27,17 +34,26 @@ import {
   Plus,
   Check,
   Filter,
+  Map as MapIcon,
+  LayoutDashboard,
+  Sparkles,
 } from 'lucide-react-native';
 
-export default function ModernMapScreen() {
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+export default function ModernHomeScreen() {
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   const { issues, activeIssues } = useIssues();
+
+  // Mode: 'dashboard' vs 'map'
+  const [viewMode, setViewMode] = useState<'dashboard' | 'map'>('dashboard');
 
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'urgent' | 'active' | 'resolved'>('all');
-  const [selectedIssue, setSelectedIssue] = useState<CivicIssue | null>(null);
+  const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<LocationResult | null>(null);
 
   // Map Controls State
@@ -46,15 +62,14 @@ export default function ModernMapScreen() {
   const [showStatusDropdown, setShowStatusDropdown] = useState<boolean>(false);
   const [urgentOnly, setUrgentOnly] = useState<boolean>(false);
 
+  const carouselRef = useRef<MapIssueCarouselRef>(null);
+
   useEffect(() => {
     async function initLocation() {
-      // 1. Instant cache load
       const cached = await getLastKnownLocation();
       if (cached) {
         setUserLocation(cached);
       }
-
-      // 2. High-precision live GPS
       const res = await getCurrentLocation();
       if (res.location) {
         setUserLocation(res.location);
@@ -62,21 +77,6 @@ export default function ModernMapScreen() {
     }
     initLocation();
   }, []);
-
-  // Top Left Button 1: Cycle Map Type
-  const handleToggleMapLayers = () => {
-    setMapType((prev) => (prev === 'standard' ? 'satellite' : prev === 'satellite' ? 'hybrid' : 'standard'));
-  };
-
-  // Top Left Button 2: Re-center to live GPS
-  const handleRecenterGPS = () => {
-    setRecenterTrigger(Date.now());
-  };
-
-  // Top Left Button 3: Toggle Urgent filter
-  const handleToggleUrgent = () => {
-    setUrgentOnly((prev) => !prev);
-  };
 
   // Filter issues based on search, category, status, and urgent toggle
   const filteredIssues = issues.filter((issue) => {
@@ -99,243 +99,272 @@ export default function ModernMapScreen() {
     return matchesSearch && matchesCategory;
   });
 
-  const handleSelectIssue = (issue: CivicIssue) => {
-    setSelectedIssue(issue);
+  // Calculate live telemetry numbers for Civic Pulse
+  const activeCount = issues.filter((i) => i.status === 'active').length;
+  const confirmedCount = issues.reduce((acc, i) => acc + (i.confirmationCount || 0), 0);
+  const resolvedCount = issues.filter((i) => i.status === 'resolved').length;
+
+  // Set default selected issue if none selected
+  useEffect(() => {
+    if (filteredIssues.length > 0 && !selectedIssueId) {
+      setSelectedIssueId(filteredIssues[0].id);
+    }
+  }, [filteredIssues, selectedIssueId]);
+
+  // Greeting based on time of day
+  const getGreeting = () => {
+    const hr = new Date().getHours();
+    if (hr < 12) return 'Good morning';
+    if (hr < 17) return 'Good afternoon';
+    return 'Good evening';
   };
 
-  const handleViewDetails = (issueId: string) => {
-    router.push({
-      pathname: '/issue/[id]',
-      params: { id: issueId },
-    });
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'Citizen';
+
+  const handleSelectIssueFromMap = (issue: CivicIssue) => {
+    setSelectedIssueId(issue.id);
+    if (carouselRef.current) {
+      carouselRef.current.scrollToIssue(issue.id);
+    }
+  };
+
+  const handleActiveIssueChangeFromCarousel = (issue: CivicIssue) => {
+    setSelectedIssueId(issue.id);
+  };
+
+  const handleOpenIssueDetails = (issueId: string) => {
+    router.push(`/issue/${issueId}`);
   };
 
   return (
     <View style={styles.container}>
-      {/* Fullscreen Map */}
-      <CivicMapView
-        issues={filteredIssues}
-        selectedIssueId={selectedIssue?.id}
-        onSelectIssue={handleSelectIssue}
-        userCoords={userLocation}
-        mapType={mapType}
-        recenterTrigger={recenterTrigger}
-      />
-
-      {/* Status Filter Dismiss Backdrop */}
-      {showStatusDropdown && (
-        <TouchableOpacity
-          style={styles.dropdownDismissBackdrop}
-          onPress={() => setShowStatusDropdown(false)}
-          activeOpacity={1}
-        />
-      )}
-
-      {/* DYNAMIC TOP FLOATING HUD (With safe area inset) */}
-      <View style={[styles.floatingTopContainer, { paddingTop: insets.top + (Platform.OS === 'ios' ? 4 : 8) }]}>
-        {/* Top Action Row */}
-        <View style={styles.topActionRow}>
-          {/* TOP LEFT 3 WORKING BUTTONS */}
-          <View style={styles.topPillSegment}>
-            {/* Button 1: Layers Switcher */}
-            <TouchableOpacity
-              style={[styles.topPillBtn, mapType !== 'standard' && styles.topPillBtnActive]}
-              onPress={handleToggleMapLayers}
-              activeOpacity={0.8}
-            >
-              <Layers size={16} color={mapType !== 'standard' ? '#FFFFFF' : COLORS.primary} />
-            </TouchableOpacity>
-
-            {/* Button 2: GPS Re-center */}
-            <TouchableOpacity
-              style={styles.topPillBtn}
-              onPress={handleRecenterGPS}
-              activeOpacity={0.8}
-            >
-              <LocateFixed size={16} color={COLORS.primary} />
-            </TouchableOpacity>
-
-            {/* Button 3: Urgent Hazards Filter Toggle */}
-            <TouchableOpacity
-              style={[styles.topPillBtn, urgentOnly && styles.topPillBtnActiveUrgent]}
-              onPress={handleToggleUrgent}
-              activeOpacity={0.8}
-            >
-              <Flame size={16} color={urgentOnly ? '#FFFFFF' : '#EF4444'} />
-            </TouchableOpacity>
-          </View>
-
-          {/* TOP RIGHT 3-DOTS STATUS DROPDOWN SELECTOR */}
-          <View style={styles.dropdownWrapper}>
-            <TouchableOpacity
-              style={styles.dropdownPill}
-              onPress={() => setShowStatusDropdown(!showStatusDropdown)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.dotsRow}>
-                <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
-                <View style={[styles.dot, { backgroundColor: '#F59E0B' }]} />
-                <View style={[styles.dot, { backgroundColor: '#EF4444' }]} />
-              </View>
-              <View style={styles.dropdownCountBadge}>
-                <Text style={styles.dropdownCountText}>{filteredIssues.length}</Text>
-              </View>
-              <ChevronDown size={13} color={COLORS.textPrimary} />
-            </TouchableOpacity>
-
-            {/* Status Filter Dropdown Menu */}
-            {showStatusDropdown && (
-              <View style={styles.dropdownMenu}>
-                <TouchableOpacity
-                  style={[styles.dropdownItem, statusFilter === 'all' && styles.dropdownItemActive]}
-                  onPress={() => {
-                    setStatusFilter('all');
-                    setShowStatusDropdown(false);
-                  }}
-                >
-                  <Text style={[styles.dropdownItemText, statusFilter === 'all' && styles.dropdownItemTextActive]}>
-                    All Issues ({issues.length})
-                  </Text>
-                  {statusFilter === 'all' && <Check size={14} color={COLORS.primary} />}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.dropdownItem, statusFilter === 'urgent' && styles.dropdownItemActive]}
-                  onPress={() => {
-                    setStatusFilter('urgent');
-                    setShowStatusDropdown(false);
-                  }}
-                >
-                  <View style={styles.menuLabelRow}>
-                    <View style={[styles.dot, { backgroundColor: '#EF4444' }]} />
-                    <Text style={[styles.dropdownItemText, statusFilter === 'urgent' && styles.dropdownItemTextActive]}>
-                      Urgent Priority
-                    </Text>
-                  </View>
-                  {statusFilter === 'urgent' && <Check size={14} color={COLORS.primary} />}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.dropdownItem, statusFilter === 'active' && styles.dropdownItemActive]}
-                  onPress={() => {
-                    setStatusFilter('active');
-                    setShowStatusDropdown(false);
-                  }}
-                >
-                  <View style={styles.menuLabelRow}>
-                    <View style={[styles.dot, { backgroundColor: '#F59E0B' }]} />
-                    <Text style={[styles.dropdownItemText, statusFilter === 'active' && styles.dropdownItemTextActive]}>
-                      In Progress
-                    </Text>
-                  </View>
-                  {statusFilter === 'active' && <Check size={14} color={COLORS.primary} />}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.dropdownItem, statusFilter === 'resolved' && styles.dropdownItemActive]}
-                  onPress={() => {
-                    setStatusFilter('resolved');
-                    setShowStatusDropdown(false);
-                  }}
-                >
-                  <View style={styles.menuLabelRow}>
-                    <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
-                    <Text style={[styles.dropdownItemText, statusFilter === 'resolved' && styles.dropdownItemTextActive]}>
-                      Resolved
-                    </Text>
-                  </View>
-                  {statusFilter === 'resolved' && <Check size={14} color={COLORS.primary} />}
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
+      {/* 1. Header Bar with Greeting & Mode Switcher */}
+      <View style={[styles.topHeader, { paddingTop: insets.top + (Platform.OS === 'android' ? 8 : 4) }]}>
+        <View style={styles.greetingCol}>
+          <Text style={styles.greetingSub}>{getGreeting()},</Text>
+          <Text style={styles.greetingName} numberOfLines={1}>
+            {displayName}
+          </Text>
         </View>
 
-        {/* Floating Search Pill */}
-        <View style={styles.floatingSearchCard}>
-          <View style={styles.searchIconBox}>
-            <Search size={15} color={COLORS.primary} />
-          </View>
-
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by area, road, or category..."
-            placeholderTextColor={COLORS.textMuted}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-
-        {/* Floating Horizontal Category Chips */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryPillsScroll}
-        >
+        <View style={styles.headerRightActions}>
           <TouchableOpacity
             style={[
-              styles.minimalPill,
-              selectedCategory === 'all' && styles.minimalPillActive,
+              styles.modeToggleBtn,
+              viewMode === 'map' && styles.modeToggleBtnActive,
             ]}
-            onPress={() => setSelectedCategory('all')}
-            activeOpacity={0.8}
+            onPress={() => setViewMode((prev) => (prev === 'dashboard' ? 'map' : 'dashboard'))}
+            activeOpacity={0.85}
           >
-            <Text
-              style={[
-                styles.minimalPillText,
-                selectedCategory === 'all' && styles.minimalPillTextActive,
-              ]}
-            >
-              All ({issues.length})
-            </Text>
+            {viewMode === 'dashboard' ? (
+              <>
+                <MapIcon size={14} color={COLORS.primary} strokeWidth={2.4} />
+                <Text style={styles.modeToggleText}>Map View</Text>
+              </>
+            ) : (
+              <>
+                <LayoutDashboard size={14} color="#FFFFFF" strokeWidth={2.4} />
+                <Text style={[styles.modeToggleText, { color: '#FFFFFF' }]}>Dashboard</Text>
+              </>
+            )}
           </TouchableOpacity>
+        </View>
+      </View>
 
-          {CATEGORY_LIST.map((cat) => {
-            const isSelected = selectedCategory === cat.id;
-            return (
+      {/* 2. Main Content: Dashboard Mode vs Map HUD Mode */}
+      {viewMode === 'dashboard' ? (
+        <ScrollView
+          style={styles.dashboardScroll}
+          contentContainerStyle={[styles.dashboardContent, { paddingBottom: insets.bottom + 90 }]}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Quick Search Bar */}
+          <View style={styles.searchRow}>
+            <View style={styles.searchBar}>
+              <Search size={16} color={COLORS.textMuted} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search hazards, roads, districts..."
+                placeholderTextColor={COLORS.textMuted}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                returnKeyType="search"
+              />
+            </View>
+          </View>
+
+          {/* Quick Report Hero Action Widget */}
+          <QuickReportWidget onPress={() => router.push('/(tabs)/report')} />
+
+          {/* Civic Pulse Neighborhood Telemetry */}
+          <CivicPulseWidget
+            activeCount={activeCount}
+            confirmedCount={confirmedCount}
+            resolvedCount={resolvedCount}
+            districtName={userLocation ? 'Connaught Place Area' : 'Local District'}
+          />
+
+          {/* Nearby Hazards Carousel Section */}
+          <View style={styles.sectionHeaderRow}>
+            <View style={styles.sectionTitleGroup}>
+              <Text style={styles.sectionTitle}>Nearby Hazards</Text>
+              <View style={styles.countBadge}>
+                <Text style={styles.countBadgeText}>{filteredIssues.length}</Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              onPress={() => setViewMode('map')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.sectionActionText}>View on Map</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Horizontal Swipeable Card Carousel */}
+          {filteredIssues.length > 0 ? (
+            <FlatList
+              data={filteredIssues}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalCarousel}
+              renderItem={({ item }) => (
+                <CivicIssueCard
+                  issue={item}
+                  userCoords={userLocation}
+                  onPress={handleOpenIssueDetails}
+                  variant="featured"
+                />
+              )}
+            />
+          ) : (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyCardTitle}>No Hazards Found</Text>
+              <Text style={styles.emptyCardSub}>
+                Your local neighborhood is clear of reported civic hazards.
+              </Text>
+            </View>
+          )}
+
+          {/* Recent Activity Stream */}
+          <ActivityStreamWidget
+            issues={issues}
+            onPressIssue={handleOpenIssueDetails}
+          />
+        </ScrollView>
+      ) : (
+        /* Map HUD Mode */
+        <View style={styles.mapContainer}>
+          <CivicMapView
+            issues={filteredIssues}
+            selectedIssueId={selectedIssueId}
+            onSelectIssue={handleSelectIssueFromMap}
+            userCoords={userLocation}
+            mapType={mapType}
+            recenterTrigger={recenterTrigger}
+          />
+
+          {/* Map Top Floating Search & Filter Pill Strip */}
+          <View style={[styles.mapTopControls, { top: insets.top + (Platform.OS === 'android' ? 64 : 58) }]}>
+            {/* Search Pill */}
+            <View style={styles.mapSearchBar}>
+              <Search size={14} color={COLORS.textMuted} />
+              <TextInput
+                style={styles.mapSearchInput}
+                placeholder="Search map hazards..."
+                placeholderTextColor={COLORS.textMuted}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+            </View>
+
+            {/* Category Filter Horizontal Strip */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryPillStrip}
+            >
               <TouchableOpacity
-                key={cat.id}
                 style={[
-                  styles.minimalPill,
-                  isSelected && styles.minimalPillActive,
+                  styles.categoryPill,
+                  selectedCategory === 'all' && styles.categoryPillActive,
                 ]}
-                onPress={() => setSelectedCategory(cat.id)}
+                onPress={() => setSelectedCategory('all')}
                 activeOpacity={0.8}
               >
                 <Text
                   style={[
-                    styles.minimalPillText,
-                    isSelected && styles.minimalPillTextActive,
+                    styles.categoryPillText,
+                    selectedCategory === 'all' && styles.categoryPillTextActive,
                   ]}
                 >
-                  {cat.label}
+                  All ({issues.length})
                 </Text>
               </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
 
-      {/* Floating Bottom-Right Current Location Button */}
-      {!selectedIssue && (
-        <TouchableOpacity
-          style={[styles.floatingLocationFab, { bottom: insets.bottom + 90 }]}
-          onPress={handleRecenterGPS}
-          activeOpacity={0.85}
-        >
-          <View style={styles.fabPulseRing} />
-          <LocateFixed size={20} color={COLORS.primary} strokeWidth={2.4} />
-        </TouchableOpacity>
-      )}
+              {CATEGORY_LIST.map((cat) => {
+                const count = issues.filter((i) => i.category === cat.id).length;
+                const isSelected = selectedCategory === cat.id;
+                return (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[
+                      styles.categoryPill,
+                      isSelected && styles.categoryPillActive,
+                    ]}
+                    onPress={() => setSelectedCategory(cat.id)}
+                    activeOpacity={0.8}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryPillText,
+                        isSelected && styles.categoryPillTextActive,
+                      ]}
+                    >
+                      {cat.label} ({count})
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
 
-      {/* Selected Marker Floating Bottom Sheet (Live state updated in real-time) */}
-      {selectedIssue && (
-        <IssueBottomSheet
-          issue={issues.find((i) => i.id === selectedIssue.id) || selectedIssue}
-          userCoords={userLocation}
-          onViewDetails={handleViewDetails}
-          onClose={() => setSelectedIssue(null)}
-        />
+          {/* Map Side Tools (Layers, GPS Re-center, Urgent Toggle) */}
+          <View style={[styles.mapSideTools, { top: insets.top + 130 }]}>
+            <TouchableOpacity
+              style={styles.toolFab}
+              onPress={() => setMapType((p) => (p === 'standard' ? 'satellite' : 'standard'))}
+              activeOpacity={0.85}
+            >
+              <Layers size={16} color={COLORS.textPrimary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.toolFab}
+              onPress={() => setRecenterTrigger(Date.now())}
+              activeOpacity={0.85}
+            >
+              <LocateFixed size={16} color={COLORS.primary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.toolFab, urgentOnly && styles.toolFabUrgent]}
+              onPress={() => setUrgentOnly((p) => !p)}
+              activeOpacity={0.85}
+            >
+              <Flame size={16} color={urgentOnly ? '#FFFFFF' : '#DC2626'} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Synchronized Snapping Bottom Issue Carousel */}
+          <MapIssueCarousel
+            ref={carouselRef}
+            issues={filteredIssues}
+            userCoords={userLocation}
+            onPressIssue={handleOpenIssueDetails}
+            onActiveIssueChange={handleActiveIssueChangeFromCarousel}
+          />
+        </View>
       )}
     </View>
   );
@@ -344,196 +373,220 @@ export default function ModernMapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  floatingLocationFab: {
-    position: 'absolute',
-    right: 18,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    zIndex: 25,
-    ...SHADOWS.medium,
-  },
-  fabPulseRing: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0, 102, 255, 0.08)',
-  },
-  floatingTopContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: SPACING.md,
-    gap: 8,
-    zIndex: 20,
-  },
-  topActionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  topPillSegment: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
-    borderRadius: RADIUS.full,
-    padding: 3,
-    gap: 3,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.small,
-  },
-  topPillBtn: {
-    width: 38,
-    height: 32,
-    borderRadius: RADIUS.full,
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#F8FAFC',
   },
-  topPillBtnActive: {
-    backgroundColor: COLORS.primary,
-  },
-  topPillBtnActiveUrgent: {
-    backgroundColor: '#EF4444',
-  },
-  dropdownDismissBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 19,
-  },
-  dropdownWrapper: {
-    position: 'relative',
-    zIndex: 30,
-  },
-  dropdownPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: RADIUS.full,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: 6,
-    ...SHADOWS.small,
-  },
-  dropdownCountBadge: {
-    backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
-    borderRadius: RADIUS.full,
-  },
-  dropdownCountText: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: COLORS.primaryDark,
-  },
-  dotsRow: {
-    flexDirection: 'row',
-    gap: 4,
-    alignItems: 'center',
-  },
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-  },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 42,
-    right: 0,
-    width: 190,
+  topHeader: {
     backgroundColor: '#FFFFFF',
-    borderRadius: RADIUS.lg,
-    padding: 6,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.large,
-    gap: 4,
-  },
-  dropdownItem: {
+    paddingHorizontal: 18,
+    paddingBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: RADIUS.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    zIndex: 100,
   },
-  dropdownItemActive: {
-    backgroundColor: COLORS.primaryLight,
-  },
-  menuLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  dropdownItemText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
-  dropdownItemTextActive: {
-    color: COLORS.primaryDark,
-    fontWeight: '900',
-  },
-  floatingSearchCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
-    borderRadius: RADIUS.full,
-    paddingHorizontal: 12,
-    paddingVertical: Platform.OS === 'ios' ? 7 : 3,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.subtle,
-  },
-  searchIconBox: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: COLORS.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-  },
-  searchInput: {
+  greetingCol: {
     flex: 1,
+  },
+  greetingSub: {
     fontSize: 12,
-    color: COLORS.textPrimary,
+    color: COLORS.textMuted,
     fontWeight: '600',
   },
-  categoryPillsScroll: {
-    gap: 6,
-    paddingVertical: 2,
+  greetingName: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: COLORS.textPrimary,
+    letterSpacing: -0.4,
   },
-  minimalPill: {
-    paddingHorizontal: 12,
+  headerRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  modeToggleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.94)',
     borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.subtle,
+    borderColor: '#BFDBFE',
   },
-  minimalPillActive: {
+  modeToggleBtnActive: {
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
   },
-  minimalPillText: {
+  modeToggleText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+
+  // Dashboard Styles
+  dashboardScroll: {
+    flex: 1,
+  },
+  dashboardContent: {
+    padding: 16,
+    gap: 16,
+  },
+  searchRow: {
+    flexDirection: 'row',
+  },
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 12,
+    height: 44,
+    gap: 8,
+    ...SHADOWS.card,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    color: COLORS.textPrimary,
+    fontWeight: '500',
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  sectionTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: COLORS.textPrimary,
+    letterSpacing: -0.3,
+  },
+  countBadge: {
+    backgroundColor: '#E2E8F0',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: RADIUS.full,
+  },
+  countBadgeText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: COLORS.textSecondary,
+  },
+  sectionActionText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+  horizontalCarousel: {
+    paddingRight: 16,
+  },
+  emptyCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: RADIUS.lg,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 4,
+  },
+  emptyCardTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+  },
+  emptyCardSub: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+  },
+
+  // Map Mode Styles
+  mapContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  mapTopControls: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    zIndex: 80,
+    gap: 8,
+  },
+  mapSearchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    paddingHorizontal: 12,
+    height: 40,
+    gap: 8,
+    ...SHADOWS.card,
+  },
+  mapSearchInput: {
+    flex: 1,
+    fontSize: 12.5,
+    color: COLORS.textPrimary,
+    fontWeight: '500',
+  },
+  categoryPillStrip: {
+    gap: 6,
+    paddingVertical: 2,
+  },
+  categoryPill: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    ...SHADOWS.card,
+  },
+  categoryPillActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  categoryPillText: {
     fontSize: 11,
     fontWeight: '700',
     color: COLORS.textSecondary,
   },
-  minimalPillTextActive: {
+  categoryPillTextActive: {
     color: '#FFFFFF',
-    fontWeight: '900',
+  },
+  mapSideTools: {
+    position: 'absolute',
+    right: 14,
+    zIndex: 80,
+    gap: 8,
+  },
+  toolFab: {
+    width: 38,
+    height: 38,
+    borderRadius: RADIUS.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    ...SHADOWS.card,
+  },
+  toolFabUrgent: {
+    backgroundColor: '#DC2626',
+    borderColor: '#DC2626',
   },
 });

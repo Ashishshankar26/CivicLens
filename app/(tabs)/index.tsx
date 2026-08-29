@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TextInput,
   Platform,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -21,6 +22,8 @@ import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { MapType } from 'react-native-maps';
 import { PotholeHotspotModal } from '@/components/map/PotholeHotspotModal';
 import { PotholePredictionHotspot } from '@/services/analytics/potholePredictionService';
+import { fetchLiveAirQuality, AirQualityData } from '@/services/analytics/airQualityService';
+import { DEFAULT_REGION } from '@/constants/mockData';
 import {
   Search,
   Layers,
@@ -32,6 +35,7 @@ import {
   Filter,
   Activity,
   CloudRain,
+  Wind,
 } from 'lucide-react-native';
 
 export default function ModernMapScreen() {
@@ -54,6 +58,19 @@ export default function ModernMapScreen() {
   // Rain & Pothole Predictive Hotspots State
   const [showHotspots, setShowHotspots] = useState<boolean>(true);
   const [selectedHotspot, setSelectedHotspot] = useState<PotholePredictionHotspot | null>(null);
+
+  // Live Air Quality (AQI) State
+  const [airQuality, setAirQuality] = useState<AirQualityData | null>(null);
+
+  useEffect(() => {
+    async function loadAqi() {
+      const lat = userLocation?.latitude || DEFAULT_REGION.latitude;
+      const lng = userLocation?.longitude || DEFAULT_REGION.longitude;
+      const data = await fetchLiveAirQuality(lat, lng);
+      setAirQuality(data);
+    }
+    loadAqi();
+  }, [userLocation?.latitude, userLocation?.longitude]);
 
   const carouselRef = useRef<MapIssueCarouselRef>(null);
 
@@ -199,6 +216,24 @@ export default function ModernMapScreen() {
                 strokeWidth={2.2}
               />
             </TouchableOpacity>
+
+            {/* Live Air Quality (AQI) Badge */}
+            {airQuality && (
+              <TouchableOpacity
+                style={[styles.aqiPillBtn, { borderColor: airQuality.color + '70' }]}
+                onPress={() => {
+                  Alert.alert(
+                    `🌫️ ${airQuality.label} (AQI ${airQuality.aqi})`,
+                    `• US AQI: ${airQuality.aqi}\n• PM2.5: ${airQuality.pm2_5} µg/m³\n• PM10: ${airQuality.pm10} µg/m³\n• Dust: ${airQuality.dust} µg/m³\n\n💡 Recommendation:\n${airQuality.recommendation}`,
+                    [{ text: 'OK', style: 'default' }]
+                  );
+                }}
+                activeOpacity={0.85}
+              >
+                <View style={[styles.aqiDot, { backgroundColor: airQuality.color }]} />
+                <Text style={styles.aqiText}>AQI {airQuality.aqi}</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Right Status Filter Pill Dropdown */}
@@ -457,6 +492,26 @@ const styles = StyleSheet.create({
   },
   topPillBtnActiveUrgent: {
     backgroundColor: '#EF4444',
+  },
+  aqiPillBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 9,
+    height: 32,
+    borderRadius: RADIUS.full,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    gap: 5,
+  },
+  aqiDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  aqiText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#1E293B',
   },
   dropdownWrapper: {
     position: 'relative',

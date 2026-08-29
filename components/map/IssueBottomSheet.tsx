@@ -15,6 +15,7 @@ import { CategoryBadge } from '../ui/CategoryBadge';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { formatDistance, formatRelativeTime } from '@/utils/formatters';
 import { calculateDistance } from '@/utils/distance';
+import { openGoogleStreetView } from '@/services/location/streetViewService';
 import {
   X,
   MapPin,
@@ -22,6 +23,7 @@ import {
   ArrowRight,
   Navigation,
   Flame,
+  Eye,
 } from 'lucide-react-native';
 
 interface IssueBottomSheetProps {
@@ -138,8 +140,17 @@ export const IssueBottomSheet: React.FC<IssueBottomSheetProps> = ({
         </View>
       </View>
 
-      {/* Action Bar with Google Maps Navigation + Details */}
+      {/* Action Bar with Street View + Navigation + Details */}
       <View style={styles.footerRow}>
+        <TouchableOpacity
+          style={styles.streetViewBtn}
+          onPress={() => openGoogleStreetView(issue.latitude, issue.longitude, issue.locationName)}
+          activeOpacity={0.8}
+        >
+          <Eye size={13} color="#475569" />
+          <Text style={styles.streetViewText}>360° View</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.googleMapsBtn}
           onPress={handleOpenGoogleMaps}
@@ -154,7 +165,7 @@ export const IssueBottomSheet: React.FC<IssueBottomSheetProps> = ({
           onPress={() => onViewDetails(issue.id)}
           activeOpacity={0.85}
         >
-          <Text style={styles.viewDetailsText}>View Details</Text>
+          <Text style={styles.viewDetailsText}>Details</Text>
           <ArrowRight size={13} color="#FFFFFF" strokeWidth={2.4} />
         </TouchableOpacity>
       </View>
@@ -290,7 +301,23 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
-    gap: 8,
+    gap: 6,
+  },
+  streetViewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: RADIUS.md,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  streetViewText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#475569',
   },
   googleMapsBtn: {
     flexDirection: 'row',

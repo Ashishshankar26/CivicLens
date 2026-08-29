@@ -11,37 +11,23 @@ const DEFAULT_PRIVACY: UserPrivacySettings = {
   shareTelemetry: true,
 };
 
-// Generate seeded activity dates for the Demo presentation user
-function generateDemoActivityDates(): Record<string, number> {
-  const dates: Record<string, number> = {};
-  const today = new Date();
-  const sampleOffsets = [0, 1, 2, 4, 7, 8, 12, 15, 18, 22, 28, 35, 42, 50, 65, 80];
-  sampleOffsets.forEach((offset, idx) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() - offset);
-    const iso = d.toISOString().split('T')[0];
-    dates[iso] = (idx % 3) + 1;
-  });
-  return dates;
-}
-
 /**
- * Pre-seeded reputation for the Demo Citizen presentation account
+ * Clean baseline reputation for demo and user accounts
  */
 export const DEMO_REPUTATION: UserReputation = {
-  level: 4,
-  levelTitle: 'Road Guardian 🛡️',
-  trustScore: 92,
-  trustTier: 'Verified Guardian',
-  streakDays: 4,
-  maxStreakDays: 12,
-  streakWeeks: 3,
-  activeDaysThisWeek: ['Mon', 'Wed', 'Thu', 'Today'],
-  activityDates: generateDemoActivityDates(),
-  reportsCount: 14,
-  confirmationsCount: 22,
-  resolvedCount: 6,
-  impactRadiusKm: 5.4,
+  level: 1,
+  levelTitle: 'Novice Scout 🌱',
+  trustScore: 70,
+  trustTier: 'Active Citizen',
+  streakDays: 0,
+  maxStreakDays: 0,
+  streakWeeks: 0,
+  activeDaysThisWeek: [],
+  activityDates: {},
+  reportsCount: 0,
+  confirmationsCount: 0,
+  resolvedCount: 0,
+  impactRadiusKm: 0.0,
   badges: ALL_CIVIC_BADGES.map((b) => {
     // Unlock key introductory and progression badges for demo account
     const unlockedIds = [

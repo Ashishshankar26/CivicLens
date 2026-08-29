@@ -71,11 +71,105 @@ export default function ModernYouScreen() {
   const totalCaught = myReports.length;
   const badgesCount = reputation?.badges.filter((b) => b.isUnlocked).length || 0;
   const impactRadius = reputation?.impactRadiusKm || 0.0;
-  const totalContributions = reputation?.activityDates
-    ? Object.values(reputation.activityDates).reduce((a, b) => a + b, 0)
-    : (reputation?.reportsCount || 0) + (reputation?.confirmationsCount || 0) + (reputation?.resolvedCount || 0);
-  const currentStreak = reputation?.streakDays || 0;
-  const maxStreak = reputation?.maxStreakDays || currentStreak;
+
+  // 1. Compile real activity dates map from actual reports and logged actions
+  const realActivityDates = React.useMemo(() => {
+    const datesMap: Record<string, number> = {};
+
+    // Real reports created by this user
+    myReports.forEach((report) => {
+      if (report.createdAt) {
+        try {
+          const iso = new Date(report.createdAt).toISOString().split('T')[0];
+          datesMap[iso] = (datesMap[iso] || 0) + 1;
+        } catch {}
+      }
+    });
+
+    // Real community verifications / votes / resolutions
+    (reputation?.activityLogs || []).forEach((log) => {
+      if (log.timestamp) {
+        try {
+          const iso = new Date(log.timestamp).toISOString().split('T')[0];
+          datesMap[iso] = (datesMap[iso] || 0) + 1;
+        } catch {}
+      }
+    });
+
+    return datesMap;
+  }, [myReports, reputation]);
+
+  // 2. Real total contributions count directly from actual activity
+  const totalContributions = React.useMemo(() => {
+    const sum = Object.values(realActivityDates).reduce((a, b) => a + b, 0);
+    return sum > 0 ? sum : totalCaught;
+  }, [realActivityDates, totalCaught]);
+
+  // 3. Genuine streak calculation from real active dates
+  const { currentStreak, maxStreak } = React.useMemo(() => {
+    const activeDates = new Set(
+      Object.keys(realActivityDates).filter((k) => realActivityDates[k] > 0)
+    );
+
+    if (activeDates.size === 0) {
+      return { currentStreak: 0, maxStreak: 0 };
+    }
+
+    const todayDate = new Date();
+    const todayStr = todayDate.toISOString().split('T')[0];
+
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+
+    let streak = 0;
+    let checkDate: Date | null = null;
+
+    if (activeDates.has(todayStr)) {
+      checkDate = new Date();
+    } else if (activeDates.has(yesterdayStr)) {
+      checkDate = yesterdayDate;
+    }
+
+    if (checkDate) {
+      while (true) {
+        const dateStr = checkDate.toISOString().split('T')[0];
+        if (activeDates.has(dateStr)) {
+          streak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+    }
+
+    // Compute all-time max consecutive day run
+    const sortedDates = Array.from(activeDates).sort();
+    let maxRun = 0;
+    let tempRun = 0;
+    let prevTimestamp: number | null = null;
+
+    sortedDates.forEach((dStr) => {
+      const ts = new Date(dStr).getTime();
+      if (prevTimestamp === null) {
+        tempRun = 1;
+      } else {
+        const diffDays = Math.round((ts - prevTimestamp) / (1000 * 60 * 60 * 24));
+        if (diffDays === 1) {
+          tempRun++;
+        } else if (diffDays > 1) {
+          tempRun = 1;
+        }
+      }
+      if (tempRun > maxRun) maxRun = tempRun;
+      prevTimestamp = ts;
+    });
+
+    return {
+      currentStreak: streak,
+      maxStreak: Math.max(maxRun, streak),
+    };
+  }, [realActivityDates]);
 
   // GitHub Style Matrix Configuration (20 weeks, 7 days per week)
   const heatmapCols = 20;
@@ -90,7 +184,7 @@ export default function ModernYouScreen() {
     const cellDate = new Date(today);
     cellDate.setDate(cellDate.getDate() - daysAgo);
     const dateStr = cellDate.toISOString().split('T')[0];
-    return reputation?.activityDates?.[dateStr] || 0;
+    return realActivityDates[dateStr] || 0;
   };
 
   // Generate dynamic 5 months labels based on past 20 weeks

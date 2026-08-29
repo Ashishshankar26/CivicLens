@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, Region, MapType } from 'react-native-maps';
+import MapView, { Marker, UrlTile, Region, MapType } from 'react-native-maps';
 import { CivicIssue } from '@/types/issue';
 import { IssueMarker } from './IssueMarker';
 import { DEFAULT_REGION } from '@/constants/mockData';
@@ -105,7 +105,6 @@ export const CivicMapView: React.FC<CivicMapViewProps> = ({
       <MapView
         ref={mapRef}
         style={styles.map}
-        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         initialRegion={initialRegion}
         mapType={mapType}
         onRegionChangeComplete={handleRegionChangeComplete}
@@ -114,6 +113,14 @@ export const CivicMapView: React.FC<CivicMapViewProps> = ({
         showsCompass={true}
         showsScale={false}
       >
+        {/* Universal High-Res Tile Fallback: Ensures map NEVER appears blank on any Android APK */}
+        <UrlTile
+          urlTemplate="https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png"
+          maximumZ={19}
+          flipY={false}
+          zIndex={-1}
+        />
+
         {issues.map((issue) => {
           const isSelected = issue.id === selectedIssueId;
           return (

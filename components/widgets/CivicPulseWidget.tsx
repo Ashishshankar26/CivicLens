@@ -34,7 +34,7 @@ export function CivicPulseWidget({
         {/* Metric 1: Active Civic Issues */}
         <View style={[styles.metricBox, styles.metricBoxActive]}>
           <View style={styles.metricIconWrapActive}>
-            <Flame size={14} color="#EA580C" />
+            <Flame size={14} color={COLORS.accentAmber} />
           </View>
           <Text style={styles.metricValue}>{activeCount}</Text>
           <Text style={styles.metricLabel}>Active Issues</Text>
@@ -43,7 +43,7 @@ export function CivicPulseWidget({
         {/* Metric 2: Verified */}
         <View style={[styles.metricBox, styles.metricBoxConfirm]}>
           <View style={styles.metricIconWrapConfirm}>
-            <Users size={14} color="#0284C7" />
+            <Users size={14} color={COLORS.accentCyan} />
           </View>
           <Text style={styles.metricValue}>{confirmedCount}</Text>
           <Text style={styles.metricLabel}>Verifications</Text>
@@ -52,7 +52,7 @@ export function CivicPulseWidget({
         {/* Metric 3: Resolved */}
         <View style={[styles.metricBox, styles.metricBoxResolved]}>
           <View style={styles.metricIconWrapResolved}>
-            <ShieldCheck size={14} color="#059669" />
+            <ShieldCheck size={14} color={COLORS.accentEmerald} />
           </View>
           <Text style={styles.metricValue}>{resolvedCount}</Text>
           <Text style={styles.metricLabel}>Resolved</Text>
@@ -64,10 +64,10 @@ export function CivicPulseWidget({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.border,
     padding: 14,
     ...SHADOWS.card,
     gap: 12,
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   districtPill: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.surfaceHighlight,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: RADIUS.full,
@@ -111,25 +111,25 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   metricBoxActive: {
-    backgroundColor: '#FFF7ED',
+    backgroundColor: COLORS.warningLight,
     borderWidth: 1,
-    borderColor: '#FFEDD5',
+    borderColor: `${COLORS.accentAmber}22`,
   },
   metricBoxConfirm: {
-    backgroundColor: '#F0F9FF',
+    backgroundColor: COLORS.primaryLight,
     borderWidth: 1,
-    borderColor: '#E0F2FE',
+    borderColor: `${COLORS.accentCyan}22`,
   },
   metricBoxResolved: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: COLORS.resolvedLight,
     borderWidth: 1,
-    borderColor: '#D1FAE5',
+    borderColor: `${COLORS.resolved}22`,
   },
   metricIconWrapActive: {
     width: 24,
     height: 24,
     borderRadius: RADIUS.full,
-    backgroundColor: '#FFEDD5',
+    backgroundColor: '#FEF3C7',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: RADIUS.full,
-    backgroundColor: '#E0F2FE',
+    backgroundColor: COLORS.primaryMuted,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: RADIUS.full,
-    backgroundColor: '#D1FAE5',
+    backgroundColor: COLORS.resolvedLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,

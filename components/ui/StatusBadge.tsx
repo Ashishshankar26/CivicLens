@@ -24,9 +24,9 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     >
       {isActive && <View style={[styles.liveDot, size === 'sm' && styles.liveDotSm]} />}
       {isActive ? (
-        <AlertCircle size={iconSize} color="#DC2626" strokeWidth={2.5} />
+        <AlertCircle size={iconSize} color={COLORS.active} strokeWidth={2.5} />
       ) : (
-        <CheckCircle2 size={iconSize} color="#059669" strokeWidth={2.5} />
+        <CheckCircle2 size={iconSize} color={COLORS.resolved} strokeWidth={2.5} />
       )}
       <Text
         style={[
@@ -62,14 +62,14 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   activeBadge: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: COLORS.activeLight,
     borderWidth: 1,
-    borderColor: '#FECACA',
+    borderColor: `${COLORS.active}33`,
   },
   resolvedBadge: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: COLORS.resolvedLight,
     borderWidth: 1,
-    borderColor: '#A7F3D0',
+    borderColor: `${COLORS.resolved}33`,
   },
   text: {
     fontWeight: '800',
@@ -83,20 +83,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   activeText: {
-    color: '#DC2626',
+    color: COLORS.active,
   },
   resolvedText: {
-    color: '#059669',
+    color: COLORS.resolved,
   },
   liveDot: {
     width: 5,
     height: 5,
     borderRadius: 2.5,
-    backgroundColor: '#EF4444',
+    backgroundColor: COLORS.active,
   },
   liveDotSm: {
     width: 4,
     height: 4,
     borderRadius: 2,
+    backgroundColor: COLORS.active,
   },
 });

@@ -17,8 +17,8 @@ export const CATEGORIES: Record<IssueCategory, CategoryMeta> = {
     label: 'Pothole',
     shortLabel: 'Pothole',
     iconName: 'AlertCircle',
-    color: '#0066FF', // Cobalt Blue
-    backgroundColor: '#EFF6FF',
+    color: COLORS.pothole,
+    backgroundColor: COLORS.potholeLight,
     description: 'Road craters, depressions, or asphalt damage causing hazard',
   },
   garbage: {
@@ -26,8 +26,8 @@ export const CATEGORIES: Record<IssueCategory, CategoryMeta> = {
     label: 'Garbage Dump',
     shortLabel: 'Garbage',
     iconName: 'Trash2',
-    color: '#059669', // Emerald
-    backgroundColor: '#ECFDF5',
+    color: COLORS.garbage,
+    backgroundColor: COLORS.garbageLight,
     description: 'Overflowing bins, illegal dumping, or scattered waste',
   },
   streetlight: {
@@ -35,17 +35,17 @@ export const CATEGORIES: Record<IssueCategory, CategoryMeta> = {
     label: 'Streetlight',
     shortLabel: 'Streetlight',
     iconName: 'Lightbulb',
-    color: '#D97706', // Amber
-    backgroundColor: '#FEF3C7',
+    color: COLORS.streetlight,
+    backgroundColor: COLORS.streetlightLight,
     description: 'Dark streets, flickering bulbs, or damaged lighting poles',
   },
   road_damage: {
     id: 'road_damage',
-    label: 'Road Hazard',
-    shortLabel: 'Hazard',
+    label: 'Road Damage',
+    shortLabel: 'Damage',
     iconName: 'Construction',
-    color: '#DC2626', // Red
-    backgroundColor: '#FEE2E2',
+    color: COLORS.roadDamage,
+    backgroundColor: COLORS.roadDamageLight,
     description: 'Cracks, missing manhole covers, or broken dividers',
   },
   other: {
@@ -53,8 +53,8 @@ export const CATEGORIES: Record<IssueCategory, CategoryMeta> = {
     label: 'Civic Issue',
     shortLabel: 'Other',
     iconName: 'HelpCircle',
-    color: '#6366F1', // Indigo
-    backgroundColor: '#EEF2FF',
+    color: COLORS.other,
+    backgroundColor: COLORS.otherLight,
     description: 'Waterlogging, fallen branches, or general infrastructure faults',
   },
 };

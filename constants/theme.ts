@@ -1,75 +1,84 @@
-// System-Wide Electric Cobalt Blue & Modern iOS Design System
+// CivicLens — Premium Curated Design System & Luxury Mineral/Gemstone Palette
 
 export const COLORS = {
-  // Brand Primary & Glow (Electric Cobalt Blue)
-  primary: '#0066FF',
-  primaryDark: '#0052CC',
-  primaryLight: '#EFF6FF',
+  // Brand Primary & Glow (Deep Sapphire & Royal Indigo)
+  primary: '#2563EB',
+  primaryDark: '#1E40AF',
+  primaryNavy: '#0F2756',
+  primaryLight: '#F0F6FE',
   primaryMuted: '#DBEAFE',
-  primaryGlow: 'rgba(0, 102, 255, 0.25)',
+  primaryGlow: 'rgba(37, 99, 235, 0.22)',
+  primaryGradientStart: '#3B82F6',
+  primaryGradientEnd: '#1D4ED8',
 
-  // Secondary Accents
-  accentGreen: '#10B981',
-  accentAmber: '#F59E0B',
-  accentRed: '#EF4444',
-  accentPurple: '#8B5CF6',
+  // Curated Luxury Accents
+  accentEmerald: '#059669',
+  accentGreen: '#059669',
+  accentAmber: '#D97706',
+  accentRuby: '#E11D48',
+  accentRed: '#E11D48',
+  accentAmethyst: '#7C3AED',
+  accentPurple: '#7C3AED',
+  accentCyan: '#0284C7',
 
-  // Surfaces & Backgrounds
+  // Surfaces & Backgrounds (Pearl White & Fine Titanium Slate)
   background: '#F8FAFC',
   surface: '#FFFFFF',
   surfaceElevated: '#FFFFFF',
   surfaceHighlight: '#F1F5F9',
   surfaceGlass: 'rgba(255, 255, 255, 0.94)',
-  surfaceGlassBorder: 'rgba(0, 102, 255, 0.12)',
-  surfaceDark: '#0F172A',
+  surfaceGlassBorder: 'rgba(37, 99, 235, 0.12)',
+  surfaceDark: '#090D16',
+  surfaceDarkElevated: '#111827',
 
-  // Status Colors
-  success: '#10B981',
-  successLight: '#D1FAE5',
-  warning: '#F59E0B',
-  warningLight: '#FEF3C7',
-  error: '#EF4444',
-  errorLight: '#FEE2E2',
-  active: '#EF4444',
-  activeLight: '#FEE2E2',
-  resolved: '#10B981',
-  resolvedLight: '#D1FAE5',
+  // Status & Dynamic Feedback (Gemstone Palette)
+  success: '#059669',
+  successLight: '#ECFDF5',
+  warning: '#D97706',
+  warningLight: '#FFFBEB',
+  error: '#E11D48',
+  errorLight: '#FFF1F2',
+  active: '#E11D48',
+  activeLight: '#FFF1F2',
+  resolved: '#059669',
+  resolvedLight: '#ECFDF5',
 
   // Severity specific
-  low: '#10B981',
-  lowLight: '#D1FAE5',
-  medium: '#0066FF',
-  mediumLight: '#EFF6FF',
-  high: '#EF4444',
-  highLight: '#FEE2E2',
+  low: '#059669',
+  lowLight: '#ECFDF5',
+  medium: '#2563EB',
+  mediumLight: '#F0F6FE',
+  high: '#E11D48',
+  highLight: '#FFF1F2',
 
-  // Categories
-  pothole: '#0066FF',
-  potholeLight: '#EFF6FF',
-  garbage: '#10B981',
+  // Civic Categories (Harmonious Curated Tones)
+  pothole: '#2563EB',
+  potholeLight: '#F0F6FE',
+  garbage: '#059669',
   garbageLight: '#ECFDF5',
-  streetlight: '#F59E0B',
-  streetlightLight: '#FEF3C7',
-  roadDamage: '#EF4444',
-  roadDamageLight: '#FEE2E2',
-  other: '#8B5CF6',
-  otherLight: '#F3E8FF',
+  streetlight: '#D97706',
+  streetlightLight: '#FFFBEB',
+  roadDamage: '#E11D48',
+  roadDamageLight: '#FFF1F2',
+  other: '#7C3AED',
+  otherLight: '#F5F3FF',
 
-  // Borders
+  // Borders & Dividers
   border: '#E2E8F0',
   borderLight: '#F1F5F9',
-  borderFocus: '#0066FF',
+  borderFocus: '#2563EB',
+  borderSubtle: '#EDE8F5',
 
   // Typography
   textPrimary: '#0F172A',
-  textSecondary: '#64748B',
+  textSecondary: '#475569',
   textMuted: '#94A3B8',
   textInverse: '#FFFFFF',
 
   // Tab bar & Navbar
   tabBar: '#FFFFFF',
   tabBarBorder: '#E2E8F0',
-  tabBarActive: '#0066FF',
+  tabBarActive: '#2563EB',
   tabBarInactive: '#94A3B8',
   header: '#FFFFFF',
 };
@@ -84,6 +93,7 @@ export const SPACING = {
 };
 
 export const RADIUS = {
+  xs: 6,
   sm: 8,
   md: 14,
   lg: 20,
@@ -95,50 +105,50 @@ export const SHADOWS = {
   card: {
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
     elevation: 3,
   },
   button: {
-    shadowColor: '#0066FF',
+    shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
-    shadowRadius: 10,
+    shadowOpacity: 0.24,
+    shadowRadius: 12,
     elevation: 4,
   },
   subtle: {
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 2,
   },
   small: {
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.07,
     shadowRadius: 12,
-    elevation: 4,
+    elevation: 3,
   },
   medium: {
-    shadowColor: '#0066FF',
+    shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.14,
     shadowRadius: 18,
-    elevation: 6,
+    elevation: 5,
   },
   large: {
-    shadowColor: '#0066FF',
+    shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.22,
     shadowRadius: 24,
     elevation: 8,
   },
   floating: {
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 25,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.14,
+    shadowRadius: 26,
     elevation: 10,
   },
 };

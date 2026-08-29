@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(0, 102, 255, 0.08)',
+    backgroundColor: COLORS.primaryLight,
   },
   inlinePlusBtn: {
     width: 36,

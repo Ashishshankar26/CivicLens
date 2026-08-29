@@ -88,11 +88,7 @@ export const LocationPreviewCard: React.FC<LocationPreviewCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    gap: 8,
   },
   headerRow: {
     flexDirection: 'row',

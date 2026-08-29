@@ -36,6 +36,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "mirror": "scrcpy --always-on-top --window-title 'CivicLens 2.0 Live'",
     "mail:server": "node server/mailServer.js"
   },
   "private": true

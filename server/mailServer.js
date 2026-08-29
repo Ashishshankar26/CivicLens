@@ -1,15 +1,38 @@
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 const nodemailer = require('nodemailer');
 
+// Load environment variables from .env securely
+const envPath = path.resolve(__dirname, '../.env');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  envContent.split('\n').forEach((line) => {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+      const [key, ...rest] = trimmed.split('=');
+      const val = rest.join('=').replace(/(^"|"$|^'|'$)/g, '').trim();
+      if (!process.env[key.trim()]) {
+        process.env[key.trim()] = val;
+      }
+    }
+  });
+}
+
 const PORT = process.env.MAIL_SERVER_PORT || 4001;
+const SMTP_USER = process.env.EXPO_PUBLIC_SMTP_USER || process.env.SMTP_USER || '';
+const SMTP_PASS = process.env.EXPO_PUBLIC_SMTP_PASS || process.env.SMTP_PASS || '';
+const SMTP_HOST = process.env.EXPO_PUBLIC_SMTP_HOST || process.env.SMTP_HOST || 'smtp.gmail.com';
+const SMTP_PORT = parseInt(process.env.EXPO_PUBLIC_SMTP_PORT || process.env.SMTP_PORT || '587', 10);
+const MAIL_FROM = process.env.EXPO_PUBLIC_MAIL_FROM || `CivicLens 2.0 <${SMTP_USER}>`;
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
+  host: SMTP_HOST,
+  port: SMTP_PORT,
   secure: false,
   auth: {
-    user: 'tonystarm2003@gmail.com',
-    pass: 'bdsynwfclowqcevu',
+    user: SMTP_USER,
+    pass: SMTP_PASS,
   },
 });
 
@@ -48,7 +71,7 @@ const server = http.createServer(async (req, res) => {
         }
 
         const info = await transporter.sendMail({
-          from: '"CivicLens 2.0" <tonystarm2003@gmail.com>',
+          from: MAIL_FROM,
           to,
           subject,
           html,
@@ -59,7 +82,7 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, messageId: info.messageId }));
       } catch (err) {
-        console.error('[CivicLens Mailer] Dispatch error:', err);
+        console.error('[CivicLens Mailer] Error sending email:', err.message);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: err.message }));
       }
@@ -68,9 +91,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   res.writeHead(404, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ error: 'Not Found' }));
+  res.end(JSON.stringify({ error: 'Not found' }));
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[CivicLens Mailer] Live SMTP Relay running on http://0.0.0.0:${PORT}`);
+server.listen(PORT, () => {
+  console.log(`[CivicLens Mailer] Live relay server running on http://localhost:${PORT}`);
 });

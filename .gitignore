@@ -33,6 +33,8 @@ yarn-error.*
 # local env files
 .env
 .env*.local
+.env.production
+.env.staging
 
 # typescript
 *.tsbuildinfo
@@ -40,3 +42,13 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Pitch deck, presentation documents, and internal guides
+*.docx
+*.doc
+*.pptx
+*.ppt
+*.pdf
+*Pitch_Deck*
+*Presentation*
+scratch/

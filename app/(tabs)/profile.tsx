@@ -127,7 +127,7 @@ export default function ModernYouScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Top Header Title */}
-        <Text style={styles.topPageTitle}>Civic Profile</Text>
+        <Text style={styles.topPageTitle}>Profile</Text>
 
         {/* 1. PUBLIC CITIZEN PROFILE HERO */}
         <View style={styles.spotterCard}>

@@ -21,6 +21,7 @@ import { CivicIssue } from '@/types/issue';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { MapType } from 'react-native-maps';
 import { PotholeHotspotModal } from '@/components/map/PotholeHotspotModal';
+import { AirQualityModal } from '@/components/map/AirQualityModal';
 import { PotholePredictionHotspot } from '@/services/analytics/potholePredictionService';
 import { fetchLiveAirQuality, AirQualityData } from '@/services/analytics/airQualityService';
 import { DEFAULT_REGION } from '@/constants/mockData';
@@ -61,6 +62,7 @@ export default function ModernMapScreen() {
 
   // Live Air Quality (AQI) State
   const [airQuality, setAirQuality] = useState<AirQualityData | null>(null);
+  const [showAqiModal, setShowAqiModal] = useState<boolean>(false);
 
   useEffect(() => {
     async function loadAqi() {
@@ -221,13 +223,7 @@ export default function ModernMapScreen() {
             {airQuality && (
               <TouchableOpacity
                 style={[styles.aqiPillBtn, { borderColor: airQuality.color + '70' }]}
-                onPress={() => {
-                  Alert.alert(
-                    `🌫️ ${airQuality.label} (AQI ${airQuality.aqi})`,
-                    `• US AQI: ${airQuality.aqi}\n• PM2.5: ${airQuality.pm2_5} µg/m³\n• PM10: ${airQuality.pm10} µg/m³\n• Dust: ${airQuality.dust} µg/m³\n\n💡 Recommendation:\n${airQuality.recommendation}`,
-                    [{ text: 'OK', style: 'default' }]
-                  );
-                }}
+                onPress={() => setShowAqiModal(true)}
                 activeOpacity={0.85}
               >
                 <View style={[styles.aqiDot, { backgroundColor: airQuality.color }]} />
@@ -427,6 +423,13 @@ export default function ModernMapScreen() {
             },
           });
         }}
+      />
+
+      {/* Rich Air Quality Dashboard Modal */}
+      <AirQualityModal
+        data={airQuality}
+        visible={showAqiModal}
+        onClose={() => setShowAqiModal(false)}
       />
     </View>
   );

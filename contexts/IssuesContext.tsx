@@ -59,7 +59,7 @@ export function IssuesProvider({ children }: { children: React.ReactNode }) {
     const userName = user?.displayName || 'Citizen';
 
     const newIssue = await createIssue(input, userId, userName);
-    setIssues((prev) => [newIssue, ...prev]);
+    setIssues((prev) => [newIssue, ...prev.filter((i) => i.id !== newIssue.id)]);
     return newIssue;
   };
 

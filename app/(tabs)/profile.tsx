@@ -111,10 +111,10 @@ export default function ModernYouScreen() {
               <View style={styles.spotterBadge}>
                 <Sparkles size={11} color={COLORS.primary} />
                 <Text style={styles.spotterBadgeText}>
-                  LEVEL {reputation?.level || 4} • {reputation?.levelTitle?.toUpperCase() || 'ROAD GUARDIAN'}
+                  LEVEL {reputation?.level || 1} • {reputation?.levelTitle?.toUpperCase() || 'NOVICE SCOUT'}
                 </Text>
               </View>
-              <Text style={styles.spotterName}>{user?.displayName || 'Ashish Shankar'}</Text>
+              <Text style={styles.spotterName}>{user?.displayName || 'Active Citizen'}</Text>
               <View style={styles.verifiedRow}>
                 <ShieldCheck size={12} color="#059669" />
                 <Text style={styles.verifiedText}>Verified Citizen • Community Scout</Text>
@@ -130,7 +130,7 @@ export default function ModernYouScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statCol}>
-              <Text style={styles.statNumber}>{reputation?.confirmationsCount || 16}</Text>
+              <Text style={styles.statNumber}>{reputation?.confirmationsCount || 0}</Text>
               <Text style={styles.statLabel}>verified</Text>
             </View>
             <View style={styles.statDivider} />

@@ -33,11 +33,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (persisted) {
           setUser(persisted);
         } else {
-          // Auto-initialize demo user on first startup for instant hackathon showcase
-          setUser(DEMO_USER);
+          setUser(null);
         }
       } catch (err) {
-        setUser(DEMO_USER);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }

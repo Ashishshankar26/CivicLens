@@ -142,7 +142,8 @@ export async function createIssue(
   // 4. Update local cache
   const cached = await AsyncStorage.getItem(ISSUES_STORAGE_KEY);
   const currentIssues: CivicIssue[] = cached ? JSON.parse(cached) : INITIAL_MOCK_ISSUES;
-  const updatedIssues = [newIssue, ...currentIssues];
+  const filtered = currentIssues.filter((i) => i.id !== newIssue.id);
+  const updatedIssues = [newIssue, ...filtered];
   await AsyncStorage.setItem(ISSUES_STORAGE_KEY, JSON.stringify(updatedIssues));
 
   return newIssue;

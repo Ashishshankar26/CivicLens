@@ -83,6 +83,7 @@ export async function sendCitizenEmail({
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(1500),
         body: JSON.stringify({
           to,
           subject,

@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users profile
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Civic Issues collection
+    match /issues/{issueId} {
+      // Anyone authenticated can view issues on the shared map
+      allow read: if request.auth != null;
+      // Authenticated citizens can report new issues
+      allow create: if request.auth != null && request.resource.data.reportedBy == request.auth.uid;
+      // Updates allowed for community confirmations and status resolution
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null && resource.data.reportedBy == request.auth.uid;
+    }
+
+    // Community Confirmations ("Still Exists")
+    match /confirmations/{confirmationId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Resolution Confirmations ("Mark as Resolved")
+    match /resolutionConfirmations/{resConfirmationId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+  }
+}

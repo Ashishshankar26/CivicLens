@@ -40,6 +40,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [focusedInput, setFocusedInput] = useState<'name' | 'email' | 'password' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [alertConfig, setAlertConfig] = useState<ModernAlertConfig | null>(null);
@@ -64,7 +65,7 @@ export default function RegisterScreen() {
       setAlertConfig({
         visible: true,
         title: 'Google Sign-Up Error',
-        message: 'Unable to connect to Google OAuth. Please check your network or try email registration.',
+        message: 'Unable to connect to Google OAuth. Please check network connection.',
         icon: 'warning',
         confirmText: 'OK',
         confirmVariant: 'danger',
@@ -73,25 +74,25 @@ export default function RegisterScreen() {
     }
   }, [response]);
 
-  const handleGoogleTokenSuccess = async (accessToken: string) => {
+  const handleGoogleTokenSuccess = async (token: string) => {
     setIsGoogleLoading(true);
     try {
       const userInfoRes = await fetch('https://www.googleapis.com/userinfo/v2/me', {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (userInfoRes.ok) {
-        const data = await userInfoRes.json();
-        await loginGoogle({
-          name: data.name || data.email?.split('@')[0] || 'Google Citizen',
-          email: data.email,
-          photoUrl: data.picture,
-        });
-        router.replace('/(tabs)');
-      } else {
-        throw new Error('Could not fetch profile from Google.');
-      }
-    } catch (error: any) {
-      setAlertConfig({ visible: true, title: 'Google Sign-Up Error', message: error?.message || 'Failed to register with Google.', icon: 'warning', confirmText: 'OK', confirmVariant: 'danger', onConfirm: () => setAlertConfig(null) });
+      const gData = await userInfoRes.json();
+      await loginGoogle({ email: gData.email || 'user@gmail.com', name: gData.name || 'Google User', photoUrl: gData.picture });
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      setAlertConfig({
+        visible: true,
+        title: 'Authentication Failed',
+        message: err.message || 'Failed to register with Google.',
+        icon: 'warning',
+        confirmText: 'OK',
+        confirmVariant: 'danger',
+        onConfirm: () => setAlertConfig(null),
+      });
     } finally {
       setIsGoogleLoading(false);
     }
@@ -100,16 +101,29 @@ export default function RegisterScreen() {
   const handleGoogleButtonPress = async () => {
     setIsGoogleLoading(true);
     try {
-      const userProfile = await executeGoogleAuth();
-      if (userProfile) {
+      const userObj = await executeGoogleAuth();
+      if (userObj) {
         router.replace('/(tabs)');
+        return;
       }
-    } catch (err: any) {
-      console.warn('[Google Auth Error]:', err);
+      if (request) {
+        await promptAsync();
+      } else {
+        setAlertConfig({
+          visible: true,
+          title: 'Google Auth Unavailable',
+          message: 'Google registration is initializing. Please tap again.',
+          icon: 'info',
+          confirmText: 'OK',
+          onConfirm: () => setAlertConfig(null),
+        });
+      }
+    } catch (error: any) {
+      console.warn('[Register Google Error]:', error);
       setAlertConfig({
         visible: true,
-        title: 'Google Sign-Up Error',
-        message: err?.message || 'Failed to complete Google OAuth registration session.',
+        title: 'Sign Up Failed',
+        message: error.message || 'Google registration was cancelled.',
         icon: 'warning',
         confirmText: 'OK',
         confirmVariant: 'danger',
@@ -122,21 +136,43 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!name.trim() || !email.trim() || !password.trim()) {
-      setAlertConfig({ visible: true, title: 'Missing Fields', message: 'Please enter your full name, email, and password.', icon: 'info', confirmText: 'OK', onConfirm: () => setAlertConfig(null) });
+      setAlertConfig({
+        visible: true,
+        title: 'Missing Fields',
+        message: 'Please fill in your name, email, and password.',
+        icon: 'info',
+        confirmText: 'OK',
+        onConfirm: () => setAlertConfig(null),
+      });
       return;
     }
 
     if (password.length < 6) {
-      setAlertConfig({ visible: true, title: 'Security Requirement', message: 'Password must be at least 6 characters for account safety.', icon: 'info', confirmText: 'OK', onConfirm: () => setAlertConfig(null) });
+      setAlertConfig({
+        visible: true,
+        title: 'Weak Password',
+        message: 'Password must be at least 6 characters long.',
+        icon: 'warning',
+        confirmText: 'OK',
+        onConfirm: () => setAlertConfig(null),
+      });
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await register(name.trim(), email.trim(), password);
+      await register(email.trim(), password, name.trim());
       router.replace('/(tabs)');
     } catch (error: any) {
-      setAlertConfig({ visible: true, title: 'Registration Failed', message: error?.message || 'Unable to create account.', icon: 'warning', confirmText: 'Try Again', confirmVariant: 'danger', onConfirm: () => setAlertConfig(null) });
+      setAlertConfig({
+        visible: true,
+        title: 'Registration Failed',
+        message: error.message || 'Could not create account. Please try a different email.',
+        icon: 'warning',
+        confirmText: 'OK',
+        confirmVariant: 'danger',
+        onConfirm: () => setAlertConfig(null),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -145,27 +181,29 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
           {
-            paddingTop: insets.top + (Platform.OS === 'ios' ? 16 : 24),
-            paddingBottom: insets.bottom + 24,
+            paddingTop: insets.top + (Platform.OS === 'ios' ? 12 : 20),
+            paddingBottom: insets.bottom + 32,
           },
         ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets={true}
       >
-        {/* Back Row */}
+        {/* Back Navigation Button */}
         <TouchableOpacity
-          style={styles.backButton}
+          style={styles.backBtn}
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
-          <ArrowLeft size={16} color="#64748B" />
-          <Text style={styles.backButtonText}>Back to Sign In</Text>
+          <ArrowLeft size={20} color="#1C1C1E" />
+          <Text style={styles.backBtnText}>Back to Sign In</Text>
         </TouchableOpacity>
 
         {/* Brand Header */}
@@ -176,18 +214,18 @@ export default function RegisterScreen() {
             </View>
             <View>
               <Text style={styles.brandName}>CivicLens</Text>
-              <Text style={styles.brandTagline}>COMMUNITY CITIZEN ENROLLMENT</Text>
+              <Text style={styles.brandTagline}>ROAD SAFETY NETWORK</Text>
             </View>
           </View>
 
           <Text style={styles.headline}>Create Account</Text>
           <Text style={styles.subheadline}>
-            Join your neighborhood network to report civic issues and verify street safety.
+            Join thousands of active citizens reporting & verifying road safety hazards.
           </Text>
         </View>
 
-        {/* Form Body */}
-        <View style={styles.formSection}>
+        {/* Apple Structured Auth Card */}
+        <View style={styles.cardFormContainer}>
           {/* Official Google Button */}
           <TouchableOpacity
             style={[styles.googleButton, (!request || isGoogleLoading) && styles.buttonDisabled]}
@@ -200,7 +238,7 @@ export default function RegisterScreen() {
             ) : (
               <>
                 <GoogleIcon size={18} />
-                <Text style={styles.googleButtonText}>Sign Up with Google</Text>
+                <Text style={styles.googleButtonText}>Continue with Google</Text>
               </>
             )}
           </TouchableOpacity>
@@ -208,22 +246,24 @@ export default function RegisterScreen() {
           {/* Divider */}
           <View style={styles.dividerContainer}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerLabel}>OR ENROLL WITH EMAIL</Text>
+            <Text style={styles.dividerLabel}>OR REGISTER WITH EMAIL</Text>
             <View style={styles.dividerLine} />
           </View>
 
           {/* Full Name Input */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>FULL NAME</Text>
-            <View style={styles.inputWrapper}>
-              <User size={16} color="#64748B" style={styles.inputLeadingIcon} />
+            <View style={[styles.inputWrapper, focusedInput === 'name' && styles.inputWrapperFocused]}>
+              <User size={16} color={focusedInput === 'name' ? '#007AFF' : '#64748B'} style={styles.inputLeadingIcon} />
               <TextInput
                 style={styles.textInput}
-                placeholder="Jane Doe"
+                placeholder="Alex Morgan"
                 placeholderTextColor="#94A3B8"
                 autoCapitalize="words"
                 value={name}
                 onChangeText={setName}
+                onFocus={() => setFocusedInput('name')}
+                onBlur={() => setFocusedInput(null)}
               />
             </View>
           </View>
@@ -231,8 +271,8 @@ export default function RegisterScreen() {
           {/* Email Input */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
-            <View style={styles.inputWrapper}>
-              <Mail size={16} color="#64748B" style={styles.inputLeadingIcon} />
+            <View style={[styles.inputWrapper, focusedInput === 'email' && styles.inputWrapperFocused]}>
+              <Mail size={16} color={focusedInput === 'email' ? '#007AFF' : '#64748B'} style={styles.inputLeadingIcon} />
               <TextInput
                 style={styles.textInput}
                 placeholder="name@example.com"
@@ -242,6 +282,8 @@ export default function RegisterScreen() {
                 autoCorrect={false}
                 value={email}
                 onChangeText={setEmail}
+                onFocus={() => setFocusedInput('email')}
+                onBlur={() => setFocusedInput(null)}
               />
             </View>
           </View>
@@ -249,15 +291,17 @@ export default function RegisterScreen() {
           {/* Password Input */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>PASSWORD</Text>
-            <View style={styles.inputWrapper}>
-              <Lock size={16} color="#64748B" style={styles.inputLeadingIcon} />
+            <View style={[styles.inputWrapper, focusedInput === 'password' && styles.inputWrapperFocused]}>
+              <Lock size={16} color={focusedInput === 'password' ? '#007AFF' : '#64748B'} style={styles.inputLeadingIcon} />
               <TextInput
                 style={styles.textInput}
-                placeholder="At least 6 characters"
+                placeholder="••••••••"
                 placeholderTextColor="#94A3B8"
                 secureTextEntry={!showPassword}
                 value={password}
                 onChangeText={setPassword}
+                onFocus={() => setFocusedInput('password')}
+                onBlur={() => setFocusedInput(null)}
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
@@ -284,8 +328,8 @@ export default function RegisterScreen() {
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <>
-                <Text style={styles.primaryButtonText}>Create Citizen Account</Text>
-                <ArrowRight size={16} color="#FFFFFF" strokeWidth={2.5} />
+                <Text style={styles.primaryButtonText}>Create Account</Text>
+                <ArrowRight size={17} color="#FFFFFF" strokeWidth={2.4} />
               </>
             )}
           </TouchableOpacity>
@@ -293,14 +337,14 @@ export default function RegisterScreen() {
 
         {/* Footer Navigation */}
         <View style={styles.footerContainer}>
-          <Text style={styles.footerText}>Already enrolled?</Text>
-          <TouchableOpacity onPress={() => router.back()}>
+          <Text style={styles.footerText}>Already have an account?</Text>
+          <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
             <Text style={styles.footerAction}>Sign In</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
 
-      {/* Modern Alert Modal */}
+      {/* Alert Modal */}
       {alertConfig && (
         <ModernAlertModal
           {...alertConfig}
@@ -316,87 +360,100 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFC',
+    backgroundColor: '#F2F2F7',
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 26,
+    paddingHorizontal: 20,
     justifyContent: 'center',
   },
-  backButton: {
+  backBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 20,
+    marginBottom: 12,
     alignSelf: 'flex-start',
   },
-  backButtonText: {
-    fontSize: 13,
+  backBtnText: {
+    fontSize: 14,
     fontWeight: '600',
-    color: '#64748B',
+    color: '#007AFF',
   },
   headerSection: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
+    gap: 10,
+    marginBottom: 10,
   },
   brandIconBox: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     borderRadius: 12,
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#007AFF',
     alignItems: 'center',
     justifyContent: 'center',
-    ...SHADOWS.medium,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   brandName: {
     fontSize: 18,
-    fontWeight: '900',
-    color: '#0F172A',
-    letterSpacing: -0.5,
+    fontWeight: '800',
+    color: '#1C1C1E',
+    letterSpacing: -0.4,
   },
   brandTagline: {
-    fontSize: 8.5,
+    fontSize: 9,
     fontWeight: '800',
-    color: '#0066FF',
-    letterSpacing: 0.8,
+    color: '#007AFF',
+    letterSpacing: 1,
   },
   headline: {
-    fontSize: 30,
-    fontWeight: '900',
-    color: '#0F172A',
-    letterSpacing: -0.7,
-    marginBottom: 6,
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#1C1C1E',
+    letterSpacing: -0.6,
+    marginBottom: 4,
   },
   subheadline: {
     fontSize: 13.5,
-    color: '#64748B',
+    color: '#8E8E93',
     lineHeight: 19,
     fontWeight: '400',
   },
-  formSection: {
-    gap: 15,
+  cardFormContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(210, 210, 215, 0.6)',
+    gap: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 4,
   },
   googleButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     paddingVertical: 13,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     gap: 10,
-    ...SHADOWS.subtle,
   },
   googleButtonText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#1E293B',
+    fontWeight: '700',
+    color: '#1C1C1E',
     letterSpacing: -0.2,
   },
   dividerContainer: {
@@ -408,33 +465,36 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#E5E5EA',
   },
   dividerLabel: {
-    fontSize: 10.5,
+    fontSize: 10,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: '#8E8E93',
     letterSpacing: 0.6,
   },
   inputGroup: {
     gap: 6,
   },
   inputLabel: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '800',
-    color: '#475569',
+    color: '#3C3C4399',
     letterSpacing: 0.6,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
     paddingHorizontal: 14,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
     height: 48,
-    ...SHADOWS.subtle,
+  },
+  inputWrapperFocused: {
+    borderColor: '#007AFF',
+    backgroundColor: '#FFFFFF',
   },
   inputLeadingIcon: {
     marginRight: 10,
@@ -442,7 +502,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 14,
-    color: '#0F172A',
+    color: '#1C1C1E',
     fontWeight: '500',
     height: '100%',
   },
@@ -453,17 +513,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#007AFF',
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     gap: 8,
     marginTop: 4,
-    ...SHADOWS.small,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
+    elevation: 4,
   },
   primaryButtonText: {
     color: '#FFFFFF',
     fontWeight: '800',
-    fontSize: 14.5,
+    fontSize: 15,
     letterSpacing: -0.2,
   },
   buttonDisabled: {
@@ -474,16 +538,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 6,
-    marginTop: 24,
+    marginTop: 20,
   },
   footerText: {
     fontSize: 13,
-    color: '#64748B',
+    color: '#8E8E93',
     fontWeight: '500',
   },
   footerAction: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.primary,
+    color: '#007AFF',
   },
 });

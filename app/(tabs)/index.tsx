@@ -122,6 +122,15 @@ export default function ModernMapScreen() {
         recenterTrigger={recenterTrigger}
       />
 
+      {/* Status Filter Dismiss Backdrop */}
+      {showStatusDropdown && (
+        <TouchableOpacity
+          style={styles.dropdownDismissBackdrop}
+          onPress={() => setShowStatusDropdown(false)}
+          activeOpacity={1}
+        />
+      )}
+
       {/* DYNAMIC TOP FLOATING HUD (With safe area inset) */}
       <View style={[styles.floatingTopContainer, { paddingTop: insets.top + (Platform.OS === 'ios' ? 4 : 8) }]}>
         {/* Top Action Row */}
@@ -384,6 +393,10 @@ const styles = StyleSheet.create({
   },
   topPillBtnActiveUrgent: {
     backgroundColor: '#EF4444',
+  },
+  dropdownDismissBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 19,
   },
   dropdownWrapper: {
     position: 'relative',

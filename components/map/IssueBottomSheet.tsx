@@ -100,28 +100,30 @@ export const IssueBottomSheet: React.FC<IssueBottomSheetProps> = ({
           <View style={styles.badgeRow}>
             <CategoryBadge category={issue.category} size="sm" />
             <StatusBadge status={issue.status} size="sm" />
-            <View style={[styles.priorityPill, isUrgent && styles.priorityPillUrgent]}>
-              <Text style={[styles.priorityPillText, isUrgent && styles.priorityPillTextUrgent]}>
-                {priorityScore} PRIORITY
-              </Text>
-            </View>
           </View>
 
           <Text style={styles.description} numberOfLines={2}>
             {issue.description}
           </Text>
 
-          {/* Distance & Relative Time Glass Pill */}
+          {/* Telemetry Pills */}
           <View style={styles.telemetryRow}>
+            <View style={[styles.telemetryPill, isUrgent && styles.telemetryPillUrgent]}>
+              <Flame size={10} color={isUrgent ? '#DC2626' : COLORS.primary} />
+              <Text style={[styles.telemetryText, isUrgent && styles.telemetryTextUrgent]}>
+                {priorityScore}
+              </Text>
+            </View>
+
             {distance !== null && (
               <View style={styles.telemetryPill}>
-                <MapPin size={11} color={COLORS.primary} />
+                <MapPin size={10} color={COLORS.primary} />
                 <Text style={styles.telemetryText}>{formatDistance(distance)}</Text>
               </View>
             )}
 
             <View style={styles.telemetryPill}>
-              <Clock size={11} color={COLORS.textSecondary} />
+              <Clock size={10} color={COLORS.textSecondary} />
               <Text style={styles.telemetryText}>{formatRelativeTime(issue.createdAt)}</Text>
             </View>
           </View>
@@ -198,8 +200,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   thumbnail: {
-    width: 82,
-    height: 82,
+    width: 80,
+    height: 80,
     borderRadius: RADIUS.md,
     backgroundColor: '#E2E8F0',
   },
@@ -229,29 +231,7 @@ const styles = StyleSheet.create({
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    flexWrap: 'wrap',
-  },
-  priorityPill: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: RADIUS.full,
-    backgroundColor: COLORS.surfaceHighlight,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  priorityPillUrgent: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#FECACA',
-  },
-  priorityPillText: {
-    fontSize: 8.5,
-    fontWeight: '800',
-    color: COLORS.textSecondary,
-    letterSpacing: 0.3,
-  },
-  priorityPillTextUrgent: {
-    color: '#DC2626',
+    gap: 6,
   },
   description: {
     fontSize: 13,
@@ -262,7 +242,7 @@ const styles = StyleSheet.create({
   telemetryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
     marginTop: 2,
   },
   telemetryPill: {
@@ -274,10 +254,19 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.sm,
     gap: 3,
   },
+  telemetryPillUrgent: {
+    backgroundColor: '#FEF2F2',
+    borderWidth: 0.5,
+    borderColor: '#FECACA',
+  },
   telemetryText: {
     fontSize: 10,
     color: COLORS.textSecondary,
     fontWeight: '600',
+  },
+  telemetryTextUrgent: {
+    color: '#DC2626',
+    fontWeight: '800',
   },
   coordsText: {
     fontSize: 10.5,

@@ -21,7 +21,7 @@ import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { formatRelativeTime } from '@/utils/formatters';
 import {
   LayoutGrid,
-  Route,
+  Layers,
   Sparkles,
   Award,
   CheckCircle2,
@@ -44,7 +44,6 @@ export default function SpotdexScreen() {
   const { user } = useAuth();
   const { issues, myReports, refreshIssues, isLoading } = useIssues();
   const [reputation, setReputation] = useState<UserReputation | null>(null);
-  const [topSegment, setTopSegment] = useState<'grid' | 'route'>('grid');
   const [registryScope, setRegistryScope] = useState<'my' | 'community'>('my');
   const [logFilter, setLogFilter] = useState<string>('all');
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
@@ -96,24 +95,16 @@ export default function SpotdexScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + (Platform.OS === 'ios' ? 4 : 8) }]}>
-      {/* TOP DYNAMIC PILL TOGGLE */}
-      <View style={styles.topPillContainer}>
-        <View style={styles.topPillSegment}>
-          <TouchableOpacity
-            style={[styles.topPillBtn, topSegment === 'grid' && styles.topPillBtnActive]}
-            onPress={() => setTopSegment('grid')}
-            activeOpacity={0.8}
-          >
-            <LayoutGrid size={17} color={topSegment === 'grid' ? '#FFFFFF' : COLORS.textSecondary} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.topPillBtn, topSegment === 'route' && styles.topPillBtnActive]}
-            onPress={() => setTopSegment('route')}
-            activeOpacity={0.8}
-          >
-            <Route size={17} color={topSegment === 'route' ? '#FFFFFF' : COLORS.textSecondary} />
-          </TouchableOpacity>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerIconBox}>
+          <Layers size={20} color={COLORS.primary} />
+        </View>
+        <View style={styles.headerTextCol}>
+          <Text style={styles.headerTitle}>Spotdex</Text>
+          <Text style={styles.headerSub}>
+            Community catalog of district road hazards and badges
+          </Text>
         </View>
       </View>
 
@@ -277,7 +268,7 @@ export default function SpotdexScreen() {
 
           {/* Badges Horizontal Row with Live Progress */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.badgesRow}>
-            {reputation?.badges.map((b) => (
+            {(reputation?.badges || []).slice(0, 8).map((b) => (
               <TouchableOpacity
                 key={b.id}
                 style={styles.badgeItem}
@@ -297,6 +288,19 @@ export default function SpotdexScreen() {
                 </Text>
               </TouchableOpacity>
             ))}
+
+            {/* View All Tile */}
+            <TouchableOpacity
+              style={styles.viewAllBadgeTile}
+              onPress={() => setAllBadgesModalVisible(true)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.viewAllBadgeCircle}>
+                <Award size={22} color={COLORS.primary} />
+              </View>
+              <Text style={styles.viewAllBadgeText}>+{Math.max(0, totalBadgesCount - 8)} More</Text>
+              <Text style={styles.viewAllBadgeSub}>View All</Text>
+            </TouchableOpacity>
           </ScrollView>
         </View>
 
@@ -489,29 +493,37 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  topPillContainer: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  topPillSegment: {
+  header: {
     flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 10,
     backgroundColor: '#FFFFFF',
-    borderRadius: RADIUS.full,
-    padding: 3,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.subtle,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    gap: 12,
   },
-  topPillBtn: {
-    width: 44,
-    height: 32,
-    borderRadius: RADIUS.full,
+  headerIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  topPillBtnActive: {
-    backgroundColor: COLORS.primary,
+  headerTextCol: {
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: COLORS.textPrimary,
+    letterSpacing: -0.4,
+  },
+  headerSub: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    marginTop: 1,
   },
   scrollContent: {
     paddingHorizontal: SPACING.md,
@@ -742,6 +754,38 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.textPrimary,
     textAlign: 'center',
+  },
+  viewAllBadgeTile: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 72,
+    height: 90,
+    borderRadius: RADIUS.lg,
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1.5,
+    borderColor: '#BFDBFE',
+    borderStyle: 'dashed',
+    gap: 2,
+    padding: 4,
+  },
+  viewAllBadgeCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  viewAllBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: COLORS.primaryDark,
+  },
+  viewAllBadgeSub: {
+    fontSize: 8.5,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   logbookSection: {
     marginTop: 4,

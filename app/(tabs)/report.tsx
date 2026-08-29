@@ -20,7 +20,6 @@ import { AiSuggestionCard } from '@/components/report/AiSuggestionCard';
 import { LocationPreviewCard } from '@/components/report/LocationPreviewCard';
 import { DuplicateAlertModal } from '@/components/report/DuplicateAlertModal';
 import { AchievementModal } from '@/components/gamification/AchievementModal';
-import { LinearGradient } from 'expo-linear-gradient';
 import { CATEGORY_LIST } from '@/constants/categories';
 import { SEVERITY_LIST } from '@/constants/severities';
 import { getCurrentLocation, LocationResult } from '@/services/location/locationService';
@@ -225,14 +224,9 @@ export default function ReportIssueScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <LinearGradient
-              colors={['#0052CC', '#0066FF']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.headerIconBox}
-            >
-              <Camera size={20} color="#FFFFFF" />
-            </LinearGradient>
+            <View style={styles.headerIconBox}>
+              <Camera size={20} color={COLORS.primary} />
+            </View>
             <View style={styles.headerTextCol}>
               <Text style={styles.headerTitle}>Report an Issue</Text>
               <Text style={styles.headerSub}>
@@ -341,32 +335,28 @@ export default function ReportIssueScreen() {
                 return (
                   <TouchableOpacity
                     key={sev.id}
-                    style={[styles.severityBtn, isSelected && styles.severityBtnActiveWrapper]}
+                    style={[
+                      styles.severityBtn,
+                      isSelected && {
+                        backgroundColor:
+                          sev.id === 'high'
+                            ? '#EF4444'
+                            : sev.id === 'medium'
+                            ? COLORS.primary
+                            : '#10B981',
+                      },
+                    ]}
                     onPress={() => setSeverity(sev.id)}
                     activeOpacity={0.8}
                   >
-                    {isSelected ? (
-                      <LinearGradient
-                        colors={
-                          sev.id === 'high'
-                            ? ['#DC2626', '#EF4444']
-                            : sev.id === 'medium'
-                            ? ['#0052CC', '#0066FF']
-                            : ['#059669', '#10B981']
-                        }
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={styles.severityGradient}
-                      >
-                        <Text style={styles.severityTextActive}>
-                          {sev.label.toUpperCase()}
-                        </Text>
-                      </LinearGradient>
-                    ) : (
-                      <Text style={styles.severityText}>
-                        {sev.label.toUpperCase()}
-                      </Text>
-                    )}
+                    <Text
+                      style={[
+                        styles.severityText,
+                        isSelected && styles.severityTextActive,
+                      ]}
+                    >
+                      {sev.label.toUpperCase()}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -419,17 +409,10 @@ export default function ReportIssueScreen() {
             disabled={isSubmitting}
             activeOpacity={0.88}
           >
-            <LinearGradient
-              colors={['#0052CC', '#0066FF', '#2563EB']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.submitBtnGradient}
-            >
-              <Send size={18} color="#FFFFFF" />
-              <Text style={styles.submitBtnText}>
-                {isSubmitting ? 'Submitting Report...' : 'Submit Report'}
-              </Text>
-            </LinearGradient>
+            <Send size={18} color="#FFFFFF" />
+            <Text style={styles.submitBtnText}>
+              {isSubmitting ? 'Submitting Report...' : 'Submit Report'}
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -589,18 +572,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 9,
     alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: RADIUS.sm,
-  },
-  severityBtnActiveWrapper: {
-    paddingVertical: 0,
-    overflow: 'hidden',
-  },
-  severityGradient: {
-    width: '100%',
-    paddingVertical: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
     borderRadius: RADIUS.sm,
   },
   severityText: {
@@ -611,7 +582,6 @@ const styles = StyleSheet.create({
   severityTextActive: {
     color: '#FFFFFF',
     fontWeight: '900',
-    fontSize: 11,
   },
   descHeaderRow: {
     flexDirection: 'row',
@@ -643,22 +613,19 @@ const styles = StyleSheet.create({
     minHeight: 75,
   },
   submitBtn: {
-    borderRadius: RADIUS.full,
-    overflow: 'hidden',
-    ...SHADOWS.large,
-    marginVertical: SPACING.md,
-  },
-  submitBtnGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 15,
-    gap: 8,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
     borderRadius: RADIUS.full,
+    gap: 8,
+    ...SHADOWS.large,
+    marginVertical: SPACING.md,
   },
   submitBtnText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '900',
     letterSpacing: 0.3,
   },

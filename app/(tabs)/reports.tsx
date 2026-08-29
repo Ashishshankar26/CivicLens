@@ -17,7 +17,6 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { CategoryBadge } from '@/components/ui/CategoryBadge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { CivicIssue } from '@/types/issue';
-import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { formatRelativeTime } from '@/utils/formatters';
 import {
@@ -87,14 +86,9 @@ export default function ModernMyReportsScreen() {
     <View style={[styles.container, { paddingTop: insets.top + (Platform.OS === 'ios' ? 4 : 8) }]}>
       {/* Header */}
       <View style={styles.header}>
-        <LinearGradient
-          colors={['#0052CC', '#0066FF']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.headerIconBox}
-        >
-          <ClipboardList size={20} color="#FFFFFF" />
-        </LinearGradient>
+        <View style={styles.headerIconBox}>
+          <ClipboardList size={20} color={COLORS.primary} />
+        </View>
         <View style={styles.headerTextCol}>
           <Text style={styles.headerTitle}>My Reports</Text>
           <Text style={styles.headerSub}>
@@ -106,7 +100,7 @@ export default function ModernMyReportsScreen() {
       {/* METRIC TELEMETRY BAR */}
       <View style={styles.telemetryBar}>
         <View style={styles.telemetrySegment}>
-          <Text style={[styles.telemetryNum, { color: '#0066FF' }]}>{myReports.length}</Text>
+          <Text style={styles.telemetryNum}>{myReports.length}</Text>
           <Text style={styles.telemetryLabel}>Total Logged</Text>
         </View>
 
@@ -133,22 +127,9 @@ export default function ModernMyReportsScreen() {
             onPress={() => setStatusTab('all')}
             activeOpacity={0.8}
           >
-            {statusTab === 'all' ? (
-              <LinearGradient
-                colors={['#0052CC', '#0066FF']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.tabBtnGradient}
-              >
-                <Text style={styles.tabTextActive}>
-                  All ({myReports.length})
-                </Text>
-              </LinearGradient>
-            ) : (
-              <Text style={styles.tabText}>
-                All ({myReports.length})
-              </Text>
-            )}
+            <Text style={[styles.tabText, statusTab === 'all' && styles.tabTextActive]}>
+              All ({myReports.length})
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -156,22 +137,9 @@ export default function ModernMyReportsScreen() {
             onPress={() => setStatusTab('active')}
             activeOpacity={0.8}
           >
-            {statusTab === 'active' ? (
-              <LinearGradient
-                colors={['#0052CC', '#0066FF']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.tabBtnGradient}
-              >
-                <Text style={styles.tabTextActive}>
-                  Active ({activeCount})
-                </Text>
-              </LinearGradient>
-            ) : (
-              <Text style={styles.tabText}>
-                Active ({activeCount})
-              </Text>
-            )}
+            <Text style={[styles.tabText, statusTab === 'active' && styles.tabTextActive]}>
+              Active ({activeCount})
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -179,22 +147,9 @@ export default function ModernMyReportsScreen() {
             onPress={() => setStatusTab('resolved')}
             activeOpacity={0.8}
           >
-            {statusTab === 'resolved' ? (
-              <LinearGradient
-                colors={['#0052CC', '#0066FF']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.tabBtnGradient}
-              >
-                <Text style={styles.tabTextActive}>
-                  Resolved ({resolvedCount})
-                </Text>
-              </LinearGradient>
-            ) : (
-              <Text style={styles.tabText}>
-                Resolved ({resolvedCount})
-              </Text>
-            )}
+            <Text style={[styles.tabText, statusTab === 'resolved' && styles.tabTextActive]}>
+              Resolved ({resolvedCount})
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -268,11 +223,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     marginHorizontal: SPACING.md,
     marginTop: SPACING.sm,
-    borderRadius: 20,
-    paddingVertical: 14,
+    borderRadius: RADIUS.lg,
+    paddingVertical: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.border,
     ...SHADOWS.subtle,
   },
   telemetrySegment: {
@@ -280,21 +235,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   telemetryNum: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '900',
     color: COLORS.textPrimary,
   },
   telemetryLabel: {
     fontSize: 9,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.textMuted,
     marginTop: 2,
-    letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   divider: {
     width: 1,
-    height: 26,
+    height: 24,
     backgroundColor: '#E2E8F0',
   },
   tabsWrapper: {
@@ -303,51 +257,41 @@ const styles = StyleSheet.create({
   },
   segmentedTabs: {
     flexDirection: 'row',
-    backgroundColor: '#EDF2F7',
+    backgroundColor: COLORS.surfaceHighlight,
     borderRadius: RADIUS.full,
     padding: 3,
-    gap: 4,
   },
   tabBtn: {
     flex: 1,
-    borderRadius: RADIUS.full,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: RADIUS.full,
   },
   tabBtnActive: {
-    // handled by LinearGradient
-  },
-  tabBtnGradient: {
-    width: '100%',
-    paddingVertical: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: RADIUS.full,
+    backgroundColor: '#FFFFFF',
+    ...SHADOWS.subtle,
   },
   tabText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: COLORS.textSecondary,
   },
   tabTextActive: {
-    color: '#FFFFFF',
+    color: COLORS.primary,
     fontWeight: '900',
-    fontSize: 12,
   },
   listContent: {
     paddingHorizontal: SPACING.md,
-    gap: 12,
+    gap: 10,
   },
   reportCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: RADIUS.xl,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.border,
     gap: 12,
     ...SHADOWS.subtle,
   },

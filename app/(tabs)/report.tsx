@@ -275,9 +275,15 @@ export default function ReportIssueScreen() {
             <View style={styles.headerTextCol}>
               <Text style={styles.headerTitle}>Report an Issue</Text>
               <Text style={styles.headerSub}>
-                Capture or upload photo evidence for automatic AI categorization
+                Capture photo evidence for automatic AI categorization
               </Text>
             </View>
+          </View>
+
+          {/* AI-Powered Banner */}
+          <View style={styles.aiBannerStrip}>
+            <Sparkles size={13} color="#7C3AED" strokeWidth={2.4} />
+            <Text style={styles.aiBannerText}>Powered by Gemini Vision AI — auto-categorization & severity detection</Text>
           </View>
 
           {/* 1. PHOTO EVIDENCE WITH GEMINI VISION */}
@@ -454,10 +460,14 @@ export default function ReportIssueScreen() {
             disabled={isSubmitting}
             activeOpacity={0.88}
           >
-            <Send size={18} color="#FFFFFF" />
-            <Text style={styles.submitBtnText}>
-              {isSubmitting ? 'Submitting Report...' : 'Submit Report'}
-            </Text>
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <>
+                <Send size={18} color="#FFFFFF" />
+                <Text style={styles.submitBtnText}>Submit Report</Text>
+              </>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -557,6 +567,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     ...SHADOWS.subtle,
+  },
+  aiBannerStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FAF5FF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: RADIUS.lg,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#E9D5FF',
+  },
+  aiBannerText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#6D28D9',
+    flex: 1,
   },
   cardSectionLabel: {
     fontSize: 10,

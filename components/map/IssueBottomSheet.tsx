@@ -21,6 +21,7 @@ import {
   Clock,
   ArrowRight,
   Navigation,
+  Flame,
 } from 'lucide-react-native';
 
 interface IssueBottomSheetProps {
@@ -88,7 +89,8 @@ export const IssueBottomSheet: React.FC<IssueBottomSheetProps> = ({
           />
           {isUrgent && (
             <View style={styles.urgentBadge}>
-              <Text style={styles.urgentText}>🚨 URGENT</Text>
+              <Flame size={10} color="#FFFFFF" />
+              <Text style={styles.urgentText}>HIGH IMPACT</Text>
             </View>
           )}
         </View>
@@ -98,6 +100,11 @@ export const IssueBottomSheet: React.FC<IssueBottomSheetProps> = ({
           <View style={styles.badgeRow}>
             <CategoryBadge category={issue.category} size="sm" />
             <StatusBadge status={issue.status} size="sm" />
+            <View style={[styles.priorityPill, isUrgent && styles.priorityPillUrgent]}>
+              <Text style={[styles.priorityPillText, isUrgent && styles.priorityPillTextUrgent]}>
+                {priorityScore} PRIORITY
+              </Text>
+            </View>
           </View>
 
           <Text style={styles.description} numberOfLines={2}>
@@ -119,9 +126,9 @@ export const IssueBottomSheet: React.FC<IssueBottomSheetProps> = ({
             </View>
           </View>
 
-          {/* Coordinates Subtitle */}
-          <Text style={styles.coordsText}>
-            📍 {issue.latitude.toFixed(4)}, {issue.longitude.toFixed(4)}
+          {/* Location / Coordinates Subtitle */}
+          <Text style={styles.coordsText} numberOfLines={1}>
+            📍 {issue.locationName || `${issue.latitude.toFixed(4)}, ${issue.longitude.toFixed(4)}`}
           </Text>
         </View>
       </View>
@@ -134,7 +141,7 @@ export const IssueBottomSheet: React.FC<IssueBottomSheetProps> = ({
           activeOpacity={0.8}
         >
           <Navigation size={13} color={COLORS.primaryDark} />
-          <Text style={styles.googleMapsText}>Google Maps</Text>
+          <Text style={styles.googleMapsText}>Navigate</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -142,8 +149,8 @@ export const IssueBottomSheet: React.FC<IssueBottomSheetProps> = ({
           onPress={() => onViewDetails(issue.id)}
           activeOpacity={0.85}
         >
-          <Text style={styles.viewDetailsText}>View Details</Text>
-          <ArrowRight size={13} color="#FFFFFF" />
+          <Text style={styles.viewDetailsText}>View Full Dossier</Text>
+          <ArrowRight size={13} color="#FFFFFF" strokeWidth={2.4} />
         </TouchableOpacity>
       </View>
     </View>
@@ -191,8 +198,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   thumbnail: {
-    width: 78,
-    height: 78,
+    width: 82,
+    height: 82,
     borderRadius: RADIUS.md,
     backgroundColor: '#E2E8F0',
   },
@@ -204,11 +211,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(239, 68, 68, 0.95)',
     paddingVertical: 2,
     borderRadius: RADIUS.sm,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
   },
   urgentText: {
     color: '#FFFFFF',
-    fontSize: 8,
+    fontSize: 7.5,
     fontWeight: '900',
     letterSpacing: 0.4,
   },
@@ -219,7 +229,29 @@ const styles = StyleSheet.create({
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
+    flexWrap: 'wrap',
+  },
+  priorityPill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.surfaceHighlight,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  priorityPillUrgent: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+  },
+  priorityPillText: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: COLORS.textSecondary,
+    letterSpacing: 0.3,
+  },
+  priorityPillTextUrgent: {
+    color: '#DC2626',
   },
   description: {
     fontSize: 13,
@@ -248,7 +280,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   coordsText: {
-    fontSize: 10,
+    fontSize: 10.5,
     color: COLORS.textMuted,
     fontWeight: '600',
   },
@@ -266,7 +298,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: RADIUS.md,
     gap: 5,
@@ -274,7 +306,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primaryMuted,
   },
   googleMapsText: {
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '800',
     color: COLORS.primaryDark,
   },
@@ -285,7 +317,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: RADIUS.md,
-    gap: 5,
+    gap: 6,
     ...SHADOWS.small,
   },
   viewDetailsText: {

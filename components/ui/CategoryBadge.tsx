@@ -44,7 +44,7 @@ export const CategoryBadge: React.FC<CategoryBadgeProps> = ({
     <View
       style={[
         styles.badge,
-        { backgroundColor: meta.backgroundColor },
+        { backgroundColor: meta.backgroundColor, borderColor: `${meta.color}22` },
         size === 'sm' && styles.badgeSm,
       ]}
     >
@@ -69,9 +69,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: RADIUS.full,
-    gap: 6,
+    gap: 5,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
   },
   badgeSm: {
     paddingHorizontal: 7,
@@ -79,12 +78,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   text: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '800',
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
   },
   textSm: {
-    fontSize: 10.5,
+    fontSize: 10,
     fontWeight: '800',
   },
 });

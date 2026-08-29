@@ -28,11 +28,7 @@ export default function RootLayout() {
             <Stack.Screen
               name="issue/[id]"
               options={{
-                headerShown: true,
-                headerTitle: 'Issue Details',
-                headerBackTitle: 'Back',
-                headerTintColor: '#0F172A',
-                headerStyle: { backgroundColor: '#FFFFFF' },
+                headerShown: false,
               }}
             />
           </Stack>

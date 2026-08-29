@@ -24,11 +24,11 @@ export default function FloatingTabsLayout() {
         tabBarStyle: {
           position: 'absolute',
           bottom: bottomOffset,
-          left: 20,
-          right: 20,
+          left: 18,
+          right: 18,
           backgroundColor: 'rgba(255, 255, 255, 0.98)',
           borderRadius: RADIUS.full,
-          height: 60,
+          height: 64,
           paddingBottom: 0,
           paddingHorizontal: 6,
           borderWidth: 1,
@@ -41,9 +41,10 @@ export default function FloatingTabsLayout() {
           alignItems: 'center',
         },
         tabBarLabelStyle: {
-          fontSize: 9.5,
+          fontSize: 10,
           fontWeight: '800',
-          marginTop: 1,
+          marginTop: 2,
+          letterSpacing: -0.1,
         },
       }}
     >
@@ -53,7 +54,8 @@ export default function FloatingTabsLayout() {
           title: 'Map',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.tabIconContainer, focused && styles.tabIconActive]}>
-              <Compass size={20} color={focused ? COLORS.primary : color} strokeWidth={focused ? 2.4 : 2} />
+              <Compass size={20} color={focused ? COLORS.primary : color} strokeWidth={focused ? 2.4 : 1.8} />
+              {focused && <View style={styles.activeIndicatorDot} />}
             </View>
           ),
         }}
@@ -65,7 +67,8 @@ export default function FloatingTabsLayout() {
           title: 'Spotdex',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.tabIconContainer, focused && styles.tabIconActive]}>
-              <Layers size={19} color={focused ? COLORS.primary : color} strokeWidth={focused ? 2.4 : 2} />
+              <Layers size={19} color={focused ? COLORS.primary : color} strokeWidth={focused ? 2.4 : 1.8} />
+              {focused && <View style={styles.activeIndicatorDot} />}
             </View>
           ),
         }}
@@ -76,15 +79,18 @@ export default function FloatingTabsLayout() {
         options={{
           title: 'Spot',
           tabBarIcon: ({ focused }) => (
-            <View style={[styles.inlinePlusBtn, focused && styles.inlinePlusBtnActive]}>
-              <Plus size={18} color="#FFFFFF" strokeWidth={3} />
+            <View style={styles.plusBtnOuter}>
+              <View style={[styles.inlinePlusBtn, focused && styles.inlinePlusBtnActive]}>
+                <Plus size={20} color="#FFFFFF" strokeWidth={3} />
+              </View>
             </View>
           ),
           tabBarLabelStyle: {
-            fontSize: 9.5,
-            fontWeight: '800',
-            marginTop: 1,
+            fontSize: 10,
+            fontWeight: '900',
+            marginTop: 2,
             color: COLORS.primary,
+            letterSpacing: -0.1,
           },
         }}
       />
@@ -95,7 +101,8 @@ export default function FloatingTabsLayout() {
           title: 'Logbook',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.tabIconContainer, focused && styles.tabIconActive]}>
-              <ScrollText size={19} color={focused ? COLORS.primary : color} strokeWidth={focused ? 2.4 : 2} />
+              <ScrollText size={19} color={focused ? COLORS.primary : color} strokeWidth={focused ? 2.4 : 1.8} />
+              {focused && <View style={styles.activeIndicatorDot} />}
             </View>
           ),
         }}
@@ -107,7 +114,8 @@ export default function FloatingTabsLayout() {
           title: 'You',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.tabIconContainer, focused && styles.tabIconActive]}>
-              <CircleUserRound size={20} color={focused ? COLORS.primary : color} strokeWidth={focused ? 2.4 : 2} />
+              <CircleUserRound size={20} color={focused ? COLORS.primary : color} strokeWidth={focused ? 2.4 : 1.8} />
+              {focused && <View style={styles.activeIndicatorDot} />}
             </View>
           ),
         }}
@@ -128,22 +136,37 @@ const styles = StyleSheet.create({
   tabIconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: 22,
+    height: 26,
   },
   tabIconActive: {
-    transform: [{ scale: 1.08 }],
+    transform: [{ scale: 1.05 }],
+  },
+  activeIndicatorDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: COLORS.primary,
+    marginTop: 3,
+  },
+  plusBtnOuter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0, 102, 255, 0.08)',
   },
   inlinePlusBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    ...SHADOWS.small,
+    ...SHADOWS.medium,
   },
   inlinePlusBtnActive: {
     backgroundColor: COLORS.primaryDark,
-    transform: [{ scale: 1.08 }],
+    transform: [{ scale: 1.06 }],
   },
 });

@@ -23,6 +23,8 @@ import {
   ClipboardList,
   Users,
   ChevronRight,
+  MapPin,
+  Flame,
 } from 'lucide-react-native';
 
 export default function ModernMyReportsScreen() {
@@ -40,6 +42,8 @@ export default function ModernMyReportsScreen() {
   });
 
   const renderItem = ({ item }: { item: CivicIssue }) => {
+    const priorityScore = item.priorityScore || 50;
+    const isUrgent = priorityScore >= 80;
     return (
       <TouchableOpacity
         style={styles.reportCard}
@@ -51,11 +55,19 @@ export default function ModernMyReportsScreen() {
         }
         activeOpacity={0.8}
       >
-        <Image
-          source={{ uri: item.imageUrl }}
-          style={styles.thumbnail}
-          resizeMode="cover"
-        />
+        <View style={styles.thumbnailWrapper}>
+          <Image
+            source={{ uri: item.imageUrl }}
+            style={styles.thumbnail}
+            resizeMode="cover"
+          />
+          {/* Priority Score Overlay */}
+          <View style={[styles.priorityOverlay, isUrgent && styles.priorityOverlayUrgent]}>
+            <Text style={[styles.priorityOverlayText, isUrgent && styles.priorityOverlayTextUrgent]}>
+              {priorityScore}
+            </Text>
+          </View>
+        </View>
 
         <View style={styles.contentCol}>
           <View style={styles.badgeRow}>
@@ -68,16 +80,21 @@ export default function ModernMyReportsScreen() {
           </Text>
 
           <View style={styles.metaRow}>
+            <MapPin size={10} color={COLORS.textMuted} />
+            <Text style={styles.locationText} numberOfLines={1}>{item.locationName}</Text>
+          </View>
+
+          <View style={styles.metaRow}>
             <Text style={styles.timeText}>{formatRelativeTime(item.createdAt)}</Text>
             <Text style={styles.dotSeparator}>•</Text>
             <View style={styles.confirmationsBox}>
-              <Users size={11} color={COLORS.primaryDark} />
-              <Text style={styles.confirmationsText}>{item.confirmationCount} confirmed</Text>
+              <Users size={10} color={COLORS.primaryDark} />
+              <Text style={styles.confirmationsText}>{item.confirmationCount} verified</Text>
             </View>
           </View>
         </View>
 
-        <ChevronRight size={18} color={COLORS.textMuted} />
+        <ChevronRight size={16} color={COLORS.textMuted} />
       </TouchableOpacity>
     );
   };
@@ -296,10 +313,38 @@ const styles = StyleSheet.create({
     ...SHADOWS.subtle,
   },
   thumbnail: {
-    width: 72,
-    height: 72,
+    width: 80,
+    height: 80,
     borderRadius: RADIUS.md,
     backgroundColor: '#E2E8F0',
+  },
+  thumbnailWrapper: {
+    position: 'relative',
+  },
+  priorityOverlay: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  priorityOverlayUrgent: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+  },
+  priorityOverlayText: {
+    fontSize: 8.5,
+    fontWeight: '900',
+    color: COLORS.textSecondary,
+  },
+  priorityOverlayTextUrgent: {
+    color: '#DC2626',
   },
   contentCol: {
     flex: 1,
@@ -340,5 +385,11 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: COLORS.primaryDark,
     fontWeight: '700',
+  },
+  locationText: {
+    fontSize: 10,
+    color: COLORS.textMuted,
+    fontWeight: '600',
+    flex: 1,
   },
 });

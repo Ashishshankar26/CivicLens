@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +18,7 @@ import * as AuthSession from 'expo-auth-session';
 import { useAuth } from '@/contexts/AuthContext';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { GoogleIcon } from '@/components/ui/GoogleIcon';
+import { ModernAlertModal, ModernAlertConfig } from '@/components/ui/ModernAlertModal';
 import {
   Compass,
   Mail,
@@ -27,6 +27,7 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
+  Sparkles,
 } from 'lucide-react-native';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -39,6 +40,7 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<ModernAlertConfig | null>(null);
 
   // Real Google Auth Session Provider
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -75,7 +77,15 @@ export default function LoginScreen() {
         throw new Error('Could not fetch profile from Google.');
       }
     } catch (error: any) {
-      Alert.alert('Google Sign-In Error', error?.message || 'Failed to authenticate with Google.');
+      setAlertConfig({
+        visible: true,
+        title: 'Google Sign-In Error',
+        message: error?.message || 'Failed to authenticate with Google.',
+        icon: 'warning',
+        confirmText: 'OK',
+        confirmVariant: 'danger',
+        onConfirm: () => setAlertConfig(null),
+      });
     } finally {
       setIsGoogleLoading(false);
     }
@@ -100,7 +110,14 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Missing Fields', 'Please enter your email and password.');
+      setAlertConfig({
+        visible: true,
+        title: 'Missing Fields',
+        message: 'Please enter your email and password to continue.',
+        icon: 'info',
+        confirmText: 'OK',
+        onConfirm: () => setAlertConfig(null),
+      });
       return;
     }
 
@@ -109,7 +126,15 @@ export default function LoginScreen() {
       await login(email.trim(), password);
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Authentication Failed', error?.message || 'Invalid email or password.');
+      setAlertConfig({
+        visible: true,
+        title: 'Authentication Failed',
+        message: error?.message || 'Invalid email or password. Please try again.',
+        icon: 'warning',
+        confirmText: 'Try Again',
+        confirmVariant: 'danger',
+        onConfirm: () => setAlertConfig(null),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -121,7 +146,15 @@ export default function LoginScreen() {
       await loginDemo();
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Demo Error', error?.message || 'Unable to start demo mode.');
+      setAlertConfig({
+        visible: true,
+        title: 'Demo Error',
+        message: error?.message || 'Unable to start demo mode.',
+        icon: 'warning',
+        confirmText: 'OK',
+        confirmVariant: 'danger',
+        onConfirm: () => setAlertConfig(null),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -147,13 +180,16 @@ export default function LoginScreen() {
         <View style={styles.headerSection}>
           <View style={styles.brandRow}>
             <View style={styles.brandIconBox}>
-              <Compass size={22} color="#FFFFFF" strokeWidth={2.4} />
+              <Compass size={24} color="#FFFFFF" strokeWidth={2.4} />
             </View>
             <View>
               <Text style={styles.brandName}>CivicLens</Text>
               <Text style={styles.brandTagline}>ROAD SAFETY NETWORK</Text>
             </View>
           </View>
+
+          {/* Decorative Accent Line */}
+          <View style={styles.accentLine} />
 
           <Text style={styles.headline}>Sign In</Text>
           <Text style={styles.subheadline}>
@@ -258,13 +294,15 @@ export default function LoginScreen() {
             disabled={isSubmitting || isGoogleLoading}
             activeOpacity={0.75}
           >
+            <View style={styles.demoAccentStripe} />
             <View style={styles.demoIconCircle}>
-              <ShieldCheck size={16} color={COLORS.primary} />
+              <ShieldCheck size={16} color={COLORS.primary} strokeWidth={2.2} />
             </View>
             <View style={styles.demoTextCol}>
               <Text style={styles.demoTitle}>Instant Demo Account</Text>
               <Text style={styles.demoSubtitle}>Explore with preloaded sample reports</Text>
             </View>
+            <ArrowRight size={14} color={COLORS.textMuted} />
           </TouchableOpacity>
         </View>
 
@@ -276,6 +314,16 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Modern Alert Modal (replaces native Alert.alert) */}
+      {alertConfig && (
+        <ModernAlertModal
+          {...alertConfig}
+          visible={Boolean(alertConfig)}
+          onConfirm={alertConfig.onConfirm || (() => setAlertConfig(null))}
+          onCancel={alertConfig.onCancel || (() => setAlertConfig(null))}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -297,40 +345,48 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   brandIconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    ...SHADOWS.subtle,
+    ...SHADOWS.medium,
   },
   brandName: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '900',
     color: '#0F172A',
-    letterSpacing: -0.4,
+    letterSpacing: -0.5,
   },
   brandTagline: {
     fontSize: 9,
     fontWeight: '800',
     color: '#0066FF',
-    letterSpacing: 0.8,
+    letterSpacing: 1,
+  },
+  accentLine: {
+    height: 3,
+    width: 40,
+    borderRadius: 1.5,
+    backgroundColor: COLORS.primary,
+    marginBottom: 18,
+    opacity: 0.6,
   },
   headline: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '900',
     color: '#0F172A',
-    letterSpacing: -0.6,
+    letterSpacing: -0.8,
     marginBottom: 6,
   },
   subheadline: {
-    fontSize: 14,
+    fontSize: 14.5,
     color: '#64748B',
-    lineHeight: 20,
+    lineHeight: 21,
     fontWeight: '400',
   },
   formSection: {
@@ -341,12 +397,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    paddingVertical: 13,
-    borderRadius: 12,
+    paddingVertical: 14,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     gap: 10,
-    ...SHADOWS.subtle,
+    ...SHADOWS.small,
   },
   googleButtonText: {
     fontSize: 14,
@@ -389,11 +445,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    height: 48,
+    height: 50,
     ...SHADOWS.subtle,
   },
   inputLeadingIcon: {
@@ -414,16 +470,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.primary,
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: 15,
+    borderRadius: 14,
     gap: 8,
     marginTop: 4,
-    ...SHADOWS.small,
+    ...SHADOWS.medium,
   },
   primaryButtonText: {
     color: '#FFFFFF',
     fontWeight: '800',
-    fontSize: 14.5,
+    fontSize: 15,
     letterSpacing: -0.2,
   },
   buttonDisabled: {
@@ -433,27 +489,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    padding: 12,
-    borderRadius: 12,
+    padding: 13,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     gap: 12,
     marginTop: 2,
     ...SHADOWS.subtle,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  demoAccentStripe: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    backgroundColor: COLORS.primary,
+    borderTopLeftRadius: 14,
+    borderBottomLeftRadius: 14,
   },
   demoIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
   },
   demoTextCol: {
     flex: 1,
   },
   demoTitle: {
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '700',
     color: '#0F172A',
   },

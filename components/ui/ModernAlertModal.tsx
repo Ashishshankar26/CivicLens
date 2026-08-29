@@ -155,6 +155,9 @@ export const ModernAlertModal: React.FC<ModernAlertConfig> = ({
           <Text style={styles.titleText}>{title}</Text>
           {message ? <Text style={styles.messageText}>{message}</Text> : null}
 
+          {/* Divider */}
+          <View style={styles.actionDivider} />
+
           {/* Action Buttons */}
           <View style={styles.actionsRow}>
             {cancelText && onCancel && (
@@ -203,9 +206,9 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   iconBox: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -230,10 +233,16 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 4,
   },
+  actionDivider: {
+    height: 1,
+    width: '100%',
+    backgroundColor: '#F1F5F9',
+    marginBottom: 14,
+  },
   cancelBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: RADIUS.lg,
+    paddingVertical: 13,
+    borderRadius: RADIUS.full,
     backgroundColor: COLORS.surfaceHighlight,
     alignItems: 'center',
     justifyContent: 'center',
@@ -247,8 +256,8 @@ const styles = StyleSheet.create({
   },
   confirmBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: RADIUS.lg,
+    paddingVertical: 13,
+    borderRadius: RADIUS.full,
     alignItems: 'center',
     justifyContent: 'center',
     ...SHADOWS.subtle,

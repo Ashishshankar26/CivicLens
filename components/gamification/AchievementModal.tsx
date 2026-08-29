@@ -11,7 +11,7 @@ import {
 import { Badge } from '@/types/gamification';
 import { RealBadgeEmblem } from '@/components/ui/RealBadgeEmblem';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
-import { CheckCircle2, ShieldCheck, Sparkles, Award, Star } from 'lucide-react-native';
+import { CheckCircle2, Award, Sparkles, Star, ArrowRight } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -71,7 +71,7 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
             },
           ]}
         >
-          {/* Glowing Triple Ring Celebration Header */}
+          {/* Glowing Triple Ring Celebration Header with floating stars */}
           <View style={styles.glowHeaderWrapper}>
             <View style={styles.pulseOuterRing} />
             <View style={styles.pulseMiddleRing} />
@@ -84,6 +84,16 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
                 <CheckCircle2 size={38} color="#0066FF" strokeWidth={2.4} />
               )}
             </View>
+            {/* Floating Sparkles */}
+            <View style={[styles.floatingStar, styles.starTopLeft]}>
+              <Star size={14} color="#F59E0B" fill="#F59E0B" />
+            </View>
+            <View style={[styles.floatingStar, styles.starTopRight]}>
+              <Sparkles size={16} color="#0066FF" />
+            </View>
+            <View style={[styles.floatingStar, styles.starBottomRight]}>
+              <Star size={12} color="#10B981" fill="#10B981" />
+            </View>
           </View>
 
           {/* Celebration Header */}
@@ -91,16 +101,16 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
             <Sparkles size={12} color="#0066FF" />
             <Text style={styles.celebrationPillText}>
               {leveledUp
-                ? 'CITIZEN LEVEL UPGRADE'
+                ? 'CITIZEN RANK PROMOTION'
                 : unlockedBadge
                 ? 'NEW BADGE UNLOCKED'
-                : 'COMMUNITY CONTRIBUTION LOGGED'}
+                : 'CONTRIBUTION VERIFIED'}
             </Text>
           </View>
 
           <Text style={styles.celebrationTitle}>
             {leveledUp
-              ? 'Level Promoted!'
+              ? 'Rank Promoted!'
               : unlockedBadge
               ? unlockedBadge.title
               : 'Action Verified & Recorded!'}
@@ -140,6 +150,7 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
             activeOpacity={0.88}
           >
             <Text style={styles.actionBtnText}>Continue Scouting</Text>
+            <ArrowRight size={15} color="#FFFFFF" strokeWidth={2.4} />
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -200,8 +211,20 @@ const styles = StyleSheet.create({
     borderColor: '#0066FF',
     ...SHADOWS.medium,
   },
-  badgeEmojiBig: {
-    fontSize: 34,
+  floatingStar: {
+    position: 'absolute',
+  },
+  starTopLeft: {
+    top: -4,
+    left: -4,
+  },
+  starTopRight: {
+    top: -6,
+    right: -8,
+  },
+  starBottomRight: {
+    bottom: -2,
+    right: -4,
   },
   celebrationPill: {
     flexDirection: 'row',
@@ -287,12 +310,15 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
   actionBtn: {
+    flexDirection: 'row',
     backgroundColor: COLORS.primary,
     paddingVertical: 13,
     borderRadius: RADIUS.full,
     width: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 14,
+    gap: 6,
     ...SHADOWS.small,
   },
   actionBtnText: {

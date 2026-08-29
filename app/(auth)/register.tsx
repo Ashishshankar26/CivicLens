@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +18,7 @@ import * as AuthSession from 'expo-auth-session';
 import { useAuth } from '@/contexts/AuthContext';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { GoogleIcon } from '@/components/ui/GoogleIcon';
+import { ModernAlertModal, ModernAlertConfig } from '@/components/ui/ModernAlertModal';
 import {
   Compass,
   User,
@@ -41,6 +41,7 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<ModernAlertConfig | null>(null);
 
   // Real Google Auth Session Provider
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -77,7 +78,7 @@ export default function RegisterScreen() {
         throw new Error('Could not fetch profile from Google.');
       }
     } catch (error: any) {
-      Alert.alert('Google Sign-Up Error', error?.message || 'Failed to register with Google.');
+      setAlertConfig({ visible: true, title: 'Google Sign-Up Error', message: error?.message || 'Failed to register with Google.', icon: 'warning', confirmText: 'OK', confirmVariant: 'danger', onConfirm: () => setAlertConfig(null) });
     } finally {
       setIsGoogleLoading(false);
     }
@@ -102,12 +103,12 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!name.trim() || !email.trim() || !password.trim()) {
-      Alert.alert('Missing Fields', 'Please enter your full name, email, and password.');
+      setAlertConfig({ visible: true, title: 'Missing Fields', message: 'Please enter your full name, email, and password.', icon: 'info', confirmText: 'OK', onConfirm: () => setAlertConfig(null) });
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Security Requirement', 'Password must be at least 6 characters.');
+      setAlertConfig({ visible: true, title: 'Security Requirement', message: 'Password must be at least 6 characters for account safety.', icon: 'info', confirmText: 'OK', onConfirm: () => setAlertConfig(null) });
       return;
     }
 
@@ -116,7 +117,7 @@ export default function RegisterScreen() {
       await register(name.trim(), email.trim(), password);
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Registration Failed', error?.message || 'Unable to create account.');
+      setAlertConfig({ visible: true, title: 'Registration Failed', message: error?.message || 'Unable to create account.', icon: 'warning', confirmText: 'Try Again', confirmVariant: 'danger', onConfirm: () => setAlertConfig(null) });
     } finally {
       setIsSubmitting(false);
     }
@@ -152,7 +153,7 @@ export default function RegisterScreen() {
         <View style={styles.headerSection}>
           <View style={styles.brandRow}>
             <View style={styles.brandIconBox}>
-              <Compass size={22} color="#FFFFFF" strokeWidth={2.4} />
+              <Compass size={24} color="#FFFFFF" strokeWidth={2.4} />
             </View>
             <View>
               <Text style={styles.brandName}>CivicLens</Text>
@@ -279,6 +280,16 @@ export default function RegisterScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Modern Alert Modal */}
+      {alertConfig && (
+        <ModernAlertModal
+          {...alertConfig}
+          visible={Boolean(alertConfig)}
+          onConfirm={alertConfig.onConfirm || (() => setAlertConfig(null))}
+          onCancel={alertConfig.onCancel || (() => setAlertConfig(null))}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -315,19 +326,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   brandIconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    ...SHADOWS.subtle,
+    ...SHADOWS.medium,
   },
   brandName: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '900',
     color: '#0F172A',
-    letterSpacing: -0.4,
+    letterSpacing: -0.5,
   },
   brandTagline: {
     fontSize: 8.5,
@@ -336,10 +347,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   headline: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '900',
     color: '#0F172A',
-    letterSpacing: -0.6,
+    letterSpacing: -0.7,
     marginBottom: 6,
   },
   subheadline: {

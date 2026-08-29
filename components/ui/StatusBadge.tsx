@@ -11,7 +11,7 @@ interface StatusBadgeProps {
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' }) => {
   const isActive = status === 'active';
-  const iconSize = size === 'sm' ? 12 : size === 'lg' ? 16 : 14;
+  const iconSize = size === 'sm' ? 11 : size === 'lg' ? 16 : 13;
 
   return (
     <View
@@ -22,10 +22,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
         size === 'lg' && styles.badgeLg,
       ]}
     >
+      {isActive && <View style={[styles.liveDot, size === 'sm' && styles.liveDotSm]} />}
       {isActive ? (
-        <AlertCircle size={iconSize} color={COLORS.active} strokeWidth={2.5} />
+        <AlertCircle size={iconSize} color="#DC2626" strokeWidth={2.5} />
       ) : (
-        <CheckCircle2 size={iconSize} color={COLORS.resolved} strokeWidth={2.5} />
+        <CheckCircle2 size={iconSize} color="#059669" strokeWidth={2.5} />
       )}
       <Text
         style={[
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
   },
   badgeSm: {
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: 2.5,
     gap: 3,
   },
   badgeLg: {
@@ -61,26 +62,41 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   activeBadge: {
-    backgroundColor: COLORS.activeLight,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
   },
   resolvedBadge: {
-    backgroundColor: COLORS.resolvedLight,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
   },
   text: {
-    fontWeight: '700',
-    fontSize: 12,
+    fontWeight: '800',
+    fontSize: 11,
     letterSpacing: 0.5,
   },
   textSm: {
-    fontSize: 10,
+    fontSize: 9.5,
   },
   textLg: {
-    fontSize: 14,
+    fontSize: 13,
   },
   activeText: {
-    color: '#065F46', // Dark emerald
+    color: '#DC2626',
   },
   resolvedText: {
-    color: '#334155', // Slate 700
+    color: '#059669',
+  },
+  liveDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#EF4444',
+  },
+  liveDotSm: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
   },
 });

@@ -179,6 +179,29 @@ export default function ModernYouScreen() {
               <Text style={styles.statLabel}>Badges</Text>
             </View>
           </View>
+
+          {/* Level XP Progress Bar */}
+          <View style={styles.xpProgressContainer}>
+            <View style={styles.xpLabelRow}>
+              <Text style={styles.xpLabelText}>Rank XP Progress</Text>
+              <Text style={styles.xpValueText}>
+                {reputation?.points || 120} / {((reputation?.level || 1) * 200)} XP
+              </Text>
+            </View>
+            <View style={styles.xpTrack}>
+              <View
+                style={[
+                  styles.xpFill,
+                  {
+                    width: `${Math.min(
+                      100,
+                      Math.max(10, (((reputation?.points || 120) % 200) / 200) * 100)
+                    )}%`,
+                  },
+                ]}
+              />
+            </View>
+          </View>
         </View>
 
         {/* 2. GITHUB / LEETCODE STYLE CONTRIBUTION ACTIVITY GRAPH */}
@@ -624,6 +647,43 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     ...SHADOWS.subtle,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  xpProgressContainer: {
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    gap: 6,
+  },
+  xpLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  xpLabelText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: COLORS.textMuted,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  xpValueText: {
+    fontSize: 10.5,
+    fontWeight: '900',
+    color: COLORS.primaryDark,
+  },
+  xpTrack: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#EFF6FF',
+    overflow: 'hidden',
+  },
+  xpFill: {
+    height: '100%',
+    borderRadius: 3,
+    backgroundColor: COLORS.primary,
   },
   spotterTopRow: {
     flexDirection: 'row',

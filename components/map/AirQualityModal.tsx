@@ -28,7 +28,6 @@ export const AirQualityModal: React.FC<AirQualityModalProps> = ({
   // Calculate percentage fill for progress bars (0 to 100 max safe reference)
   const pm25Pct = Math.min(100, Math.round((data.pm2_5 / 75) * 100));
   const pm10Pct = Math.min(100, Math.round((data.pm10 / 150) * 100));
-  const dustPct = Math.min(100, Math.round((data.dust / 100) * 100));
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -46,7 +45,9 @@ export const AirQualityModal: React.FC<AirQualityModalProps> = ({
               </View>
               <View>
                 <Text style={styles.headerTitle}>Live Air Quality (AQI)</Text>
-                <Text style={styles.headerSubtitle}>Open-Meteo Real-Time Telemetry</Text>
+                <Text style={styles.headerSubtitle}>
+                  Open-Meteo & WAQI Real-Time Telemetry {data.stationTime ? `• ${data.stationTime}` : ''}
+                </Text>
               </View>
             </View>
 
@@ -77,7 +78,9 @@ export const AirQualityModal: React.FC<AirQualityModalProps> = ({
                     ? 'Clean & Healthy Air'
                     : data.aqi <= 100
                     ? 'Acceptable Outdoor Air'
-                    : 'Elevated Air Pollution'}
+                    : data.aqi <= 200
+                    ? 'Unhealthy Outdoor Air'
+                    : 'Severe / Hazardous Air Pollution'}
                 </Text>
               </View>
             </View>
@@ -118,25 +121,6 @@ export const AirQualityModal: React.FC<AirQualityModalProps> = ({
                       {
                         width: `${pm10Pct}%`,
                         backgroundColor: pm10Pct > 60 ? '#EF4444' : pm10Pct > 35 ? '#F59E0B' : '#10B981',
-                      },
-                    ]}
-                  />
-                </View>
-              </View>
-
-              {/* Dust */}
-              <View style={styles.pollutantRow}>
-                <View style={styles.pollutantInfo}>
-                  <Text style={styles.pollutantName}>Dust Concentration</Text>
-                  <Text style={styles.pollutantVal}>{data.dust} µg/m³</Text>
-                </View>
-                <View style={styles.progressTrack}>
-                  <View
-                    style={[
-                      styles.progressBar,
-                      {
-                        width: `${dustPct}%`,
-                        backgroundColor: dustPct > 60 ? '#EF4444' : dustPct > 35 ? '#F59E0B' : '#10B981',
                       },
                     ]}
                   />

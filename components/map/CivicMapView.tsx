@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-import MapView, { Marker, UrlTile, Region, MapType } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, UrlTile, Region, MapType } from 'react-native-maps';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { CivicIssue } from '@/types/issue';
 import { IssueMarker } from './IssueMarker';
 import { DEFAULT_REGION } from '@/constants/mockData';
@@ -24,6 +25,11 @@ export const CivicMapView: React.FC<CivicMapViewProps> = ({
 }) => {
   const mapRef = useRef<MapView>(null);
   const [zoomScale, setZoomScale] = useState<number>(1.0);
+
+  // Check if running inside Expo Go
+  const isExpoGo =
+    Constants.executionEnvironment === ExecutionEnvironment.StoreClient ||
+    Constants.appOwnership === 'expo';
 
   const initialRegion: Region = {
     latitude: userCoords?.latitude || DEFAULT_REGION.latitude,
@@ -105,6 +111,7 @@ export const CivicMapView: React.FC<CivicMapViewProps> = ({
       <MapView
         ref={mapRef}
         style={styles.map}
+        provider={isExpoGo || Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         initialRegion={initialRegion}
         mapType={mapType}
         onRegionChangeComplete={handleRegionChangeComplete}
@@ -113,13 +120,15 @@ export const CivicMapView: React.FC<CivicMapViewProps> = ({
         showsCompass={true}
         showsScale={false}
       >
-        {/* Universal High-Res Tile Fallback: Ensures map NEVER appears blank on any Android APK */}
-        <UrlTile
-          urlTemplate="https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png"
-          maximumZ={19}
-          flipY={false}
-          zIndex={-1}
-        />
+        {/* Only use tile overlay in standalone builds if Google Play Services is unavailable */}
+        {!isExpoGo && (
+          <UrlTile
+            urlTemplate="https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png"
+            maximumZ={19}
+            flipY={false}
+            zIndex={-1}
+          />
+        )}
 
         {issues.map((issue) => {
           const isSelected = issue.id === selectedIssueId;

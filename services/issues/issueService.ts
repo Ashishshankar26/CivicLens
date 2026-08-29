@@ -8,6 +8,7 @@ import {
   increment,
   query,
   orderBy,
+  onSnapshot,
 } from 'firebase/firestore';
 import { db, isLiveFirebase } from '../firebase/config';
 import { uploadIssueImage } from '../storage/storageService';
@@ -15,16 +16,29 @@ import { CivicIssue, CreateIssueInput } from '@/types/issue';
 import { INITIAL_MOCK_ISSUES } from '@/constants/mockData';
 import { calculatePriorityScore, generateIssueTimeline } from '@/utils/priority';
 
-const ISSUES_STORAGE_KEY = '@civiclens_issues_cache';
-const CONFIRMATIONS_STORAGE_KEY = '@civiclens_user_confirmations';
-const RESOLUTIONS_STORAGE_KEY = '@civiclens_user_resolutions';
+const ISSUES_STORAGE_KEY = '@civiclens_issues_cache_v6';
+const CONFIRMATIONS_STORAGE_KEY = '@civiclens_user_confirmations_v6';
+const RESOLUTIONS_STORAGE_KEY = '@civiclens_user_resolutions_v6';
 
-// Resolution threshold for community confirmation (e.g. 2 unique users)
 export const RESOLUTION_THRESHOLD = 2;
 
+function cleanForFirestore(obj: any): any {
+  if (obj === null || obj === undefined) return null;
+  if (Array.isArray(obj)) return obj.map(cleanForFirestore);
+  if (typeof obj === 'object') {
+    const res: Record<string, any> = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (v !== undefined) {
+        res[k] = cleanForFirestore(v);
+      }
+    }
+    return res;
+  }
+  return obj;
+}
+
 /**
- * Initializes and retrieves the issue collection.
- * Ensures the shared map is populated with realistic issues immediately.
+ * Initializes and retrieves the issue collection from Firestore or local cache.
  */
 export async function getIssues(): Promise<CivicIssue[]> {
   try {
@@ -55,6 +69,18 @@ export async function getIssues(): Promise<CivicIssue[]> {
 
     // 3. Seed with initial mock issues if cache is empty
     await AsyncStorage.setItem(ISSUES_STORAGE_KEY, JSON.stringify(INITIAL_MOCK_ISSUES));
+
+    // Also seed to Firestore if live so cloud database has the initial dataset
+    if (isLiveFirebase && db) {
+      for (const item of INITIAL_MOCK_ISSUES) {
+        try {
+          await setDoc(doc(db, 'issues', item.id), cleanForFirestore(item), { merge: true });
+        } catch {
+          // ignore seeding error
+        }
+      }
+    }
+
     return INITIAL_MOCK_ISSUES;
   } catch (error) {
     console.warn('Error fetching issues, using seeded fallback', error);
@@ -79,7 +105,7 @@ export async function createIssue(
   const priorityData = calculatePriorityScore(
     input.severity,
     input.trafficLevel || 'medium',
-    1, // Reporter implicitly confirms
+    1,
     0,
     new Date().toISOString(),
     input.roadType || 'main_road',
@@ -100,14 +126,13 @@ export async function createIssue(
     reporterName: userName || 'Citizen',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    confirmationCount: 1, // Reporter implicitly confirms it
+    confirmationCount: 1,
     gettingWorseCount: 0,
     repairedVotesCount: 0,
     resolvedAt: undefined,
     aiSuggestedCategory: input.aiSuggestedCategory,
     aiConfidence: input.aiConfidence,
     
-    // CivicLens 2.0 Attributes
     priorityScore: priorityData.total,
     priorityTier: priorityData.tier,
     impactFactors: input.impactFactors || [],
@@ -127,13 +152,7 @@ export async function createIssue(
   // 3. Persist to Firestore if live
   if (isLiveFirebase && db) {
     try {
-      const sanitized: Record<string, any> = {};
-      for (const [k, v] of Object.entries(newIssue)) {
-        if (v !== undefined) {
-          sanitized[k] = v;
-        }
-      }
-      await setDoc(doc(db, 'issues', issueId), sanitized);
+      await setDoc(doc(db, 'issues', issueId), cleanForFirestore(newIssue), { merge: true });
     } catch (err) {
       console.warn('Firestore write warning: persisting to local cache', err);
     }
@@ -171,22 +190,11 @@ export async function confirmIssueExists(
   userConfirmations.push(issueId);
   await AsyncStorage.setItem(confirmationsKey, JSON.stringify(userConfirmations));
 
-  // Update in Firestore
-  if (isLiveFirebase && db) {
-    try {
-      const issueRef = doc(db, 'issues', issueId);
-      await updateDoc(issueRef, {
-        confirmationCount: increment(1),
-        updatedAt: new Date().toISOString(),
-      });
-    } catch (err) {
-      console.warn('Firestore confirmation update warning', err);
-    }
-  }
-
-  // Update in local cache
+  // Update in local cache first to compute updated priority and timeline
   const cached = await AsyncStorage.getItem(ISSUES_STORAGE_KEY);
   let newCount = 1;
+  let updatedIssueObj: CivicIssue | null = null;
+
   if (cached) {
     const issues: CivicIssue[] = JSON.parse(cached);
     const updated = issues.map((issue) => {
@@ -202,7 +210,7 @@ export async function confirmIssueExists(
           issue.impactFactors || []
         );
 
-        return {
+        updatedIssueObj = {
           ...issue,
           confirmationCount: newCount,
           priorityScore: newPriority.total,
@@ -214,10 +222,20 @@ export async function confirmIssueExists(
             priorityScore: newPriority.total,
           }),
         };
+        return updatedIssueObj;
       }
       return issue;
     });
     await AsyncStorage.setItem(ISSUES_STORAGE_KEY, JSON.stringify(updated));
+  }
+
+  // Update in Firestore with full updated state
+  if (isLiveFirebase && db && updatedIssueObj) {
+    try {
+      await setDoc(doc(db, 'issues', issueId), cleanForFirestore(updatedIssueObj), { merge: true });
+    } catch (err) {
+      console.warn('Firestore confirmation update warning', err);
+    }
   }
 
   return {
@@ -235,13 +253,15 @@ export async function confirmIssueGettingWorse(
   userId: string
 ): Promise<{ success: boolean; message: string }> {
   const cached = await AsyncStorage.getItem(ISSUES_STORAGE_KEY);
+  let updatedIssueObj: CivicIssue | null = null;
+
   if (cached) {
     const issues: CivicIssue[] = JSON.parse(cached);
     const updated = issues.map((issue) => {
       if (issue.id === issueId) {
         const newWorse = (issue.gettingWorseCount || 0) + 1;
         const newPriority = calculatePriorityScore(
-          'high', // Escalates severity to high
+          'high',
           issue.trafficLevel || 'heavy',
           issue.confirmationCount || 1,
           newWorse,
@@ -250,7 +270,7 @@ export async function confirmIssueGettingWorse(
           issue.impactFactors || []
         );
 
-        return {
+        updatedIssueObj = {
           ...issue,
           severity: 'high' as const,
           gettingWorseCount: newWorse,
@@ -264,10 +284,20 @@ export async function confirmIssueGettingWorse(
             priorityScore: newPriority.total,
           }),
         };
+        return updatedIssueObj;
       }
       return issue;
     });
     await AsyncStorage.setItem(ISSUES_STORAGE_KEY, JSON.stringify(updated));
+  }
+
+  // Persist the escalation to Firestore immediately
+  if (isLiveFirebase && db && updatedIssueObj) {
+    try {
+      await setDoc(doc(db, 'issues', issueId), cleanForFirestore(updatedIssueObj), { merge: true });
+    } catch (err) {
+      console.warn('Firestore gettingWorse update warning', err);
+    }
   }
 
   return {
@@ -293,21 +323,32 @@ export async function confirmIssueResolved(
     await AsyncStorage.setItem(resolutionsKey, JSON.stringify(userResolutions));
   }
 
+  // If a local image URI was provided, upload it to storage
+  let finalResolvedUrl = resolvedImageUrl;
+  if (resolvedImageUrl && (resolvedImageUrl.startsWith('file:') || resolvedImageUrl.startsWith('content:'))) {
+    try {
+      finalResolvedUrl = await uploadIssueImage(resolvedImageUrl, userId, `${issueId}_resolved`);
+    } catch {
+      finalResolvedUrl = resolvedImageUrl;
+    }
+  }
+
   const cached = await AsyncStorage.getItem(ISSUES_STORAGE_KEY);
-  let isResolved = true;
+  let updatedIssueObj: CivicIssue | null = null;
+
   if (cached) {
     const issues: CivicIssue[] = JSON.parse(cached);
     const updated = issues.map((issue) => {
       if (issue.id === issueId) {
         const resolutionCount = (issue.repairedVotesCount || 0) + 1;
 
-        const updatedIssue: CivicIssue = {
+        updatedIssueObj = {
           ...issue,
           repairedVotesCount: resolutionCount,
           status: 'resolved',
           resolvedAt: new Date().toISOString(),
           resolvedBy: userId,
-          resolvedImageUrl: resolvedImageUrl || issue.resolvedImageUrl,
+          resolvedImageUrl: finalResolvedUrl || issue.resolvedImageUrl,
           updatedAt: new Date().toISOString(),
           timeline: generateIssueTimeline({
             ...issue,
@@ -315,11 +356,20 @@ export async function confirmIssueResolved(
             resolvedAt: new Date().toISOString(),
           }),
         };
-        return updatedIssue;
+        return updatedIssueObj;
       }
       return issue;
     });
     await AsyncStorage.setItem(ISSUES_STORAGE_KEY, JSON.stringify(updated));
+  }
+
+  // Persist resolved status directly to Firestore
+  if (isLiveFirebase && db && updatedIssueObj) {
+    try {
+      await setDoc(doc(db, 'issues', issueId), cleanForFirestore(updatedIssueObj), { merge: true });
+    } catch (err) {
+      console.warn('Firestore resolved status write error', err);
+    }
   }
 
   return {

@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { db, isLiveFirebase } from '@/services/firebase/config';
 import { CivicIssue, CreateIssueInput, NearbyDuplicate } from '@/types/issue';
 import {
   getIssues,
@@ -46,8 +48,41 @@ export function IssuesProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Real-time Firestore document sync
   useEffect(() => {
-    refreshIssues();
+    let unsubscribe: (() => void) | undefined;
+
+    if (isLiveFirebase && db) {
+      try {
+        const issuesRef = collection(db, 'issues');
+        const q = query(issuesRef, orderBy('createdAt', 'desc'));
+        unsubscribe = onSnapshot(
+          q,
+          (snapshot) => {
+            if (!snapshot.empty) {
+              const liveIssues: CivicIssue[] = [];
+              snapshot.forEach((docSnap) => {
+                liveIssues.push(docSnap.data() as CivicIssue);
+              });
+              setIssues(liveIssues);
+              setIsLoading(false);
+            }
+          },
+          (err) => {
+            console.warn('Live issues snapshot listener notice:', err);
+            refreshIssues();
+          }
+        );
+      } catch (e) {
+        refreshIssues();
+      }
+    } else {
+      refreshIssues();
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [refreshIssues]);
 
   const activeIssues = issues.filter((i) => i.status === 'active');

@@ -32,132 +32,134 @@ export const AirQualityModal: React.FC<AirQualityModalProps> = ({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.backdrop}>
-          <TouchableWithoutFeedback>
-            <View style={styles.modalCard}>
-              {/* Header Handle */}
-              <View style={styles.handle} />
+      <View style={styles.backdrop}>
+        <TouchableOpacity style={styles.dismissOverlay} activeOpacity={1} onPress={onClose} />
+        <View style={styles.modalCard}>
+          {/* Header Handle */}
+          <View style={styles.handle} />
 
-              {/* Title Header */}
-              <View style={styles.headerRow}>
-                <View style={styles.titleGroup}>
-                  <View style={[styles.iconCircle, { backgroundColor: data.color + '20' }]}>
-                    <Wind size={22} color={data.color} />
-                  </View>
-                  <View>
-                    <Text style={styles.headerTitle}>Live Air Quality (AQI)</Text>
-                    <Text style={styles.headerSubtitle}>Open-Meteo Real-Time Telemetry</Text>
-                  </View>
-                </View>
+          {/* Title Header */}
+          <View style={styles.headerRow}>
+            <View style={styles.titleGroup}>
+              <View style={[styles.iconCircle, { backgroundColor: data.color + '20' }]}>
+                <Wind size={22} color={data.color} />
+              </View>
+              <View>
+                <Text style={styles.headerTitle}>Live Air Quality (AQI)</Text>
+                <Text style={styles.headerSubtitle}>Open-Meteo Real-Time Telemetry</Text>
+              </View>
+            </View>
 
-                <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-                  <X size={18} color="#64748B" />
-                </TouchableOpacity>
+            <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+              <X size={18} color="#64748B" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            style={styles.scrollContent}
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={true}
+            nestedScrollEnabled={true}
+          >
+            {/* Giant AQI Meter Card */}
+            <View style={[styles.gaugeCard, { borderColor: data.color + '40' }]}>
+              <View style={[styles.gaugeRing, { borderColor: data.color }]}>
+                <Text style={[styles.aqiNumber, { color: data.color }]}>{data.aqi}</Text>
+                <Text style={styles.aqiUnit}>US AQI</Text>
               </View>
 
-              <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                {/* Giant AQI Meter Card */}
-                <View style={[styles.gaugeCard, { borderColor: data.color + '40' }]}>
-                  <View style={[styles.gaugeRing, { borderColor: data.color }]}>
-                    <Text style={[styles.aqiNumber, { color: data.color }]}>{data.aqi}</Text>
-                    <Text style={styles.aqiUnit}>US AQI</Text>
-                  </View>
-
-                  <View style={styles.gaugeInfo}>
-                    <View style={[styles.statusBadge, { backgroundColor: data.color }]}>
-                      <Text style={styles.statusText}>{data.label.toUpperCase()}</Text>
-                    </View>
-                    <Text style={styles.gaugeSubtitle}>
-                      {data.aqi <= 50
-                        ? 'Clean & Healthy Air'
-                        : data.aqi <= 100
-                        ? 'Acceptable Outdoor Air'
-                        : 'Elevated Air Pollution'}
-                    </Text>
-                  </View>
+              <View style={styles.gaugeInfo}>
+                <View style={[styles.statusBadge, { backgroundColor: data.color }]}>
+                  <Text style={styles.statusText}>{data.label.toUpperCase()}</Text>
                 </View>
-
-                {/* Pollutants Breakdown Section */}
-                <Text style={styles.sectionTitle}>Key Air Pollutants</Text>
-
-                <View style={styles.pollutantsList}>
-                  {/* PM2.5 */}
-                  <View style={styles.pollutantRow}>
-                    <View style={styles.pollutantInfo}>
-                      <Text style={styles.pollutantName}>PM 2.5 (Fine Particulates)</Text>
-                      <Text style={styles.pollutantVal}>{data.pm2_5} µg/m³</Text>
-                    </View>
-                    <View style={styles.progressTrack}>
-                      <View
-                        style={[
-                          styles.progressBar,
-                          {
-                            width: `${pm25Pct}%`,
-                            backgroundColor: pm25Pct > 60 ? '#EF4444' : pm25Pct > 35 ? '#F59E0B' : '#10B981',
-                          },
-                        ]}
-                      />
-                    </View>
-                  </View>
-
-                  {/* PM10 */}
-                  <View style={styles.pollutantRow}>
-                    <View style={styles.pollutantInfo}>
-                      <Text style={styles.pollutantName}>PM 10 (Coarse Particulates)</Text>
-                      <Text style={styles.pollutantVal}>{data.pm10} µg/m³</Text>
-                    </View>
-                    <View style={styles.progressTrack}>
-                      <View
-                        style={[
-                          styles.progressBar,
-                          {
-                            width: `${pm10Pct}%`,
-                            backgroundColor: pm10Pct > 60 ? '#EF4444' : pm10Pct > 35 ? '#F59E0B' : '#10B981',
-                          },
-                        ]}
-                      />
-                    </View>
-                  </View>
-
-                  {/* Dust */}
-                  <View style={styles.pollutantRow}>
-                    <View style={styles.pollutantInfo}>
-                      <Text style={styles.pollutantName}>Dust Concentration</Text>
-                      <Text style={styles.pollutantVal}>{data.dust} µg/m³</Text>
-                    </View>
-                    <View style={styles.progressTrack}>
-                      <View
-                        style={[
-                          styles.progressBar,
-                          {
-                            width: `${dustPct}%`,
-                            backgroundColor: dustPct > 60 ? '#EF4444' : dustPct > 35 ? '#F59E0B' : '#10B981',
-                          },
-                        ]}
-                      />
-                    </View>
-                  </View>
-                </View>
-
-                {/* Health Guidance Card */}
-                <View style={[styles.healthCard, { backgroundColor: data.color + '12', borderColor: data.color + '35' }]}>
-                  <View style={styles.healthHeader}>
-                    <Sparkles size={16} color={data.color} />
-                    <Text style={[styles.healthTitle, { color: data.color }]}>Citizen Health Guidance</Text>
-                  </View>
-                  <Text style={styles.healthText}>{data.recommendation}</Text>
-                </View>
-              </ScrollView>
-
-              {/* Close Action Button */}
-              <TouchableOpacity style={styles.doneBtn} onPress={onClose} activeOpacity={0.85}>
-                <Text style={styles.doneBtnText}>Close Dashboard</Text>
-              </TouchableOpacity>
+                <Text style={styles.gaugeSubtitle}>
+                  {data.aqi <= 50
+                    ? 'Clean & Healthy Air'
+                    : data.aqi <= 100
+                    ? 'Acceptable Outdoor Air'
+                    : 'Elevated Air Pollution'}
+                </Text>
+              </View>
             </View>
-          </TouchableWithoutFeedback>
+
+            {/* Pollutants Breakdown Section */}
+            <Text style={styles.sectionTitle}>Key Air Pollutants</Text>
+
+            <View style={styles.pollutantsList}>
+              {/* PM2.5 */}
+              <View style={styles.pollutantRow}>
+                <View style={styles.pollutantInfo}>
+                  <Text style={styles.pollutantName}>PM 2.5 (Fine Particulates)</Text>
+                  <Text style={styles.pollutantVal}>{data.pm2_5} µg/m³</Text>
+                </View>
+                <View style={styles.progressTrack}>
+                  <View
+                    style={[
+                      styles.progressBar,
+                      {
+                        width: `${pm25Pct}%`,
+                        backgroundColor: pm25Pct > 60 ? '#EF4444' : pm25Pct > 35 ? '#F59E0B' : '#10B981',
+                      },
+                    ]}
+                  />
+                </View>
+              </View>
+
+              {/* PM10 */}
+              <View style={styles.pollutantRow}>
+                <View style={styles.pollutantInfo}>
+                  <Text style={styles.pollutantName}>PM 10 (Coarse Particulates)</Text>
+                  <Text style={styles.pollutantVal}>{data.pm10} µg/m³</Text>
+                </View>
+                <View style={styles.progressTrack}>
+                  <View
+                    style={[
+                      styles.progressBar,
+                      {
+                        width: `${pm10Pct}%`,
+                        backgroundColor: pm10Pct > 60 ? '#EF4444' : pm10Pct > 35 ? '#F59E0B' : '#10B981',
+                      },
+                    ]}
+                  />
+                </View>
+              </View>
+
+              {/* Dust */}
+              <View style={styles.pollutantRow}>
+                <View style={styles.pollutantInfo}>
+                  <Text style={styles.pollutantName}>Dust Concentration</Text>
+                  <Text style={styles.pollutantVal}>{data.dust} µg/m³</Text>
+                </View>
+                <View style={styles.progressTrack}>
+                  <View
+                    style={[
+                      styles.progressBar,
+                      {
+                        width: `${dustPct}%`,
+                        backgroundColor: dustPct > 60 ? '#EF4444' : dustPct > 35 ? '#F59E0B' : '#10B981',
+                      },
+                    ]}
+                  />
+                </View>
+              </View>
+            </View>
+
+            {/* Health Guidance Card */}
+            <View style={[styles.healthCard, { backgroundColor: data.color + '12', borderColor: data.color + '35' }]}>
+              <View style={styles.healthHeader}>
+                <Sparkles size={16} color={data.color} />
+                <Text style={[styles.healthTitle, { color: data.color }]}>Citizen Health Guidance</Text>
+              </View>
+              <Text style={styles.healthText}>{data.recommendation}</Text>
+            </View>
+          </ScrollView>
+
+          {/* Close Action Button */}
+          <TouchableOpacity style={styles.doneBtn} onPress={onClose} activeOpacity={0.85}>
+            <Text style={styles.doneBtnText}>Close Dashboard</Text>
+          </TouchableOpacity>
         </View>
-      </TouchableWithoutFeedback>
+      </View>
     </Modal>
   );
 };
@@ -167,6 +169,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(15, 23, 42, 0.55)',
     justifyContent: 'flex-end',
+  },
+  dismissOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
   modalCard: {
     backgroundColor: '#FFFFFF',
@@ -215,7 +220,10 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   scrollContent: {
-    maxHeight: 380,
+    maxHeight: 450,
+  },
+  scrollContainer: {
+    paddingBottom: 18,
   },
   gaugeCard: {
     flexDirection: 'row',

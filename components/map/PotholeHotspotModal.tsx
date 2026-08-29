@@ -7,10 +7,12 @@ import {
   StyleSheet,
   ScrollView,
   TouchableWithoutFeedback,
+  Platform,
+  Linking,
 } from 'react-native';
 import { PotholePredictionHotspot } from '@/services/analytics/potholePredictionService';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
-import { CloudRain, AlertTriangle, ShieldAlert, ArrowRight, X, Droplets, MapPin } from 'lucide-react-native';
+import { CloudRain, AlertTriangle, ShieldAlert, ArrowRight, X, Droplets, MapPin, Navigation } from 'lucide-react-native';
 
 interface PotholeHotspotModalProps {
   hotspot: PotholePredictionHotspot | null;
@@ -31,6 +33,18 @@ export const PotholeHotspotModal: React.FC<PotholeHotspotModalProps> = ({
   const isHigh = hotspot.riskLevel === 'HIGH';
   const themeColor = isCritical ? '#EF4444' : isHigh ? '#F97316' : '#EAB308';
   const themeBg = isCritical ? '#FEF2F2' : isHigh ? '#FFF7ED' : '#FEFCE8';
+
+  const handleOpenMaps = () => {
+    if (!hotspot) return;
+    const url = Platform.select({
+      ios: `maps:0,0?q=${hotspot.latitude},${hotspot.longitude}(${encodeURIComponent(hotspot.locationName)})`,
+      android: `geo:0,0?q=${hotspot.latitude},${hotspot.longitude}(${encodeURIComponent(hotspot.locationName)})`,
+      default: `https://www.google.com/maps/search/?api=1&query=${hotspot.latitude},${hotspot.longitude}`,
+    });
+    Linking.openURL(url).catch(() => {
+      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${hotspot.latitude},${hotspot.longitude}`);
+    });
+  };
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -102,8 +116,9 @@ export const PotholeHotspotModal: React.FC<PotholeHotspotModalProps> = ({
 
               {/* Action Buttons */}
               <View style={styles.actionRow}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
-                  <Text style={styles.cancelBtnText}>Close</Text>
+                <TouchableOpacity style={styles.navBtn} onPress={handleOpenMaps} activeOpacity={0.8}>
+                  <Navigation size={16} color="#0066FF" />
+                  <Text style={styles.navBtnText}>Navigate</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -261,16 +276,21 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 6,
   },
-  cancelBtn: {
+  navBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     borderRadius: RADIUS.md,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    gap: 6,
   },
-  cancelBtnText: {
+  navBtnText: {
     fontSize: 13.5,
-    fontWeight: '700',
-    color: '#64748B',
+    fontWeight: '800',
+    color: '#0066FF',
   },
   reportBtn: {
     flex: 1,

@@ -195,6 +195,7 @@ export const CivicMapView: React.FC<CivicMapViewProps> = ({
               }}
               onPress={() => onSelectIssue(issue)}
               anchor={{ x: 0.5, y: 1.0 }}
+              tracksViewChanges={isSelected}
               zIndex={isSelected ? 999 : issue.status === 'resolved' ? 10 : (issue.priorityScore || 50)}
             >
               <IssueMarker

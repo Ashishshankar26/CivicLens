@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { IssuesProvider } from '@/contexts/IssuesContext';
+import { checkAndApplyAppUpdate } from '@/services/updates/updateService';
 
 export default function RootLayout() {
+  useEffect(() => {
+    checkAndApplyAppUpdate(false);
+  }, []);
   return (
     <SafeAreaProvider>
       <AuthProvider>

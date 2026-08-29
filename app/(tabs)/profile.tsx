@@ -18,6 +18,7 @@ import {
   getUserReputation,
   updatePrivacySettings,
 } from '@/services/gamification/gamificationService';
+import { checkAndApplyAppUpdate, getAppUpdateInfo } from '@/services/updates/updateService';
 import { UserReputation, UserPrivacySettings, Badge } from '@/types/gamification';
 import { BadgeDetailModal } from '@/components/gamification/BadgeDetailModal';
 import { RealBadgeEmblem } from '@/components/ui/RealBadgeEmblem';
@@ -39,6 +40,7 @@ import {
   GitCommit,
   Award,
   Compass,
+  RefreshCw,
 } from 'lucide-react-native';
 
 export default function ModernYouScreen() {
@@ -333,6 +335,22 @@ export default function ModernYouScreen() {
 
         {/* 5. SETTINGS & ACCOUNT */}
         <View style={styles.settingsCard}>
+          {/* OTA Update Check Row */}
+          <TouchableOpacity
+            style={styles.settingsRow}
+            onPress={() => checkAndApplyAppUpdate(true)}
+            activeOpacity={0.7}
+          >
+            <RefreshCw size={16} color={COLORS.primary} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.settingsText}>Check for OTA Updates</Text>
+              <Text style={{ fontSize: 11, color: '#94A3B8', marginTop: 1 }}>
+                Channel: {getAppUpdateInfo().channel} • v{getAppUpdateInfo().runtimeVersion}
+              </Text>
+            </View>
+            <ChevronRight size={16} color="#94A3B8" />
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.settingsRow}
             onPress={loginDemo}

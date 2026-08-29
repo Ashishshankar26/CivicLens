@@ -18,7 +18,17 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
 import { useAuth } from '@/contexts/AuthContext';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
-import { MapPin, User, Mail, Lock, ArrowRight, ArrowLeft } from 'lucide-react-native';
+import { GoogleIcon } from '@/components/ui/GoogleIcon';
+import {
+  Compass,
+  User,
+  Mail,
+  Lock,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  ArrowLeft,
+} from 'lucide-react-native';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -28,7 +38,9 @@ export default function RegisterScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // Real Google Auth Session Provider
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -48,7 +60,7 @@ export default function RegisterScreen() {
   }, [response]);
 
   const handleGoogleTokenSuccess = async (accessToken: string) => {
-    setIsSubmitting(true);
+    setIsGoogleLoading(true);
     try {
       const userInfoRes = await fetch('https://www.googleapis.com/userinfo/v2/me', {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -67,12 +79,12 @@ export default function RegisterScreen() {
     } catch (error: any) {
       Alert.alert('Google Sign-Up Error', error?.message || 'Failed to register with Google.');
     } finally {
-      setIsSubmitting(false);
+      setIsGoogleLoading(false);
     }
   };
 
   const handleGoogleButtonPress = async () => {
-    setIsSubmitting(true);
+    setIsGoogleLoading(true);
     try {
       if (request) {
         const res = await promptAsync();
@@ -84,18 +96,18 @@ export default function RegisterScreen() {
     } catch (err: any) {
       console.warn('Browser prompt notice:', err);
     } finally {
-      setIsSubmitting(false);
+      setIsGoogleLoading(false);
     }
   };
 
   const handleRegister = async () => {
     if (!name.trim() || !email.trim() || !password.trim()) {
-      Alert.alert('Sign Up', 'Please enter your name, email, and password.');
+      Alert.alert('Missing Fields', 'Please enter your full name, email, and password.');
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Password Length', 'Password must be at least 6 characters.');
+      Alert.alert('Security Requirement', 'Password must be at least 6 characters.');
       return;
     }
 
@@ -112,116 +124,158 @@ export default function RegisterScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { paddingTop: insets.top + (Platform.OS === 'ios' ? 12 : 20) }]}
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: insets.top + (Platform.OS === 'ios' ? 16 : 24),
+            paddingBottom: insets.bottom + 24,
+          },
+        ]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        {/* Back Button */}
+        {/* Back Row */}
         <TouchableOpacity
-          style={styles.backBtn}
+          style={styles.backButton}
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
           <ArrowLeft size={16} color="#64748B" />
-          <Text style={styles.backText}>Sign In</Text>
+          <Text style={styles.backButtonText}>Back to Sign In</Text>
         </TouchableOpacity>
 
-        {/* Minimal Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <MapPin size={24} color="#FFFFFF" />
+        {/* Brand Header */}
+        <View style={styles.headerSection}>
+          <View style={styles.brandRow}>
+            <View style={styles.brandIconBox}>
+              <Compass size={22} color="#FFFFFF" strokeWidth={2.4} />
+            </View>
+            <View>
+              <Text style={styles.brandName}>CivicLens</Text>
+              <Text style={styles.brandTagline}>COMMUNITY CITIZEN ENROLLMENT</Text>
+            </View>
           </View>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Join your neighborhood road community</Text>
+
+          <Text style={styles.headline}>Create Account</Text>
+          <Text style={styles.subheadline}>
+            Join your neighborhood network to report hazards and verify street safety.
+          </Text>
         </View>
 
-        {/* Form */}
-        <View style={styles.form}>
-          {/* Google Button */}
+        {/* Form Body */}
+        <View style={styles.formSection}>
+          {/* Official Google Button */}
           <TouchableOpacity
-            style={styles.googleBtn}
+            style={[styles.googleButton, (!request || isGoogleLoading) && styles.buttonDisabled]}
             onPress={handleGoogleButtonPress}
-            disabled={!request || isSubmitting}
+            disabled={!request || isGoogleLoading || isSubmitting}
             activeOpacity={0.8}
           >
-            <View style={styles.googleIconBox}>
-              <Text style={styles.googleGText}>G</Text>
-            </View>
-            <Text style={styles.googleBtnText}>Sign up with Google</Text>
+            {isGoogleLoading ? (
+              <ActivityIndicator size="small" color="#475569" />
+            ) : (
+              <>
+                <GoogleIcon size={18} />
+                <Text style={styles.googleButtonText}>Sign Up with Google</Text>
+              </>
+            )}
           </TouchableOpacity>
 
-          <View style={styles.divider}>
+          {/* Divider */}
+          <View style={styles.dividerContainer}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
+            <Text style={styles.dividerLabel}>OR ENROLL WITH EMAIL</Text>
             <View style={styles.dividerLine} />
           </View>
 
-          {/* Full Name */}
-          <View style={styles.inputBox}>
-            <User size={16} color="#94A3B8" />
-            <TextInput
-              style={styles.input}
-              placeholder="Full name"
-              placeholderTextColor="#94A3B8"
-              autoCapitalize="words"
-              value={name}
-              onChangeText={setName}
-            />
+          {/* Full Name Input */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>FULL NAME</Text>
+            <View style={styles.inputWrapper}>
+              <User size={16} color="#64748B" style={styles.inputLeadingIcon} />
+              <TextInput
+                style={styles.textInput}
+                placeholder="Jane Doe"
+                placeholderTextColor="#94A3B8"
+                autoCapitalize="words"
+                value={name}
+                onChangeText={setName}
+              />
+            </View>
           </View>
 
-          {/* Email Address */}
-          <View style={styles.inputBox}>
-            <Mail size={16} color="#94A3B8" />
-            <TextInput
-              style={styles.input}
-              placeholder="Email address"
-              placeholderTextColor="#94A3B8"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-            />
+          {/* Email Input */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
+            <View style={styles.inputWrapper}>
+              <Mail size={16} color="#64748B" style={styles.inputLeadingIcon} />
+              <TextInput
+                style={styles.textInput}
+                placeholder="name@example.com"
+                placeholderTextColor="#94A3B8"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
           </View>
 
-          {/* Password */}
-          <View style={styles.inputBox}>
-            <Lock size={16} color="#94A3B8" />
-            <TextInput
-              style={styles.input}
-              placeholder="Password (min. 6 characters)"
-              placeholderTextColor="#94A3B8"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
+          {/* Password Input */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>PASSWORD</Text>
+            <View style={styles.inputWrapper}>
+              <Lock size={16} color="#64748B" style={styles.inputLeadingIcon} />
+              <TextInput
+                style={styles.textInput}
+                placeholder="At least 6 characters"
+                placeholderTextColor="#94A3B8"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeBtn}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                {showPassword ? (
+                  <EyeOff size={16} color="#64748B" />
+                ) : (
+                  <Eye size={16} color="#64748B" />
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
 
-          {/* Sign Up Button */}
+          {/* Primary Action Button */}
           <TouchableOpacity
-            style={styles.primaryBtn}
+            style={[styles.primaryButton, isSubmitting && styles.buttonDisabled]}
             onPress={handleRegister}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isGoogleLoading}
             activeOpacity={0.85}
           >
             {isSubmitting ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <>
-                <Text style={styles.primaryBtnText}>Create Account</Text>
-                <ArrowRight size={16} color="#FFFFFF" />
+                <Text style={styles.primaryButtonText}>Create Citizen Account</Text>
+                <ArrowRight size={16} color="#FFFFFF" strokeWidth={2.5} />
               </>
             )}
           </TouchableOpacity>
         </View>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account?</Text>
-          <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
-            <Text style={styles.footerLink}>Sign In</Text>
+        {/* Footer Navigation */}
+        <View style={styles.footerContainer}>
+          <Text style={styles.footerText}>Already enrolled?</Text>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text style={styles.footerAction}>Sign In</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -232,146 +286,173 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAFAFC',
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 26,
     justifyContent: 'center',
-    gap: 20,
   },
-  backBtn: {
+  backButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    marginBottom: 20,
     alignSelf: 'flex-start',
   },
-  backText: {
+  backButtonText: {
     fontSize: 13,
     fontWeight: '600',
     color: '#64748B',
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 4,
+  headerSection: {
+    marginBottom: 24,
   },
-  logoContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  brandIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
     ...SHADOWS.subtle,
   },
-  title: {
-    fontSize: 22,
+  brandName: {
+    fontSize: 17,
     fontWeight: '900',
     color: '#0F172A',
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
   },
-  subtitle: {
-    fontSize: 13,
+  brandTagline: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: '#0066FF',
+    letterSpacing: 0.8,
+  },
+  headline: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#0F172A',
+    letterSpacing: -0.6,
+    marginBottom: 6,
+  },
+  subheadline: {
+    fontSize: 13.5,
     color: '#64748B',
-    marginTop: 2,
-    fontWeight: '500',
+    lineHeight: 19,
+    fontWeight: '400',
   },
-  form: {
-    gap: 12,
+  formSection: {
+    gap: 15,
   },
-  googleBtn: {
+  googleButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
     paddingVertical: 13,
-    borderRadius: RADIUS.full,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     gap: 10,
     ...SHADOWS.subtle,
   },
-  googleIconBox: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#EA4335',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  googleGText: {
-    color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 12,
-  },
-  googleBtnText: {
-    fontSize: 13.5,
-    fontWeight: '700',
+  googleButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
     color: '#1E293B',
+    letterSpacing: -0.2,
   },
-  divider: {
+  dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 4,
+    marginVertical: 2,
     gap: 10,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#E2E8F0',
   },
-  dividerText: {
-    fontSize: 11.5,
+  dividerLabel: {
+    fontSize: 10.5,
+    fontWeight: '700',
     color: '#94A3B8',
-    fontWeight: '500',
+    letterSpacing: 0.6,
   },
-  inputBox: {
+  inputGroup: {
+    gap: 6,
+  },
+  inputLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#475569',
+    letterSpacing: 0.6,
+  },
+  inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: RADIUS.lg,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
     paddingHorizontal: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    gap: 10,
+    height: 48,
+    ...SHADOWS.subtle,
   },
-  input: {
+  inputLeadingIcon: {
+    marginRight: 10,
+  },
+  textInput: {
     flex: 1,
-    paddingVertical: 13,
-    fontSize: 13.5,
+    fontSize: 14,
     color: '#0F172A',
     fontWeight: '500',
+    height: '100%',
   },
-  primaryBtn: {
+  eyeBtn: {
+    padding: 4,
+  },
+  primaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.primary,
     paddingVertical: 14,
-    borderRadius: RADIUS.full,
+    borderRadius: 12,
     gap: 8,
     marginTop: 4,
     ...SHADOWS.small,
   },
-  primaryBtnText: {
+  primaryButtonText: {
     color: '#FFFFFF',
     fontWeight: '800',
-    fontSize: 14,
+    fontSize: 14.5,
+    letterSpacing: -0.2,
   },
-  footer: {
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  footerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 6,
-    marginTop: 8,
+    marginTop: 24,
   },
   footerText: {
-    fontSize: 12.5,
+    fontSize: 13,
     color: '#64748B',
+    fontWeight: '500',
   },
-  footerLink: {
-    fontSize: 12.5,
+  footerAction: {
+    fontSize: 13,
     fontWeight: '800',
     color: COLORS.primary,
   },

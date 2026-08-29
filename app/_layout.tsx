@@ -5,9 +5,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { IssuesProvider } from '@/contexts/IssuesContext';
 import { checkAndApplyAppUpdate } from '@/services/updates/updateService';
+import { registerForPushNotificationsAsync } from '@/services/notifications/notificationService';
 
 export default function RootLayout() {
   useEffect(() => {
+    registerForPushNotificationsAsync();
     checkAndApplyAppUpdate(false);
   }, []);
   return (

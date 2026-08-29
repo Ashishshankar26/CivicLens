@@ -26,6 +26,10 @@ import { getCurrentLocation, LocationResult } from '@/services/location/location
 import { analyzeCivicImage, AiVisionAnalysis } from '@/services/ai/visionService';
 import { logUserCivicAction } from '@/services/gamification/gamificationService';
 import { sendHazardReportSubmittedEmail } from '@/services/email/emailService';
+import {
+  sendHazardAlertPushNotification,
+  sendBadgeUnlockedPushNotification,
+} from '@/services/notifications/notificationService';
 import { Badge } from '@/types/gamification';
 import { IssueCategory, IssueSeverity, NearbyDuplicate } from '@/types/issue';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
@@ -182,9 +186,15 @@ export default function ReportIssueScreen() {
         location.locationName || 'Local Road',
         { aiUsed: Boolean(aiSuggestion), userId: user?.uid }
       );
-      if (gamificationRes.unlockedBadge) setUnlockedBadge(gamificationRes.unlockedBadge);
+      if (gamificationRes.unlockedBadge) {
+        setUnlockedBadge(gamificationRes.unlockedBadge);
+        sendBadgeUnlockedPushNotification(gamificationRes.unlockedBadge.title).catch((e) => console.warn(e));
+      }
       setLeveledUp(gamificationRes.leveledUp || false);
       setAchievementModalVisible(true);
+
+      // Dispatch local/push neighborhood hazard broadcast
+      sendHazardAlertPushNotification(category, location.locationName || 'Local Road', severity === 'high').catch((e) => console.warn(e));
 
       if (user?.email) {
         sendHazardReportSubmittedEmail(user, {

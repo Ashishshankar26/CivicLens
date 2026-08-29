@@ -64,6 +64,14 @@
         {
           "photosPermission": "CivicLens accesses your photo library to let you upload photos of civic issues."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#0066FF",
+          "sounds": []
+        }
       ]
     ],
     "web": {

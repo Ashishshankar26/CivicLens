@@ -22,6 +22,11 @@ import { IssueTimeline } from '@/components/issue/IssueTimeline';
 import { AchievementModal } from '@/components/gamification/AchievementModal';
 import { ResolutionPhotoModal } from '@/components/issue/ResolutionPhotoModal';
 import { logUserCivicAction } from '@/services/gamification/gamificationService';
+import {
+  sendRepairVerifiedPushNotification,
+  sendBadgeUnlockedPushNotification,
+  sendHazardAlertPushNotification,
+} from '@/services/notifications/notificationService';
 import { generateIssueTimeline } from '@/utils/priority';
 import { Badge } from '@/types/gamification';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
@@ -132,6 +137,7 @@ export default function IssueDetailsScreen() {
           liveIssue.locationName,
           { userId: user?.uid }
         );
+        sendHazardAlertPushNotification(liveIssue.category, liveIssue.locationName, true).catch((e) => console.warn(e));
         Alert.alert('Hazard Escalated', 'Urgent hazard alert flagged to all neighboring citizens!');
       } else {
         Alert.alert('Notice', res.message);
@@ -192,7 +198,11 @@ export default function IssueDetailsScreen() {
           liveIssue.locationName,
           { hasPhotoProof: true, userId: user?.uid }
         );
-        if (gamificationRes.unlockedBadge) setUnlockedBadge(gamificationRes.unlockedBadge);
+        if (gamificationRes.unlockedBadge) {
+          setUnlockedBadge(gamificationRes.unlockedBadge);
+          sendBadgeUnlockedPushNotification(gamificationRes.unlockedBadge.title).catch((e) => console.warn(e));
+        }
+        sendRepairVerifiedPushNotification(liveIssue.category, liveIssue.locationName).catch((e) => console.warn(e));
         setAchievementModalVisible(true);
       } else {
         Alert.alert('Notice', res.message);

@@ -19,6 +19,7 @@ import {
   updatePrivacySettings,
 } from '@/services/gamification/gamificationService';
 import { checkAndApplyAppUpdate, getAppUpdateInfo } from '@/services/updates/updateService';
+import { scheduleCivicNotification } from '@/services/notifications/notificationService';
 import { UserReputation, UserPrivacySettings, Badge } from '@/types/gamification';
 import { BadgeDetailModal } from '@/components/gamification/BadgeDetailModal';
 import { RealBadgeEmblem } from '@/components/ui/RealBadgeEmblem';
@@ -41,6 +42,7 @@ import {
   Award,
   Compass,
   RefreshCw,
+  Bell,
 } from 'lucide-react-native';
 
 export default function ModernYouScreen() {
@@ -346,6 +348,29 @@ export default function ModernYouScreen() {
               <Text style={styles.settingsText}>Check for OTA Updates</Text>
               <Text style={{ fontSize: 11, color: '#94A3B8', marginTop: 1 }}>
                 Channel: {getAppUpdateInfo().channel} • v{getAppUpdateInfo().runtimeVersion}
+              </Text>
+            </View>
+            <ChevronRight size={16} color="#94A3B8" />
+          </TouchableOpacity>
+
+          {/* Test Push Notification Row */}
+          <TouchableOpacity
+            style={styles.settingsRow}
+            onPress={async () => {
+              await scheduleCivicNotification({
+                title: '🚨 Live Civic Alert: Pothole Flagged',
+                body: 'A high-severity road issue was confirmed near Connaught Circus. Tap to open map.',
+                data: { test: true },
+              });
+              Alert.alert('Push Alert Triggered', 'A test civic notification was sent to your device tray!');
+            }}
+            activeOpacity={0.7}
+          >
+            <Bell size={16} color="#F59E0B" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.settingsText}>Test Push Notifications</Text>
+              <Text style={{ fontSize: 11, color: '#94A3B8', marginTop: 1 }}>
+                Verify device notification tray delivery
               </Text>
             </View>
             <ChevronRight size={16} color="#94A3B8" />

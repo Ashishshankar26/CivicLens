@@ -184,25 +184,10 @@ export default function ModernMapScreen() {
               onPress={() => setShowStatusDropdown((prev) => !prev)}
               activeOpacity={0.8}
             >
-              <View style={styles.dropdownCountBadge}>
-                <Text style={styles.dropdownCountText}>{filteredIssues.length}</Text>
-              </View>
               <View style={styles.dotsRow}>
-                <View
-                  style={[
-                    styles.dot,
-                    {
-                      backgroundColor:
-                        statusFilter === 'urgent'
-                          ? '#EF4444'
-                          : statusFilter === 'active'
-                          ? '#0066FF'
-                          : statusFilter === 'resolved'
-                          ? '#10B981'
-                          : '#64748B',
-                    },
-                  ]}
-                />
+                <View style={[styles.dot, { backgroundColor: COLORS.error }]} />
+                <View style={[styles.dot, { backgroundColor: COLORS.primary }]} />
+                <View style={[styles.dot, { backgroundColor: COLORS.success }]} />
               </View>
               <ChevronDown size={14} color={COLORS.textSecondary} />
             </TouchableOpacity>

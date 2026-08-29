@@ -44,7 +44,7 @@ export function ResolutionComparisonCard({
               <Text style={styles.beforePillText}>BEFORE</Text>
             </View>
           </View>
-          <Text style={styles.imageCaption}>Reported Hazard</Text>
+          <Text style={styles.imageCaption}>Reported Issue</Text>
         </View>
 
         {/* After Image */}

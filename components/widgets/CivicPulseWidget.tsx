@@ -31,13 +31,13 @@ export function CivicPulseWidget({
       </View>
 
       <View style={styles.metricsGrid}>
-        {/* Metric 1: Active Hazards */}
+        {/* Metric 1: Active Civic Issues */}
         <View style={[styles.metricBox, styles.metricBoxActive]}>
           <View style={styles.metricIconWrapActive}>
             <Flame size={14} color="#EA580C" />
           </View>
           <Text style={styles.metricValue}>{activeCount}</Text>
-          <Text style={styles.metricLabel}>Active Hazards</Text>
+          <Text style={styles.metricLabel}>Active Issues</Text>
         </View>
 
         {/* Metric 2: Verified */}

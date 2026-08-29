@@ -193,7 +193,7 @@ export default function LoginScreen() {
 
           <Text style={styles.headline}>Sign In</Text>
           <Text style={styles.subheadline}>
-            Access community road reports, live hazard alerts, and verification tools.
+            Access community road reports, live civic alerts, and verification tools.
           </Text>
         </View>
 

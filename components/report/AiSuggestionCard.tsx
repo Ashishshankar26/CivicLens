@@ -38,8 +38,8 @@ export const AiSuggestionCard: React.FC<AiSuggestionCardProps> = ({
       <View style={styles.invalidContainer}>
         <View style={styles.invalidHeaderRow}>
           <View style={styles.invalidTitleRow}>
-            <ShieldAlert size={18} color="#DC2626" />
-            <Text style={styles.invalidTitle}>AI VALIDATION: INVALID PHOTO</Text>
+            <ShieldAlert size={16} color="#DC2626" />
+            <Text style={styles.invalidTitle} numberOfLines={1}>AI VALIDATION</Text>
           </View>
           <View style={styles.rejectedPill}>
             <Text style={styles.rejectedPillText}>Issue Not Detected</Text>
@@ -48,7 +48,7 @@ export const AiSuggestionCard: React.FC<AiSuggestionCardProps> = ({
 
         <View style={styles.invalidContent}>
           <Text style={styles.invalidHeading}>
-            This photo cannot be submitted as a civic hazard
+            This photo cannot be submitted as a civic issue
           </Text>
           <Text style={styles.invalidReason}>
             {rejectionReason || 'The uploaded photo does not show a clear public road, lighting, or sanitation issue.'}
@@ -62,7 +62,7 @@ export const AiSuggestionCard: React.FC<AiSuggestionCardProps> = ({
             activeOpacity={0.85}
           >
             <RefreshCw size={14} color="#FFFFFF" strokeWidth={2.4} />
-            <Text style={styles.retakeBtnText}>Retake / Upload Hazard Photo</Text>
+            <Text style={styles.retakeBtnText}>Retake / Upload Civic Issue Photo</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -155,11 +155,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 6,
   },
   invalidTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    flexShrink: 1,
   },
   invalidTitle: {
     fontSize: 11,

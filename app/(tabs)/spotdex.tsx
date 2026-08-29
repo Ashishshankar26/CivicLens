@@ -103,7 +103,7 @@ export default function SpotdexScreen() {
         <View style={styles.headerTextCol}>
           <Text style={styles.headerTitle}>Spotdex</Text>
           <Text style={styles.headerSub}>
-            Community catalog of district road hazards and badges
+            Community catalog of district civic issues and badges
           </Text>
         </View>
       </View>
@@ -314,8 +314,8 @@ export default function SpotdexScreen() {
           </View>
           <Text style={styles.logbookSub}>
             {registryScope === 'my'
-              ? 'Your personal catalog of reported road hazards and confirmed sightings.'
-              : 'Public district-wide feed of reported road issues and verified repairs.'}
+              ? 'Your personal catalog of reported civic issues and confirmed sightings.'
+              : 'Live verified registry of all public civic issues recorded in your district.'}
           </Text>
 
           {/* Scope Segment Selector: My Discoveries vs Citywide Feed */}
@@ -391,12 +391,12 @@ export default function SpotdexScreen() {
             <View style={styles.emptyRegistryCard}>
               <Compass size={32} color={COLORS.textMuted} strokeWidth={1.8} />
               <Text style={styles.emptyRegistryTitle}>
-                {registryScope === 'my' ? 'No Personal Discoveries Yet' : 'No District Hazards Found'}
+                {registryScope === 'my' ? 'No Personal Discoveries Yet' : 'No District Issues Found'}
               </Text>
               <Text style={styles.emptyRegistrySub}>
                 {registryScope === 'my'
-                  ? 'Submit your first road issue report to record an entry in your personal catalog.'
-                  : 'No hazards found for the selected category filter.'}
+                  ? 'Submit your first civic issue report to record an entry in your personal catalog.'
+                  : 'No issues found for the selected category filter.'}
               </Text>
               {registryScope === 'my' && (
                 <TouchableOpacity
@@ -405,7 +405,7 @@ export default function SpotdexScreen() {
                   activeOpacity={0.8}
                 >
                   <Plus size={14} color="#FFFFFF" strokeWidth={2.4} />
-                  <Text style={styles.emptyReportBtnText}>Report Road Hazard</Text>
+                  <Text style={styles.emptyReportBtnText}>Report Civic Issue</Text>
                 </TouchableOpacity>
               )}
             </View>

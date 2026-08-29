@@ -46,7 +46,7 @@ export const ResolutionPhotoModal: React.FC<ResolutionPhotoModalProps> = ({
 
           <Text style={styles.modalTitle}>Resolution Verification Proof</Text>
           <Text style={styles.modalSub}>
-            Upload on-site photo evidence to confirm this hazard has been resolved for the community.
+            Upload on-site photo evidence to confirm this civic issue has been resolved for the community.
           </Text>
 
           {/* Action 1: Camera */}

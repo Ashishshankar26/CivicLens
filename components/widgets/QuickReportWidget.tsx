@@ -23,7 +23,7 @@ export function QuickReportWidget({ onPress }: QuickReportWidgetProps) {
           <Text style={styles.subtitle}>Instant Urban Triage</Text>
         </View>
 
-        <Text style={styles.title}>Report a Road Hazard</Text>
+        <Text style={styles.title}>Report a Civic Issue</Text>
         <Text style={styles.description}>
           Snap a photo. CivicLens AI classifies the issue and checks nearby reports in seconds.
         </Text>

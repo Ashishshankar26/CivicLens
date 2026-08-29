@@ -130,10 +130,10 @@ export default function ModernMyReportsScreen() {
               title={statusTab === 'all' ? 'No Reports Logged' : `No ${statusTab} reports found`}
               description={
                 statusTab === 'all'
-                  ? 'You have not submitted any civic hazard reports yet. Spot an issue on the road and tap Spot to report it.'
+                  ? 'You have not submitted any civic issue reports yet. Spot an issue on the road and tap Spot to report it.'
                   : `You have no ${statusTab} issues in your logbook.`
               }
-              actionTitle="Report a Hazard"
+              actionTitle="Report an Issue"
               onAction={() => router.push('/(tabs)/report')}
             />
           </View>

@@ -220,7 +220,7 @@ export default function ModernMapScreen() {
                   <View style={styles.menuLabelRow}>
                     <View style={[styles.dot, { backgroundColor: '#64748B' }]} />
                     <Text style={[styles.dropdownItemText, statusFilter === 'all' && styles.dropdownItemTextActive]}>
-                      All Hazards ({issues.length})
+                      All Issues ({issues.length})
                     </Text>
                   </View>
                   {statusFilter === 'all' && <Check size={14} color={COLORS.primary} />}

@@ -36,7 +36,7 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
         setAlertConfig({
           visible: true,
           title: 'Camera Permission Required',
-          message: 'CivicLens requires camera access to capture on-site photos of road hazards.',
+          message: 'CivicLens requires camera access to capture on-site photos of civic issues.',
           icon: 'camera',
           confirmText: 'OK',
           confirmVariant: 'primary',
@@ -74,7 +74,7 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
         setAlertConfig({
           visible: true,
           title: 'Gallery Permission Required',
-          message: 'CivicLens requires photo library access to select photos of road hazards.',
+          message: 'CivicLens requires photo library access to select photos of civic issues.',
           icon: 'camera',
           confirmText: 'OK',
           confirmVariant: 'primary',

@@ -160,8 +160,8 @@ export default function IssueDetailsScreen() {
         sendHazardAlertPushNotification(liveIssue.category, liveIssue.locationName, true).catch((e) => console.warn(e));
         setAlertConfig({
           visible: true,
-          title: 'Hazard Escalated',
-          message: 'Urgent hazard alert flagged to all neighboring citizens and response crews!',
+          title: 'Issue Escalated',
+          message: 'Urgent civic issue alert flagged to all neighboring citizens and response crews!',
           icon: 'warning',
           confirmText: 'Got It',
           confirmVariant: 'primary',
@@ -300,7 +300,7 @@ export default function IssueDetailsScreen() {
           <View style={styles.appBarStatusRow}>
             <View style={[styles.statusMiniDot, { backgroundColor: isResolved ? '#10B981' : isUrgent ? '#EF4444' : '#0066FF' }]} />
             <Text style={styles.appBarSub}>
-              {isResolved ? 'RESOLVED' : isUrgent ? 'CRITICAL HAZARD' : 'ACTIVE REPORT'}
+              {isResolved ? 'RESOLVED' : isUrgent ? 'CRITICAL ISSUE' : 'ACTIVE REPORT'}
             </Text>
           </View>
         </View>
@@ -402,7 +402,7 @@ export default function IssueDetailsScreen() {
           {/* Impact Factors Tags */}
           {liveIssue.impactFactors && liveIssue.impactFactors.length > 0 && (
             <View style={styles.impactsWrapper}>
-              <Text style={styles.impactsSub}>Identified Hazard Factors:</Text>
+              <Text style={styles.impactsSub}>Identified Issue Factors:</Text>
               <View style={styles.impactsRow}>
                 {liveIssue.impactFactors.map((imp, idx) => (
                   <View key={idx} style={styles.impactTag}>
@@ -415,7 +415,7 @@ export default function IssueDetailsScreen() {
                         ? 'Pedestrian Risk'
                         : imp === 'traffic_slowdown'
                         ? 'Traffic Slowdown'
-                        : 'Road Hazard'}
+                        : 'Civic Issue'}
                     </Text>
                   </View>
                 ))}
@@ -492,7 +492,7 @@ export default function IssueDetailsScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.actionCardTitle}>COMMUNITY RESPONSE CONSOLE</Text>
                 <Text style={styles.actionCardSub}>
-                  Help neighboring drivers by confirming hazard status on site.
+                  Help neighboring drivers by confirming issue status on site.
                 </Text>
               </View>
             </View>
@@ -534,7 +534,7 @@ export default function IssueDetailsScreen() {
                 ) : (
                   <>
                     <AlertTriangle size={17} color="#DC2626" strokeWidth={2.4} />
-                    <Text style={styles.worseOptionText}>Escalate Hazard Urgency</Text>
+                    <Text style={styles.worseOptionText}>Escalate Issue Urgency</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -575,7 +575,7 @@ export default function IssueDetailsScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.resolvedBannerTitle}>ISSUE RESOLVED</Text>
                 <Text style={styles.resolvedBannerSub}>
-                  Hazard marked as resolved on {liveIssue.resolvedAt ? new Date(liveIssue.resolvedAt).toLocaleDateString() : 'recently'}. Verified by community evidence.
+                  Issue marked as resolved on {liveIssue.resolvedAt ? new Date(liveIssue.resolvedAt).toLocaleDateString() : 'recently'}. Verified by community evidence.
                 </Text>
               </View>
             </View>

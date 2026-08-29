@@ -163,7 +163,7 @@ export default function RegisterScreen() {
 
           <Text style={styles.headline}>Create Account</Text>
           <Text style={styles.subheadline}>
-            Join your neighborhood network to report hazards and verify street safety.
+            Join your neighborhood network to report civic issues and verify street safety.
           </Text>
         </View>
 

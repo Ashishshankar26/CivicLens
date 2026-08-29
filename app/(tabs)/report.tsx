@@ -156,7 +156,7 @@ export default function ReportIssueScreen() {
       setAlertConfig({
         visible: true,
         title: 'Photo Required',
-        message: 'Please capture or upload photo evidence of the road hazard.',
+        message: 'Please capture or upload photo evidence of the civic issue.',
         icon: 'camera',
         confirmText: 'Got It',
         confirmVariant: 'primary',
@@ -172,7 +172,7 @@ export default function ReportIssueScreen() {
         title: 'Invalid Photo Rejected',
         message:
           aiSuggestion.rejectionReason ||
-          'CivicLens AI verified that this photo does not show a valid civic or road hazard (e.g. selfie, blank, indoor room). Please take a photo of the actual issue.',
+          'CivicLens AI verified that this photo does not show a valid civic issue (e.g. selfie, blank, indoor room). Please take a photo of the actual issue.',
         icon: 'warning',
         confirmText: 'Retake Photo',
         confirmVariant: 'danger',
@@ -188,7 +188,7 @@ export default function ReportIssueScreen() {
       setAlertConfig({
         visible: true,
         title: 'Description Required',
-        message: 'Please provide a short description (at least 5 characters) explaining the hazard.',
+        message: 'Please provide a short description (at least 5 characters) explaining the issue.',
         icon: 'warning',
         confirmText: 'Understood',
         confirmVariant: 'primary',
@@ -201,7 +201,7 @@ export default function ReportIssueScreen() {
       setAlertConfig({
         visible: true,
         title: 'Location Pin Needed',
-        message: 'GPS location is required to place the hazard marker accurately on the community map.',
+        message: 'GPS location is required to place the issue marker accurately on the community map.',
         icon: 'warning',
         confirmText: 'Refresh GPS',
         confirmVariant: 'primary',
@@ -472,7 +472,7 @@ export default function ReportIssueScreen() {
             </View>
             <TextInput
               style={styles.descriptionInput}
-              placeholder="Describe the hazard and its impact on pedestrians or traffic..."
+              placeholder="Describe the civic issue and its impact on pedestrians or traffic..."
               placeholderTextColor={COLORS.textMuted}
               multiline
               numberOfLines={3}

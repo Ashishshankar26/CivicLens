@@ -52,7 +52,7 @@ export function DuplicateMatchCard({
           </View>
 
           <Text style={styles.description} numberOfLines={2}>
-            {existingIssue.description || 'Reported road hazard at this location.'}
+            {existingIssue.description || 'Reported civic issue at this location.'}
           </Text>
 
           <View style={styles.metaRow}>

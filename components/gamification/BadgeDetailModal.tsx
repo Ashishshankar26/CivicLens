@@ -71,11 +71,11 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
             <View style={[styles.tierTag, badge.isUnlocked ? styles.tierUnlocked : styles.tierLocked]}>
               <Sparkles size={11} color={badge.isUnlocked ? tierColor : COLORS.textMuted} />
               <Text style={[styles.tierTagText, { color: badge.isUnlocked ? tierColor : COLORS.textMuted }]}>
-                {badge.tier?.toUpperCase() || 'BRONZE'} CITIZEN TIER
+                {badge.tier?.toUpperCase() || 'BRONZE'} TIER
               </Text>
             </View>
             <Text style={styles.badgeTitle}>{badge.title}</Text>
-            <Text style={styles.badgeRewardTitle}>Reward: {badge.rewardTitle || 'Citizen Scout'}</Text>
+            <Text style={styles.badgeRewardTitle}>Reward: {badge.rewardTitle || 'Member Scout'}</Text>
           </View>
 
           {/* Description */}

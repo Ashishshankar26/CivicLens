@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import {
   Camera,
   Compass,
@@ -11,134 +11,95 @@ import {
   Crown,
   Bot,
   Flame,
-  Sparkles,
   Award,
-  Star,
-  Check,
+  Lock,
 } from 'lucide-react-native';
-import { SHADOWS } from '@/constants/theme';
 
 export interface BadgeStyleConfig {
-  outerRing: string;
-  middleRing: string;
+  bgColor: string;
+  borderColor: string;
   innerBg: string;
-  accentColor: string;
   iconColor: string;
   shadowColor: string;
-  shape: 'circle' | 'shield' | 'hexagon' | 'rosette' | 'diamond';
-  tag: string;
 }
 
 const BADGE_CONFIGS: Record<string, BadgeStyleConfig> = {
   first_spot: {
-    outerRing: '#38BDF8',
-    middleRing: '#0284C7',
-    innerBg: '#0C4A6E',
-    accentColor: '#BAE6FD',
-    iconColor: '#38BDF8',
+    bgColor: '#EFF6FF',
+    borderColor: '#BFDBFE',
+    innerBg: '#FFFFFF',
+    iconColor: '#0284C7',
     shadowColor: '#0284C7',
-    shape: 'circle',
-    tag: 'SCOUT LENS',
   },
   road_scout: {
-    outerRing: '#F59E0B',
-    middleRing: '#B45309',
-    innerBg: '#1E293B',
-    accentColor: '#FDE68A',
-    iconColor: '#FBBF24',
+    bgColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+    innerBg: '#FFFFFF',
+    iconColor: '#D97706',
     shadowColor: '#D97706',
-    shape: 'rosette',
-    tag: 'NAVIGATOR',
   },
   community_sentinel: {
-    outerRing: '#60A5FA',
-    middleRing: '#1D4ED8',
-    innerBg: '#172554',
-    accentColor: '#93C5FD',
-    iconColor: '#FFFFFF',
-    shadowColor: '#2563EB',
-    shape: 'shield',
-    tag: 'SENTINEL',
+    bgColor: '#EEF2FF',
+    borderColor: '#C7D2FE',
+    innerBg: '#FFFFFF',
+    iconColor: '#4F46E5',
+    shadowColor: '#4F46E5',
   },
   hazard_hunter: {
-    outerRing: '#FBBF24',
-    middleRing: '#D97706',
-    innerBg: '#451A03',
-    accentColor: '#FEF08A',
-    iconColor: '#FDE047',
-    shadowColor: '#B45309',
-    shape: 'rosette',
-    tag: 'MASTER',
+    bgColor: '#FEF2F2',
+    borderColor: '#FECDD3',
+    innerBg: '#FFFFFF',
+    iconColor: '#E11D48',
+    shadowColor: '#E11D48',
   },
   first_verifier: {
-    outerRing: '#34D399',
-    middleRing: '#059669',
-    innerBg: '#064E3B',
-    accentColor: '#A7F3D0',
-    iconColor: '#34D399',
+    bgColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+    innerBg: '#FFFFFF',
+    iconColor: '#059669',
     shadowColor: '#059669',
-    shape: 'hexagon',
-    tag: 'INSPECTOR',
   },
   civic_guardian: {
-    outerRing: '#818CF8',
-    middleRing: '#4338CA',
-    innerBg: '#1E1B4B',
-    accentColor: '#C7D2FE',
-    iconColor: '#FFFFFF',
-    shadowColor: '#4F46E5',
-    shape: 'shield',
-    tag: 'GUARDIAN',
+    bgColor: '#F5F3FF',
+    borderColor: '#DDD6FE',
+    innerBg: '#FFFFFF',
+    iconColor: '#7C3AED',
+    shadowColor: '#7C3AED',
   },
   road_restorer: {
-    outerRing: '#FB923C',
-    middleRing: '#C2410C',
-    innerBg: '#431407',
-    accentColor: '#FED7AA',
-    iconColor: '#FDBA74',
+    bgColor: '#FFF7ED',
+    borderColor: '#FED7AA',
+    innerBg: '#FFFFFF',
+    iconColor: '#EA580C',
     shadowColor: '#EA580C',
-    shape: 'rosette',
-    tag: 'RESTORER',
   },
   fixer_champion: {
-    outerRing: '#EAB308',
-    middleRing: '#A855F7',
-    innerBg: '#3B0764',
-    accentColor: '#FDE047',
-    iconColor: '#FACC15',
-    shadowColor: '#7E22CE',
-    shape: 'rosette',
-    tag: 'CHAMPION',
+    bgColor: '#FAF5FF',
+    borderColor: '#E9D5FF',
+    innerBg: '#FFFFFF',
+    iconColor: '#9333EA',
+    shadowColor: '#9333EA',
   },
   ai_visionary: {
-    outerRing: '#A855F7',
-    middleRing: '#6366F1',
-    innerBg: '#1E1B4B',
-    accentColor: '#38BDF8',
-    iconColor: '#38BDF8',
-    shadowColor: '#9333EA',
-    shape: 'hexagon',
-    tag: 'AI NEURAL',
+    bgColor: '#F0FDFA',
+    borderColor: '#99F6E4',
+    innerBg: '#FFFFFF',
+    iconColor: '#0D9488',
+    shadowColor: '#0D9488',
   },
   streak_master: {
-    outerRing: '#F87171',
-    middleRing: '#DC2626',
-    innerBg: '#450A0A',
-    accentColor: '#FDE047',
-    iconColor: '#F97316',
-    shadowColor: '#EF4444',
-    shape: 'circle',
-    tag: 'STREAK',
+    bgColor: '#FFF1F2',
+    borderColor: '#FECDD3',
+    innerBg: '#FFFFFF',
+    iconColor: '#F43F5E',
+    shadowColor: '#F43F5E',
   },
   default: {
-    outerRing: '#60A5FA',
-    middleRing: '#0284C7',
-    innerBg: '#0F172A',
-    accentColor: '#BAE6FD',
-    iconColor: '#FFFFFF',
-    shadowColor: '#0284C7',
-    shape: 'circle',
-    tag: 'BADGE',
+    bgColor: '#F8FAFC',
+    borderColor: '#E2E8F0',
+    innerBg: '#FFFFFF',
+    iconColor: '#0066FF',
+    shadowColor: '#0066FF',
   },
 };
 
@@ -156,66 +117,64 @@ export const RealBadgeEmblem: React.FC<RealBadgeEmblemProps> = ({
   const normId = (id || '').toLowerCase().trim();
   const config = BADGE_CONFIGS[normId] || BADGE_CONFIGS.default;
 
-  const iconSize = Math.round(size * 0.46);
+  const squircleRadius = Math.round(size * 0.28);
+  const innerSize = Math.round(size * 0.68);
+  const innerRadius = Math.round(innerSize * 0.26);
+  const iconSize = Math.round(size * 0.42);
+  const strokeWidth = 2.2;
 
   const renderBadgeIcon = () => {
-    const iconColor = isUnlocked ? config.iconColor : '#94A3B8';
-    const strokeWidth = 2.4;
+    const color = isUnlocked ? config.iconColor : '#94A3B8';
 
     switch (normId) {
       case 'first_spot':
-        return <Camera size={iconSize} color={iconColor} strokeWidth={strokeWidth} />;
+        return <Camera size={iconSize} color={color} strokeWidth={strokeWidth} />;
       case 'road_scout':
-        return <Compass size={iconSize} color={iconColor} strokeWidth={strokeWidth} />;
+        return <Compass size={iconSize} color={color} strokeWidth={strokeWidth} />;
       case 'community_sentinel':
-        return <Shield size={iconSize} color={iconColor} strokeWidth={strokeWidth} />;
+        return <Shield size={iconSize} color={color} strokeWidth={strokeWidth} />;
       case 'hazard_hunter':
-        return <Trophy size={iconSize} color={iconColor} strokeWidth={strokeWidth} />;
+        return <Trophy size={iconSize} color={color} strokeWidth={strokeWidth} />;
       case 'first_verifier':
-        return <Eye size={iconSize} color={iconColor} strokeWidth={strokeWidth} />;
+        return <Eye size={iconSize} color={color} strokeWidth={strokeWidth} />;
       case 'civic_guardian':
-        return <ShieldCheck size={iconSize} color={iconColor} strokeWidth={strokeWidth} />;
+        return <ShieldCheck size={iconSize} color={color} strokeWidth={strokeWidth} />;
       case 'road_restorer':
-        return <Wrench size={iconSize} color={iconColor} strokeWidth={strokeWidth} />;
+        return <Wrench size={iconSize} color={color} strokeWidth={strokeWidth} />;
       case 'fixer_champion':
-        return <Crown size={iconSize} color={iconColor} strokeWidth={strokeWidth} />;
+        return <Crown size={iconSize} color={color} strokeWidth={strokeWidth} />;
       case 'ai_visionary':
-        return <Bot size={iconSize} color={iconColor} strokeWidth={strokeWidth} />;
+        return <Bot size={iconSize} color={color} strokeWidth={strokeWidth} />;
       case 'streak_master':
-        return <Flame size={iconSize} color={iconColor} strokeWidth={strokeWidth} />;
+        return <Flame size={iconSize} color={color} strokeWidth={strokeWidth} />;
       default:
-        return <Award size={iconSize} color={iconColor} strokeWidth={strokeWidth} />;
+        return <Award size={iconSize} color={color} strokeWidth={strokeWidth} />;
     }
   };
-
-  const outerRadius = size / 2;
-  const middleSize = size * 0.84;
-  const innerSize = size * 0.68;
 
   if (!isUnlocked) {
     return (
       <View
         style={[
-          styles.emblemBase,
+          styles.cardBase,
           {
             width: size,
             height: size,
-            borderRadius: outerRadius,
-            backgroundColor: '#1E293B',
-            borderColor: '#334155',
-            opacity: 0.6,
+            borderRadius: squircleRadius,
+            backgroundColor: '#F8FAFC',
+            borderColor: '#E2E8F0',
           },
         ]}
       >
         <View
           style={[
-            styles.innerCircle,
+            styles.innerPill,
             {
               width: innerSize,
               height: innerSize,
-              borderRadius: innerSize / 2,
-              backgroundColor: '#0F172A',
-              borderColor: '#1E293B',
+              borderRadius: innerRadius,
+              backgroundColor: '#F1F5F9',
+              borderColor: '#E2E8F0',
             },
           ]}
         >
@@ -228,77 +187,52 @@ export const RealBadgeEmblem: React.FC<RealBadgeEmblemProps> = ({
   return (
     <View
       style={[
-        styles.emblemBase,
+        styles.cardBase,
         {
           width: size,
           height: size,
-          borderRadius: outerRadius,
-          backgroundColor: config.outerRing,
-          borderColor: config.middleRing,
+          borderRadius: squircleRadius,
+          backgroundColor: config.bgColor,
+          borderColor: config.borderColor,
           shadowColor: config.shadowColor,
         },
       ]}
     >
-      {/* Outer Metallic Bezel Ring */}
       <View
         style={[
-          styles.middleBezel,
+          styles.innerPill,
           {
-            width: middleSize,
-            height: middleSize,
-            borderRadius: middleSize / 2,
-            backgroundColor: config.middleRing,
-            borderColor: config.accentColor,
+            width: innerSize,
+            height: innerSize,
+            borderRadius: innerRadius,
+            backgroundColor: config.innerBg,
+            borderColor: 'rgba(255, 255, 255, 0.9)',
           },
         ]}
       >
-        {/* Deep Gem Core */}
-        <View
-          style={[
-            styles.innerCircle,
-            {
-              width: innerSize,
-              height: innerSize,
-              borderRadius: innerSize / 2,
-              backgroundColor: config.innerBg,
-              borderColor: config.accentColor,
-            },
-          ]}
-        >
-          {renderBadgeIcon()}
-
-          {/* Micro Sparkle Star Accent */}
-          <View style={styles.microSparkle}>
-            <Star size={Math.max(5, Math.round(size * 0.12))} color={config.accentColor} fill={config.accentColor} />
-          </View>
-        </View>
+        {renderBadgeIcon()}
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  emblemBase: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    ...SHADOWS.medium,
-    position: 'relative',
-  },
-  middleBezel: {
+  cardBase: {
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  innerCircle: {
+  innerPill: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
-    position: 'relative',
-  },
-  microSparkle: {
-    position: 'absolute',
-    top: 2,
-    right: 2,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
 });

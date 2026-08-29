@@ -1,8 +1,14 @@
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DEFAULT_REGION } from '@/constants/mockData';
 
 const LAST_LOCATION_KEY = '@civiclens_last_known_location';
+
+export const FALLBACK_DEFAULT_REGION = {
+  latitude: 28.6139,
+  longitude: 77.2090,
+  latitudeDelta: 0.038,
+  longitudeDelta: 0.038,
+};
 
 export interface LocationResult {
   latitude: number;
@@ -40,8 +46,8 @@ export async function getCurrentLocation(): Promise<{
         permissionGranted: false,
         errorMessage: 'Location permission is required to automatically locate your report.',
         location: cached || {
-          latitude: DEFAULT_REGION.latitude,
-          longitude: DEFAULT_REGION.longitude,
+          latitude: FALLBACK_DEFAULT_REGION.latitude,
+          longitude: FALLBACK_DEFAULT_REGION.longitude,
           locationName: 'Central Civic District (Default)',
         },
       };
@@ -103,8 +109,8 @@ export async function getCurrentLocation(): Promise<{
       permissionGranted: false,
       errorMessage: error?.message || 'Unable to retrieve GPS coordinates.',
       location: cached || {
-        latitude: DEFAULT_REGION.latitude,
-        longitude: DEFAULT_REGION.longitude,
+        latitude: FALLBACK_DEFAULT_REGION.latitude,
+        longitude: FALLBACK_DEFAULT_REGION.longitude,
         locationName: 'Central Civic District (Fallback)',
       },
     };

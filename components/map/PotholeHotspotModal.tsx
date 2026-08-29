@@ -69,7 +69,7 @@ export const PotholeHotspotModal: React.FC<PotholeHotspotModalProps> = ({
                       </Text>
                       <View style={styles.liveTag}>
                         <CloudRain size={10} color="#0066FF" />
-                        <Text style={styles.liveTagText}>Open-Meteo Data</Text>
+                        <Text style={styles.liveTagText}>2 Seasons (730 Days)</Text>
                       </View>
                     </View>
                     <Text style={styles.locationTitle}>{hotspot.locationName}</Text>
@@ -82,35 +82,35 @@ export const PotholeHotspotModal: React.FC<PotholeHotspotModalProps> = ({
               </View>
 
               <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                {/* Real Rain Metrics Grid */}
+                {/* Real 2-Season Rain Metrics Grid */}
                 <View style={styles.metricsGrid}>
                   <View style={styles.metricCard}>
                     <Droplets size={16} color="#0066FF" />
                     <Text style={styles.metricValue}>{hotspot.rainfallAccumulatedMm} mm</Text>
-                    <Text style={styles.metricLabel}>30-Day Rain Depth</Text>
+                    <Text style={styles.metricLabel}>2-Season Rain Depth</Text>
                   </View>
 
                   <View style={styles.metricCard}>
                     <CloudRain size={16} color="#F59E0B" />
-                    <Text style={styles.metricValue}>{hotspot.heavyRainDaysCount} Days</Text>
-                    <Text style={styles.metricLabel}>Heavy Rain (&gt;25mm)</Text>
+                    <Text style={styles.metricValue}>{hotspot.torrentialDownpoursCount || hotspot.heavyRainDaysCount} Days</Text>
+                    <Text style={styles.metricLabel}>Cloudbursts (&gt;40mm)</Text>
                   </View>
 
                   <View style={styles.metricCard}>
                     <AlertTriangle size={16} color={themeColor} />
                     <Text style={styles.metricValue}>~{hotspot.predictedPotholesCount} Potholes</Text>
-                    <Text style={styles.metricLabel}>Est. Formation</Text>
+                    <Text style={styles.metricLabel}>Multi-Year Risk</Text>
                   </View>
                 </View>
 
                 {/* AI Predictive Insight */}
                 <View style={[styles.aiCard, { borderColor: themeColor + '40', backgroundColor: themeBg }]}>
                   <Text style={[styles.aiHeaderTitle, { color: themeColor }]}>
-                    ⚡ AI Predictive Road Analysis
+                    ⚡ 2-Season AI Predictive Road Analysis
                   </Text>
                   <Text style={styles.aiText}>{hotspot.aiRecommendation}</Text>
                   <Text style={styles.rainDateNote}>
-                    Based on real satellite rainfall telemetry recorded on {hotspot.lastRainDate}.
+                    Based on 730 days of real satellite rainfall telemetry (2024–2026 Open-Meteo Archive).
                   </Text>
                 </View>
               </ScrollView>

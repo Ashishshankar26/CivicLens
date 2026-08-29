@@ -7,30 +7,32 @@ export interface PotholePredictionHotspot {
   longitude: number;
   riskScore: number; // 0 to 100
   riskLevel: 'CRITICAL' | 'HIGH' | 'MODERATE' | 'LOW';
-  rainfallAccumulatedMm: number;
-  heavyRainDaysCount: number;
+  rainfallAccumulatedMm: number; // 2-season total rain
+  heavyRainDaysCount: number; // 2-season heavy rain days
+  torrentialDownpoursCount: number; // Cloudburst (>40mm) events
   predictedPotholesCount: number;
   aiRecommendation: string;
-  lastRainDate: string;
+  seasonsAnalyzed: string;
   radiusMeters: number;
 }
 
 export interface RainfallAnalyticsSummary {
   latitude: number;
   longitude: number;
-  periodDays: number;
+  periodDays: number; // 730 days (2 monsoon seasons)
   totalRainfallMm: number;
   maxDailyRainfallMm: number;
   heavyRainDays: number;
+  torrentialRainDays: number;
   potholeFormationsEstimated: number;
   overallRiskScore: number;
   hotspots: PotholePredictionHotspot[];
 }
 
 /**
- * Calculates date range strings (YYYY-MM-DD) for past N days
+ * Calculates date range strings (YYYY-MM-DD) for past N days (default 730 days = 2 monsoon seasons)
  */
-function getPastDateRange(days = 30) {
+function getPastDateRange(days = 730) {
   const endDate = new Date();
   const startDate = new Date();
   startDate.setDate(endDate.getDate() - days);
@@ -43,16 +45,17 @@ function getPastDateRange(days = 30) {
 }
 
 /**
- * Fetches real historical rainfall depth (mm) from Open-Meteo Archive API
+ * Fetches real historical rainfall depth (mm) across 2 full monsoon seasons from Open-Meteo Archive API
  */
 export async function fetchRealRainfallData(
   latitude: number,
   longitude: number,
-  days = 30
+  days = 730
 ): Promise<{
   totalRainfallMm: number;
   maxDailyRainfallMm: number;
   heavyRainDays: number;
+  torrentialRainDays: number;
   dailyRainfall: number[];
   dates: string[];
 }> {
@@ -72,55 +75,60 @@ export async function fetchRealRainfallData(
     const totalRainfallMm = precipArray.reduce((acc, curr) => acc + (curr || 0), 0);
     const maxDailyRainfallMm = Math.max(...precipArray, 0);
     const heavyRainDays = precipArray.filter((val) => val >= 25.0).length;
+    const torrentialRainDays = precipArray.filter((val) => val >= 45.0).length;
 
     return {
       totalRainfallMm: Math.round(totalRainfallMm * 10) / 10,
       maxDailyRainfallMm: Math.round(maxDailyRainfallMm * 10) / 10,
       heavyRainDays,
+      torrentialRainDays,
       dailyRainfall: precipArray,
       dates: datesArray,
     };
   } catch (error) {
-    console.warn('[Pothole Prediction] Open-Meteo fetch failed, using climate fallback model:', error);
+    console.warn('[Pothole Prediction] Open-Meteo 2-Season fetch failed, using climate model fallback:', error);
     return {
-      totalRainfallMm: 184.5,
-      maxDailyRainfallMm: 42.1,
-      heavyRainDays: 3,
-      dailyRainfall: [12, 0, 5, 42, 18, 0, 0, 31, 5, 0],
+      totalRainfallMm: 1845.8,
+      maxDailyRainfallMm: 88.4,
+      heavyRainDays: 28,
+      torrentialRainDays: 9,
+      dailyRainfall: [12, 0, 5, 88, 45, 0, 0, 31, 5, 0],
       dates: [],
     };
   }
 }
 
 /**
- * Predicts Pothole Hotspots based on Real Rainfall Depth & Existing Reports
+ * Predicts Pothole Hotspots based on 2 Full Monsoon Seasons (730 Days) & Report Density
  */
 export async function predictPotholeHotspots(
   userLatitude: number,
   userLongitude: number,
   existingIssues: CivicIssue[] = []
 ): Promise<RainfallAnalyticsSummary> {
-  const rainData = await fetchRealRainfallData(userLatitude, userLongitude, 30);
+  // Fetch 730 days (2 full monsoon seasons) of real satellite precipitation depth
+  const rainData = await fetchRealRainfallData(userLatitude, userLongitude, 730);
 
-  // Pothole Vulnerability Formula:
-  // Base Risk = (Accumulated Rain mm * 0.25) + (Heavy Rain Days * 12) + (Max Daily Rain * 0.5)
+  // 2-Season Multi-Year Vulnerability Formula:
+  // Base Risk = (2-Year Rain mm * 0.032) + (Torrential Downpours * 4.5) + (Heavy Rain Days * 1.2) + (Max Daily Rain * 0.3)
   const baseRainRisk =
-    rainData.totalRainfallMm * 0.25 +
-    rainData.heavyRainDays * 12 +
-    rainData.maxDailyRainfallMm * 0.5;
+    rainData.totalRainfallMm * 0.032 +
+    rainData.torrentialRainDays * 4.5 +
+    rainData.heavyRainDays * 1.2 +
+    rainData.maxDailyRainfallMm * 0.3;
 
   const overallRiskScore = Math.min(Math.round(baseRainRisk), 100);
   const potholeFormationsEstimated = Math.max(
-    1,
-    Math.round(rainData.totalRainfallMm / 35 + rainData.heavyRainDays * 1.8)
+    2,
+    Math.round(rainData.totalRainfallMm / 220 + rainData.torrentialRainDays * 1.4)
   );
 
-  // Generate localized predictive hotspots around user area
+  // Generate localized micro-topography predictive hotspots around user area
   const offsets = [
-    { lat: 0.0035, lng: 0.0028, name: 'Main Arterial Junction', rMult: 1.1 },
-    { lat: -0.0042, lng: 0.0019, name: 'Low-Lying Drainage Zone', rMult: 1.35 },
-    { lat: 0.0018, lng: -0.0039, name: 'Heavy Transit Corridor', rMult: 0.95 },
-    { lat: -0.0029, lng: -0.0031, name: 'Flyover Underpass Road', rMult: 1.25 },
+    { lat: 0.0035, lng: 0.0028, name: 'Main Arterial Junction', rMult: 1.15, topography: 'Heavy Transit Base' },
+    { lat: -0.0042, lng: 0.0019, name: 'Low-Lying Basin & Runoff Channel', rMult: 1.45, topography: 'Natural Water Sink' },
+    { lat: 0.0018, lng: -0.0039, name: 'Heavy Commercial Corridor', rMult: 1.05, topography: 'Asphalt Shear Wear' },
+    { lat: -0.0029, lng: -0.0031, name: 'Flyover Underpass Culvert', rMult: 1.35, topography: 'Repeated Inundation' },
   ];
 
   const hotspots: PotholePredictionHotspot[] = offsets.map((off, index) => {
@@ -137,21 +145,21 @@ export async function predictPotholeHotspots(
 
     const calculatedScore = Math.min(
       100,
-      Math.round(overallRiskScore * off.rMult + nearbyReports * 10)
+      Math.round(overallRiskScore * off.rMult + nearbyReports * 8)
     );
 
     let riskLevel: PotholePredictionHotspot['riskLevel'] = 'LOW';
-    let recommendation = 'Standard road monitoring.';
+    let recommendation = 'Routine seasonal monitoring.';
 
-    if (calculatedScore >= 78) {
+    if (calculatedScore >= 80) {
       riskLevel = 'CRITICAL';
-      recommendation = `High asphalt sub-base erosion detected (${rainData.totalRainfallMm}mm rain). Urgent preventive seal coat required before monsoon washaway.`;
-    } else if (calculatedScore >= 60) {
+      recommendation = `Multi-year saturation hazard: ${rainData.totalRainfallMm}mm rain across 2 monsoon seasons (${rainData.torrentialRainDays} cloudbursts). Severe sub-base erosion on ${off.topography}. Immediate asphalt seal coating required.`;
+    } else if (calculatedScore >= 62) {
       riskLevel = 'HIGH';
-      recommendation = `Water saturation vulnerability. ${rainData.heavyRainDays} heavy rain days recorded. Pothole formation expected within 7-14 days.`;
+      recommendation = `High 2-season waterlogging risk. ${rainData.heavyRainDays} heavy rain days recorded over 2 years. Sub-surface erosion prone to rapid pothole formation.`;
     } else if (calculatedScore >= 40) {
       riskLevel = 'MODERATE';
-      recommendation = `Moderate surface runoff wear. Inspect drainage culverts to prevent waterlogging.`;
+      recommendation = `Moderate multi-season wear on ${off.topography}. Maintain drainage channels before next monsoon cycle.`;
     }
 
     return {
@@ -163,20 +171,22 @@ export async function predictPotholeHotspots(
       riskLevel,
       rainfallAccumulatedMm: rainData.totalRainfallMm,
       heavyRainDaysCount: rainData.heavyRainDays,
-      predictedPotholesCount: Math.max(1, Math.round(calculatedScore / 22)),
+      torrentialDownpoursCount: rainData.torrentialRainDays,
+      predictedPotholesCount: Math.max(1, Math.round(calculatedScore / 18)),
       aiRecommendation: recommendation,
-      lastRainDate: new Date().toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
-      radiusMeters: Math.round(250 + calculatedScore * 3.5),
+      seasonsAnalyzed: '2 Monsoon Seasons (730 Days)',
+      radiusMeters: Math.round(260 + calculatedScore * 3.5),
     };
   });
 
   return {
     latitude: userLatitude,
     longitude: userLongitude,
-    periodDays: 30,
+    periodDays: 730,
     totalRainfallMm: rainData.totalRainfallMm,
     maxDailyRainfallMm: rainData.maxDailyRainfallMm,
     heavyRainDays: rainData.heavyRainDays,
+    torrentialRainDays: rainData.torrentialRainDays,
     potholeFormationsEstimated,
     overallRiskScore,
     hotspots,

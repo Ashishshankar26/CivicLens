@@ -295,7 +295,7 @@ export default function IssueDetailsScreen() {
         </TouchableOpacity>
 
         <View style={styles.appBarTitleCol}>
-          <Text style={styles.appBarTitle}>Issue Intelligence</Text>
+          <Text style={styles.appBarTitle}>Issue Details</Text>
           <View style={styles.appBarStatusRow}>
             <View style={[styles.statusMiniDot, { backgroundColor: isResolved ? '#10B981' : isUrgent ? '#EF4444' : '#0066FF' }]} />
             <Text style={styles.appBarSub}>

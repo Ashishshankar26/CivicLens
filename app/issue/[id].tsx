@@ -334,12 +334,6 @@ export default function IssueDetailsScreen() {
               <Clock size={12} color="#FFFFFF" />
               <Text style={styles.heroMetaText}>Reported {formatRelativeTime(liveIssue.createdAt)}</Text>
             </View>
-            {liveIssue.aiConfidence && (
-              <View style={styles.heroAiPill}>
-                <Sparkles size={11} color="#A855F7" />
-                <Text style={styles.heroAiText}>AI Verified ({Math.round(liveIssue.aiConfidence * 100)}%)</Text>
-              </View>
-            )}
           </View>
         </View>
 

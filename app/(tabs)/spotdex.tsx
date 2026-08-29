@@ -134,17 +134,17 @@ export default function SpotdexScreen() {
           <View style={styles.heroCardHeader}>
             <View style={styles.heroTitleRow}>
               <Sparkles size={14} color={COLORS.primary} />
-              <Text style={styles.heroSubHeading}>CIVICDEX</Text>
+              <Text style={styles.heroSubHeading}>CIVIC PROGRESS</Text>
             </View>
             <View style={styles.gridIconCircle}>
               <LayoutGrid size={15} color={COLORS.primary} />
             </View>
           </View>
 
-          <Text style={styles.heroCountText}>{totalUserLogged} spotted</Text>
+          <Text style={styles.heroCountText}>{totalUserLogged} Reported</Text>
           <View style={styles.heroProgressRow}>
             <Text style={styles.heroProgressSub}>
-              {totalUserLogged} of {totalAreaHazards} district entries logged
+              {totalUserLogged} of {totalAreaHazards} district incidents recorded
             </Text>
             <Text style={styles.heroPercentText}>{percentClaimed}%</Text>
           </View>
@@ -158,19 +158,19 @@ export default function SpotdexScreen() {
           <View style={styles.telemetryGrid}>
             <View style={styles.telemetryCol}>
               <Text style={styles.telemetryNum}>{totalUserLogged}</Text>
-              <Text style={styles.telemetryLabel}>discovered</Text>
+              <Text style={styles.telemetryLabel}>Reported</Text>
             </View>
             <View style={styles.telemetryCol}>
               <Text style={styles.telemetryNum}>{totalSightings}</Text>
-              <Text style={styles.telemetryLabel}>sightings</Text>
+              <Text style={styles.telemetryLabel}>Verified</Text>
             </View>
             <View style={styles.telemetryCol}>
               <Text style={styles.telemetryNum}>{totalPhotos}</Text>
-              <Text style={styles.telemetryLabel}>photos</Text>
+              <Text style={styles.telemetryLabel}>Photos</Text>
             </View>
             <View style={styles.telemetryCol}>
               <Text style={styles.telemetryNum}>{totalBadgesEarned}</Text>
-              <Text style={styles.telemetryLabel}>badges</Text>
+              <Text style={styles.telemetryLabel}>Badges</Text>
             </View>
           </View>
         </View>
@@ -189,7 +189,7 @@ export default function SpotdexScreen() {
           >
             <View style={styles.newestBadge}>
               <Sparkles size={11} color={COLORS.primary} />
-              <Text style={styles.newestBadgeText}>YOUR LATEST DISCOVERY</Text>
+              <Text style={styles.newestBadgeText}>LATEST REPORT</Text>
             </View>
 
             <View style={styles.newestIconCenter}>
@@ -223,7 +223,7 @@ export default function SpotdexScreen() {
             </View>
 
             <Text style={styles.newestTitle} numberOfLines={1}>
-              {newestPersonalEntry.locationName || 'Local Roadway Hazard'}
+              {newestPersonalEntry.locationName || 'Local Roadway Incident'}
             </Text>
             <View style={styles.newestFooterRow}>
               <Text style={styles.newestSub}>
@@ -237,9 +237,9 @@ export default function SpotdexScreen() {
             <View style={styles.starterIconCircle}>
               <Compass size={28} color={COLORS.primary} strokeWidth={2.2} />
             </View>
-            <Text style={styles.starterTitle}>No Discoveries Logged Yet</Text>
+            <Text style={styles.starterTitle}>No Reports Recorded Yet</Text>
             <Text style={styles.starterSub}>
-              Spot a pothole, waste pile, or dark street lamp to record your first field discovery.
+              Report a pothole, waste overflow, or dark street lamp to start your district logbook.
             </Text>
             <TouchableOpacity
               style={styles.starterActionBtn}
@@ -247,7 +247,7 @@ export default function SpotdexScreen() {
               activeOpacity={0.8}
             >
               <Plus size={15} color="#FFFFFF" strokeWidth={2.4} />
-              <Text style={styles.starterActionText}>Report a Hazard</Text>
+              <Text style={styles.starterActionText}>Report an Incident</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -267,7 +267,7 @@ export default function SpotdexScreen() {
           </View>
 
           <Text style={styles.badgesCountSub}>
-            {totalBadgesEarned} of {totalBadgesCount} earned • Tap any badge to view milestone
+            {totalBadgesEarned} of {totalBadgesCount} unlocked • Tap any badge to view milestone
           </Text>
           <Text style={styles.nextBadgeHint}>
             Level {reputation?.level || 1}: {reputation?.levelTitle || 'Novice Scout'}
@@ -321,7 +321,7 @@ export default function SpotdexScreen() {
             >
               <User size={13} color={registryScope === 'my' ? '#FFFFFF' : COLORS.textSecondary} />
               <Text style={[styles.scopeBtnText, registryScope === 'my' && styles.scopeBtnTextActive]}>
-                My Discoveries ({myReports.length})
+                My Reports ({myReports.length})
               </Text>
             </TouchableOpacity>
 
@@ -332,7 +332,7 @@ export default function SpotdexScreen() {
             >
               <Globe size={13} color={registryScope === 'community' ? '#FFFFFF' : COLORS.textSecondary} />
               <Text style={[styles.scopeBtnText, registryScope === 'community' && styles.scopeBtnTextActive]}>
-                Citywide Feed ({issues.length})
+                Public Feed ({issues.length})
               </Text>
             </TouchableOpacity>
           </View>
@@ -345,7 +345,7 @@ export default function SpotdexScreen() {
               activeOpacity={0.8}
             >
               <Text style={[styles.filterPillText, logFilter === 'all' && styles.filterPillTextActive]}>
-                All {currentDataset.length}
+                All ({currentDataset.length})
               </Text>
             </TouchableOpacity>
 

@@ -246,7 +246,7 @@ export default function IssueDetailsScreen() {
           <View style={styles.resolvedProofCard}>
             <View style={styles.resolvedProofHeader}>
               <CheckCircle2 size={16} color="#10B981" />
-              <Text style={styles.resolvedProofTitle}>CITIZEN RESOLUTION PHOTO PROOF</Text>
+              <Text style={styles.resolvedProofTitle}>RESOLUTION VERIFICATION PROOF</Text>
             </View>
             <Image
               source={{ uri: liveIssue.resolvedImageUrl }}
@@ -254,7 +254,7 @@ export default function IssueDetailsScreen() {
               resizeMode="cover"
             />
             <Text style={styles.resolvedProofSub}>
-              Photo evidence captured on site verifying road restoration.
+              On-site photo evidence verifying road restoration.
             </Text>
           </View>
         )}
@@ -265,10 +265,10 @@ export default function IssueDetailsScreen() {
             <View style={styles.priorityTitleCol}>
               <View style={styles.priorityHeaderRow}>
                 <Flame size={16} color={isUrgent ? '#EF4444' : '#F59E0B'} />
-                <Text style={styles.priorityCardTitle}>COMMUNITY SAFETY ENGINE</Text>
+                <Text style={styles.priorityCardTitle}>PRIORITY IMPACT SCORE</Text>
               </View>
               <Text style={styles.priorityTierText}>
-                {liveIssue.priorityTier || (isUrgent ? 'Critical / Urgent' : 'High Priority Action')}
+                {liveIssue.priorityTier || (isUrgent ? 'Critical Priority' : 'Standard Priority')}
               </Text>
             </View>
 
@@ -297,19 +297,19 @@ export default function IssueDetailsScreen() {
             />
           </View>
           <Text style={styles.priorityReasoning}>
-            Weighted by: Severity ({liveIssue.severity.toUpperCase()}) + Traffic Density + {liveIssue.confirmationCount} citizen on-site verifications.
+            Calculated from severity rating ({liveIssue.severity.toUpperCase()}), traffic density, and {liveIssue.confirmationCount} community verifications.
           </Text>
         </View>
 
         {/* DESCRIPTION & METADATA */}
         <View style={styles.detailsCard}>
-          <Text style={styles.sectionHeading}>CIVIC PROBLEM SUMMARY</Text>
+          <Text style={styles.sectionHeading}>INCIDENT DETAILS</Text>
           <Text style={styles.descriptionText}>{liveIssue.description}</Text>
 
           {/* Impact Factors Chips */}
           {liveIssue.impactFactors && liveIssue.impactFactors.length > 0 && (
             <View style={styles.impactsWrapper}>
-              <Text style={styles.impactsSub}>Citizen Reported Impacts:</Text>
+              <Text style={styles.impactsSub}>Reported Impact Factors:</Text>
               <View style={styles.impactsRow}>
                 {liveIssue.impactFactors.map((imp, idx) => (
                   <View key={idx} style={styles.impactTag}>
@@ -346,7 +346,7 @@ export default function IssueDetailsScreen() {
           <View style={styles.metaRow}>
             <User size={16} color={COLORS.textMuted} />
             <Text style={styles.metaText}>
-              Scout: {liveIssue.reporterName || 'Verified Citizen'}
+              Reported by: {liveIssue.reporterName || 'Community Member'}
             </Text>
           </View>
 
@@ -370,7 +370,7 @@ export default function IssueDetailsScreen() {
           >
             <Navigation size={16} color="#FFFFFF" />
             <Text style={styles.googleMapsActionText}>
-              Open in Google Maps ({liveIssue.latitude.toFixed(4)}, {liveIssue.longitude.toFixed(4)})
+              Navigate with Google Maps
             </Text>
           </TouchableOpacity>
         </View>
@@ -381,9 +381,9 @@ export default function IssueDetailsScreen() {
         {/* 3-CHOICE COMMUNITY VERIFICATION ACTION BAR */}
         {!isResolved ? (
           <View style={styles.communityActionCard}>
-            <Text style={styles.actionCardTitle}>COMMUNITY VERIFICATION</Text>
+            <Text style={styles.actionCardTitle}>COMMUNITY ACTIONS</Text>
             <Text style={styles.actionCardSub}>
-              Have you observed this road hazard? Confirm on site or submit photo proof when repaired.
+              Confirm hazard presence on site or submit verified photo proof when restored.
             </Text>
 
             <View style={styles.actionBtnStack}>
@@ -400,7 +400,7 @@ export default function IssueDetailsScreen() {
                   <>
                     <CheckCircle2 size={16} color={hasConfirmed ? '#FFFFFF' : COLORS.primary} />
                     <Text style={[styles.verifyOptionText, hasConfirmed && styles.verifyOptionTextActive]}>
-                      {hasConfirmed ? `Confirmed Present (${liveIssue.confirmationCount})` : 'Confirm Still Present'}
+                      {hasConfirmed ? `Confirmed Present (${liveIssue.confirmationCount})` : 'Confirm Incident Present'}
                     </Text>
                   </>
                 )}
@@ -418,7 +418,7 @@ export default function IssueDetailsScreen() {
                 ) : (
                   <>
                     <AlertTriangle size={16} color="#DC2626" />
-                    <Text style={styles.worseOptionText}>Report Getting Worse / Critical</Text>
+                    <Text style={styles.worseOptionText}>Escalate Urgency Level</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -436,7 +436,7 @@ export default function IssueDetailsScreen() {
                   <>
                     <Camera size={16} color={hasResolved ? '#FFFFFF' : '#059669'} />
                     <Text style={[styles.resolveOptionText, hasResolved && styles.resolveOptionTextActive]}>
-                      {hasResolved ? 'Resolution Photo Verified' : 'Mark as Repaired (Take Photo Proof)'}
+                      {hasResolved ? 'Resolution Photo Verified' : 'Submit Resolution Proof'}
                     </Text>
                   </>
                 )}
@@ -447,9 +447,9 @@ export default function IssueDetailsScreen() {
           <View style={styles.resolvedBannerCard}>
             <CheckCircle2 size={24} color="#059669" />
             <View style={{ flex: 1 }}>
-              <Text style={styles.resolvedBannerTitle}>ISSUE RESOLVED & VERIFIED</Text>
+              <Text style={styles.resolvedBannerTitle}>INCIDENT RESOLVED</Text>
               <Text style={styles.resolvedBannerSub}>
-                Restored on {liveIssue.resolvedAt ? new Date(liveIssue.resolvedAt).toLocaleDateString() : 'recently'}. Thank you to all contributing road scouts!
+                Restored on {liveIssue.resolvedAt ? new Date(liveIssue.resolvedAt).toLocaleDateString() : 'recently'}. Verified by the community.
               </Text>
             </View>
           </View>

@@ -34,7 +34,7 @@ export const AiSuggestionCard: React.FC<AiSuggestionCardProps> = ({
       <View style={styles.headerRow}>
         <View style={styles.titleRow}>
           <Sparkles size={16} color={COLORS.primary} />
-          <Text style={styles.title}>AI VISION DETECTION</Text>
+          <Text style={styles.title}>AI CLASSIFICATION</Text>
         </View>
         <View style={styles.confidencePill}>
           <Text style={styles.confidenceText}>{confidencePercent}% confidence</Text>
@@ -45,13 +45,13 @@ export const AiSuggestionCard: React.FC<AiSuggestionCardProps> = ({
         <View style={styles.categoryInfo}>
           <Text style={styles.detectedLabel}>{label}</Text>
           <Text style={styles.detectedDesc}>
-            Suggested Category: <Text style={{ fontWeight: '700', color: meta.color }}>{meta.label}</Text>
+            Detected: <Text style={{ fontWeight: '700', color: meta.color }}>{meta.label}</Text>
             {suggestedSeverity ? ` • Severity: ${suggestedSeverity.toUpperCase()}` : ''}
           </Text>
 
           {suggestedDescription && (
             <View style={styles.descPreviewBox}>
-              <Text style={styles.descPreviewLabel}>AI SUMMARY PREVIEW:</Text>
+              <Text style={styles.descPreviewLabel}>AI GENERATED SUMMARY:</Text>
               <Text style={styles.descPreviewText} numberOfLines={2}>
                 "{suggestedDescription}"
               </Text>
@@ -68,7 +68,7 @@ export const AiSuggestionCard: React.FC<AiSuggestionCardProps> = ({
         >
           <Check size={14} color="#FFF" strokeWidth={2.5} />
           <Text style={styles.acceptText}>
-            {isAccepted ? 'Suggestion & Summary Applied' : 'Apply AI Category & Summary'}
+            {isAccepted ? 'Suggestion Applied' : 'Apply AI Suggestion'}
           </Text>
         </TouchableOpacity>
 
@@ -78,7 +78,7 @@ export const AiSuggestionCard: React.FC<AiSuggestionCardProps> = ({
           activeOpacity={0.8}
         >
           <Edit3 size={14} color={COLORS.textSecondary} />
-          <Text style={styles.overrideText}>Manual</Text>
+          <Text style={styles.overrideText}>Edit Manually</Text>
         </TouchableOpacity>
       </View>
     </View>

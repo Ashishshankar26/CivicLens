@@ -35,7 +35,7 @@ export const LocationPreviewCard: React.FC<LocationPreviewCardProps> = ({
       <View style={styles.headerRow}>
         <View style={styles.titleRow}>
           <MapPin size={16} color={COLORS.primary} />
-          <Text style={styles.title}>GPS LOCATION</Text>
+          <Text style={styles.title}>INCIDENT LOCATION</Text>
         </View>
 
         <TouchableOpacity
@@ -49,7 +49,7 @@ export const LocationPreviewCard: React.FC<LocationPreviewCardProps> = ({
           ) : (
             <>
               <RefreshCw size={12} color={COLORS.primary} />
-              <Text style={styles.refreshText}>Update GPS</Text>
+              <Text style={styles.refreshText}>Refresh Location</Text>
             </>
           )}
         </TouchableOpacity>

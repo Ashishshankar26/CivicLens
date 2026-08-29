@@ -44,9 +44,9 @@ export const ResolutionPhotoModal: React.FC<ResolutionPhotoModalProps> = ({
             <CheckCircle2 size={32} color="#059669" />
           </View>
 
-          <Text style={styles.modalTitle}>Photo Proof Required</Text>
+          <Text style={styles.modalTitle}>Resolution Verification Proof</Text>
           <Text style={styles.modalSub}>
-            Please capture or upload clear photo evidence of the repaired road so fellow citizens can verify the resolution.
+            Upload on-site photo evidence to confirm this hazard has been resolved for the community.
           </Text>
 
           {/* Action 1: Camera */}
@@ -56,7 +56,7 @@ export const ResolutionPhotoModal: React.FC<ResolutionPhotoModalProps> = ({
             activeOpacity={0.85}
           >
             <Camera size={18} color="#FFFFFF" />
-            <Text style={styles.primaryActionText}>Take Live Photo with Camera</Text>
+            <Text style={styles.primaryActionText}>Capture Photo with Camera</Text>
           </TouchableOpacity>
 
           {/* Action 2: Gallery */}
@@ -66,7 +66,7 @@ export const ResolutionPhotoModal: React.FC<ResolutionPhotoModalProps> = ({
             activeOpacity={0.8}
           >
             <ImageIcon size={18} color={COLORS.primaryDark} />
-            <Text style={styles.secondaryActionText}>Choose from Photo Gallery</Text>
+            <Text style={styles.secondaryActionText}>Upload from Gallery</Text>
           </TouchableOpacity>
 
           {/* Cancel */}

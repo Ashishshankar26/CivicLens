@@ -228,9 +228,9 @@ export default function ReportIssueScreen() {
               <Camera size={20} color={COLORS.primary} />
             </View>
             <View style={styles.headerTextCol}>
-              <Text style={styles.headerTitle}>Report Road Hazard</Text>
+              <Text style={styles.headerTitle}>Report Incident</Text>
               <Text style={styles.headerSub}>
-                Take or choose a photo — Gemini AI Vision detects the hazard instantly
+                Capture or upload photo evidence for automatic AI categorization
               </Text>
             </View>
           </View>
@@ -247,7 +247,7 @@ export default function ReportIssueScreen() {
             {isAnalyzingImage && (
               <View style={styles.analyzingBanner}>
                 <ActivityIndicator size="small" color={COLORS.primary} />
-                <Text style={styles.analyzingText}>Gemini AI Vision Analyzing Image...</Text>
+                <Text style={styles.analyzingText}>Analyzing photo with AI Vision...</Text>
               </View>
             )}
           </View>
@@ -268,7 +268,7 @@ export default function ReportIssueScreen() {
 
           {/* 2. ISSUE CATEGORY */}
           <View style={styles.card}>
-            <Text style={styles.cardSectionLabel}>ISSUE CATEGORY *</Text>
+            <Text style={styles.cardSectionLabel}>INCIDENT CATEGORY *</Text>
             <View style={styles.categoryGrid}>
               {CATEGORY_LIST.map((cat) => {
                 const isSelected = category === cat.id;
@@ -366,7 +366,7 @@ export default function ReportIssueScreen() {
           {/* 4. DESCRIPTION & AI AUTO-FILL */}
           <View style={styles.card}>
             <View style={styles.descHeaderRow}>
-              <Text style={styles.cardSectionLabel}>DESCRIPTION *</Text>
+              <Text style={styles.cardSectionLabel}>INCIDENT DESCRIPTION *</Text>
               {aiSuggestion?.suggestedDescription && (
                 <TouchableOpacity
                   style={styles.aiAutoSummaryBtn}
@@ -374,13 +374,13 @@ export default function ReportIssueScreen() {
                   activeOpacity={0.75}
                 >
                   <Sparkles size={12} color={COLORS.primaryDark} />
-                  <Text style={styles.aiAutoSummaryText}>✨ AI Auto-Fill</Text>
+                  <Text style={styles.aiAutoSummaryText}>AI Auto-Fill</Text>
                 </TouchableOpacity>
               )}
             </View>
             <TextInput
               style={styles.descriptionInput}
-              placeholder="e.g. Deep pothole near traffic intersection causing hazard..."
+              placeholder="Describe the hazard and its impact on pedestrians or traffic..."
               placeholderTextColor={COLORS.textMuted}
               multiline
               numberOfLines={3}
@@ -411,7 +411,7 @@ export default function ReportIssueScreen() {
           >
             <Send size={18} color="#FFFFFF" />
             <Text style={styles.submitBtnText}>
-              {isSubmitting ? 'Submitting Report...' : 'Submit Civic Report'}
+              {isSubmitting ? 'Submitting Report...' : 'Submit Incident Report'}
             </Text>
           </TouchableOpacity>
         </ScrollView>

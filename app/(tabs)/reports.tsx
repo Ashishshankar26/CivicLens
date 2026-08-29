@@ -90,9 +90,9 @@ export default function ModernMyReportsScreen() {
           <ClipboardList size={20} color={COLORS.primary} />
         </View>
         <View style={styles.headerTextCol}>
-          <Text style={styles.headerTitle}>My Civic Logbook</Text>
+          <Text style={styles.headerTitle}>My Reports</Text>
           <Text style={styles.headerSub}>
-            Track real-time progress and verification of your reported hazards
+            Track the status and community verification of your reported incidents
           </Text>
         </View>
       </View>
@@ -108,14 +108,14 @@ export default function ModernMyReportsScreen() {
 
         <View style={styles.telemetrySegment}>
           <Text style={[styles.telemetryNum, { color: '#EF4444' }]}>{activeCount}</Text>
-          <Text style={styles.telemetryLabel}>Active In-Field</Text>
+          <Text style={styles.telemetryLabel}>In Progress</Text>
         </View>
 
         <View style={styles.divider} />
 
         <View style={styles.telemetrySegment}>
           <Text style={[styles.telemetryNum, { color: '#10B981' }]}>{resolvedCount}</Text>
-          <Text style={styles.telemetryLabel}>Repaired</Text>
+          <Text style={styles.telemetryLabel}>Resolved</Text>
         </View>
       </View>
 
@@ -170,9 +170,9 @@ export default function ModernMyReportsScreen() {
         }
         ListEmptyComponent={
           <EmptyState
-            title="No Reports Found"
-            description="You haven't submitted any civic issue reports in this category yet."
-            buttonTitle="Submit First Report"
+            title="No Incidents Reported Yet"
+            description="Your submitted reports and their live resolution status will appear here."
+            buttonTitle="Report an Incident"
             onButtonPress={() => router.push('/(tabs)/report')}
           />
         }

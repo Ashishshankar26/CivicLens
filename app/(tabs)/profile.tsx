@@ -127,7 +127,7 @@ export default function ModernYouScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Top Header Title */}
-        <Text style={styles.topPageTitle}>You</Text>
+        <Text style={styles.topPageTitle}>Civic Profile</Text>
 
         {/* 1. PUBLIC CITIZEN PROFILE HERO */}
         <View style={styles.spotterCard}>
@@ -147,7 +147,7 @@ export default function ModernYouScreen() {
               <Text style={styles.spotterName}>{user?.displayName || 'Active Citizen'}</Text>
               <View style={styles.verifiedRow}>
                 <ShieldCheck size={12} color="#059669" />
-                <Text style={styles.verifiedText}>Verified Citizen • Community Scout</Text>
+                <Text style={styles.verifiedText}>Verified Citizen • Active Contributor</Text>
               </View>
             </View>
           </View>
@@ -156,17 +156,17 @@ export default function ModernYouScreen() {
           <View style={styles.spotterStatsRow}>
             <View style={styles.statCol}>
               <Text style={styles.statNumber}>{totalCaught}</Text>
-              <Text style={styles.statLabel}>logged</Text>
+              <Text style={styles.statLabel}>Reported</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statCol}>
               <Text style={styles.statNumber}>{reputation?.confirmationsCount || 0}</Text>
-              <Text style={styles.statLabel}>verified</Text>
+              <Text style={styles.statLabel}>Verified</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statCol}>
               <Text style={styles.statNumber}>{badgesCount}</Text>
-              <Text style={styles.statLabel}>badges</Text>
+              <Text style={styles.statLabel}>Badges</Text>
             </View>
           </View>
         </View>
@@ -177,11 +177,11 @@ export default function ModernYouScreen() {
             <View style={styles.githubTitleRow}>
               <GitCommit size={16} color={COLORS.primary} />
               <Text style={styles.githubHeaderTitle}>
-                {totalContributions} contributions in 2026
+                {totalContributions} contributions in {new Date().getFullYear()}
               </Text>
             </View>
             <View style={styles.yearPill}>
-              <Text style={styles.yearPillText}>2026</Text>
+              <Text style={styles.yearPillText}>{new Date().getFullYear()}</Text>
             </View>
           </View>
 

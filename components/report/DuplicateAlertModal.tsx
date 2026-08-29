@@ -49,7 +49,7 @@ export const DuplicateAlertModal: React.FC<DuplicateAlertModalProps> = ({
               <AlertTriangle size={24} color="#D97706" />
             </View>
             <View style={styles.headerTextCol}>
-              <Text style={styles.warningTitle}>POSSIBLE DUPLICATE FOUND</Text>
+              <Text style={styles.warningTitle}>NEARBY REPORT DETECTED</Text>
               <View style={styles.distanceRow}>
                 <MapPin size={11} color={COLORS.primary} />
                 <Text style={styles.distanceBadge}>
@@ -60,7 +60,7 @@ export const DuplicateAlertModal: React.FC<DuplicateAlertModalProps> = ({
           </View>
 
           <Text style={styles.explanationText}>
-            A similar active <Text style={{ fontWeight: '800', color: COLORS.primaryDark }}>{issue.category.toUpperCase()}</Text> has already been reported right nearby.
+            A similar <Text style={{ fontWeight: '800', color: COLORS.primaryDark }}>{issue.category.toUpperCase()}</Text> incident was recently reported at this location.
           </Text>
 
           {/* Existing Issue Preview Card */}
@@ -75,7 +75,7 @@ export const DuplicateAlertModal: React.FC<DuplicateAlertModalProps> = ({
                 "{issue.description}"
               </Text>
               <Text style={styles.existingConfirmations}>
-                👥 {issue.confirmationCount} citizens already verified this
+                {issue.confirmationCount} community verifications
               </Text>
             </View>
           </View>
@@ -88,7 +88,7 @@ export const DuplicateAlertModal: React.FC<DuplicateAlertModalProps> = ({
               activeOpacity={0.85}
             >
               <CheckCircle2 size={16} color="#FFF" />
-              <Text style={styles.viewExistingText}>View & Confirm Existing</Text>
+              <Text style={styles.viewExistingText}>View Existing Report</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -96,7 +96,7 @@ export const DuplicateAlertModal: React.FC<DuplicateAlertModalProps> = ({
               onPress={onReportAnyway}
               activeOpacity={0.8}
             >
-              <Text style={styles.reportAnywayText}>Report as Separate Issue</Text>
+              <Text style={styles.reportAnywayText}>Submit as New Incident</Text>
               <ArrowRight size={14} color={COLORS.textSecondary} />
             </TouchableOpacity>
           </View>

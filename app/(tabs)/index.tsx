@@ -182,7 +182,7 @@ export default function ModernMapScreen() {
                   }}
                 >
                   <Text style={[styles.dropdownItemText, statusFilter === 'all' && styles.dropdownItemTextActive]}>
-                    All Hazards ({issues.length})
+                    All Incidents ({issues.length})
                   </Text>
                   {statusFilter === 'all' && <Check size={14} color={COLORS.primary} />}
                 </TouchableOpacity>
@@ -197,7 +197,7 @@ export default function ModernMapScreen() {
                   <View style={styles.menuLabelRow}>
                     <View style={[styles.dot, { backgroundColor: '#EF4444' }]} />
                     <Text style={[styles.dropdownItemText, statusFilter === 'urgent' && styles.dropdownItemTextActive]}>
-                      Urgent / Critical
+                      Urgent Priority
                     </Text>
                   </View>
                   {statusFilter === 'urgent' && <Check size={14} color={COLORS.primary} />}
@@ -213,7 +213,7 @@ export default function ModernMapScreen() {
                   <View style={styles.menuLabelRow}>
                     <View style={[styles.dot, { backgroundColor: '#F59E0B' }]} />
                     <Text style={[styles.dropdownItemText, statusFilter === 'active' && styles.dropdownItemTextActive]}>
-                      Active Spots
+                      In Progress
                     </Text>
                   </View>
                   {statusFilter === 'active' && <Check size={14} color={COLORS.primary} />}
@@ -229,7 +229,7 @@ export default function ModernMapScreen() {
                   <View style={styles.menuLabelRow}>
                     <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
                     <Text style={[styles.dropdownItemText, statusFilter === 'resolved' && styles.dropdownItemTextActive]}>
-                      Repaired & Restored
+                      Resolved
                     </Text>
                   </View>
                   {statusFilter === 'resolved' && <Check size={14} color={COLORS.primary} />}
@@ -247,7 +247,7 @@ export default function ModernMapScreen() {
 
           <TextInput
             style={styles.searchInput}
-            placeholder="Search nearby hazards, streetlights..."
+            placeholder="Search by area, road, or category..."
             placeholderTextColor={COLORS.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}

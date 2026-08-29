@@ -16,6 +16,7 @@ import { getUserReputation } from '@/services/gamification/gamificationService';
 import { UserReputation, Badge } from '@/types/gamification';
 import { BadgeDetailModal } from '@/components/gamification/BadgeDetailModal';
 import { RealBadgeEmblem } from '@/components/ui/RealBadgeEmblem';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { formatRelativeTime } from '@/utils/formatters';
 import {
@@ -130,14 +131,21 @@ export default function SpotdexScreen() {
         }
       >
         {/* SPOTDEX HERO CARD (Live dynamic metrics) */}
-        <View style={styles.heroCard}>
+        <LinearGradient
+          colors={['#091E42', '#1E40AF', '#0066FF']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.heroCard}
+        >
           <View style={styles.heroCardHeader}>
             <View style={styles.heroTitleRow}>
-              <Sparkles size={14} color={COLORS.primary} />
-              <Text style={styles.heroSubHeading}>MY ACTIVITY</Text>
+              <View style={styles.heroGlassBadge}>
+                <Sparkles size={13} color="#60A5FA" />
+                <Text style={styles.heroSubHeading}>MY ACTIVITY</Text>
+              </View>
             </View>
             <View style={styles.gridIconCircle}>
-              <LayoutGrid size={15} color={COLORS.primary} />
+              <LayoutGrid size={15} color="#FFFFFF" />
             </View>
           </View>
 
@@ -149,9 +157,14 @@ export default function SpotdexScreen() {
             <Text style={styles.heroPercentText}>{percentClaimed}%</Text>
           </View>
 
-          {/* Electric Blue Progress Bar */}
+          {/* Electric Cyan/Blue Progress Bar */}
           <View style={styles.progressBarTrack}>
-            <View style={[styles.progressBarFill, { width: `${Math.max(6, percentClaimed)}%` }]} />
+            <LinearGradient
+              colors={['#38BDF8', '#60A5FA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.progressBarFill, { width: `${Math.max(6, percentClaimed)}%` }]}
+            />
           </View>
 
           {/* 4 Telemetry Metrics */}
@@ -173,7 +186,7 @@ export default function SpotdexScreen() {
               <Text style={styles.telemetryLabel}>Badges</Text>
             </View>
           </View>
-        </View>
+        </LinearGradient>
 
         {/* LATEST DISCOVERY CARD (Personal Discovery or Starter Prompt) */}
         {newestPersonalEntry ? (
@@ -319,10 +332,26 @@ export default function SpotdexScreen() {
               onPress={() => setRegistryScope('my')}
               activeOpacity={0.8}
             >
-              <User size={13} color={registryScope === 'my' ? '#FFFFFF' : COLORS.textSecondary} />
-              <Text style={[styles.scopeBtnText, registryScope === 'my' && styles.scopeBtnTextActive]}>
-                My Reports ({myReports.length})
-              </Text>
+              {registryScope === 'my' ? (
+                <LinearGradient
+                  colors={['#0052CC', '#0066FF']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.scopeBtnGradient}
+                >
+                  <User size={13} color="#FFFFFF" />
+                  <Text style={styles.scopeBtnTextActive}>
+                    My Reports ({myReports.length})
+                  </Text>
+                </LinearGradient>
+              ) : (
+                <View style={styles.scopeBtnInner}>
+                  <User size={13} color={COLORS.textSecondary} />
+                  <Text style={styles.scopeBtnText}>
+                    My Reports ({myReports.length})
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -330,10 +359,26 @@ export default function SpotdexScreen() {
               onPress={() => setRegistryScope('community')}
               activeOpacity={0.8}
             >
-              <Globe size={13} color={registryScope === 'community' ? '#FFFFFF' : COLORS.textSecondary} />
-              <Text style={[styles.scopeBtnText, registryScope === 'community' && styles.scopeBtnTextActive]}>
-                Public Feed ({issues.length})
-              </Text>
+              {registryScope === 'community' ? (
+                <LinearGradient
+                  colors={['#0052CC', '#0066FF']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.scopeBtnGradient}
+                >
+                  <Globe size={13} color="#FFFFFF" />
+                  <Text style={styles.scopeBtnTextActive}>
+                    Public Feed ({issues.length})
+                  </Text>
+                </LinearGradient>
+              ) : (
+                <View style={styles.scopeBtnInner}>
+                  <Globe size={13} color={COLORS.textSecondary} />
+                  <Text style={styles.scopeBtnText}>
+                    Public Feed ({issues.length})
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -509,92 +554,101 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   heroCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: RADIUS.xl,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.subtle,
+    borderRadius: 24,
+    padding: SPACING.lg,
+    ...SHADOWS.large,
   },
   heroCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   heroTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
+  heroGlassBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+  },
   heroSubHeading: {
     fontSize: 11,
     fontWeight: '900',
-    color: COLORS.primary,
+    color: '#E0F2FE',
     letterSpacing: 0.8,
   },
   gridIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.primaryLight,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   heroCountText: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '900',
-    color: COLORS.textPrimary,
-    letterSpacing: -0.5,
-    marginBottom: 4,
+    color: '#FFFFFF',
+    letterSpacing: -0.8,
+    marginBottom: 6,
   },
   heroProgressRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   heroProgressSub: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
+    fontSize: 12,
+    color: '#BAE6FD',
     fontWeight: '600',
   },
   heroPercentText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
-    color: COLORS.textPrimary,
+    color: '#FFFFFF',
   },
   progressBarTrack: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.surfaceHighlight,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     overflow: 'hidden',
-    marginBottom: 16,
+    marginBottom: 18,
   },
   progressBarFill: {
     height: '100%',
-    borderRadius: 3,
-    backgroundColor: COLORS.primary,
+    borderRadius: 4,
   },
   telemetryGrid: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingTop: 12,
+    borderTopColor: 'rgba(255, 255, 255, 0.18)',
+    paddingTop: 14,
   },
   telemetryCol: {
     flex: 1,
     alignItems: 'center',
   },
   telemetryNum: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '900',
-    color: COLORS.textPrimary,
+    color: '#FFFFFF',
   },
   telemetryLabel: {
-    fontSize: 10,
-    color: COLORS.textMuted,
+    fontSize: 11,
+    color: '#93C5FD',
     marginTop: 2,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   newestCard: {
     backgroundColor: '#FFFFFF',
@@ -882,24 +936,39 @@ const styles = StyleSheet.create({
   scopeSegmentRow: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    borderRadius: RADIUS.lg,
+    borderRadius: 16,
     padding: 4,
     gap: 6,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    marginVertical: 4,
+    borderColor: '#E2E8F0',
+    marginVertical: 6,
+    ...SHADOWS.subtle,
   },
   scopeBtn: {
     flex: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  scopeBtnActive: {
+    // handled by LinearGradient
+  },
+  scopeBtnGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: RADIUS.md,
+    paddingVertical: 9,
+    paddingHorizontal: 8,
+    borderRadius: 12,
     gap: 6,
   },
-  scopeBtnActive: {
-    backgroundColor: COLORS.primary,
+  scopeBtnInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 9,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    gap: 6,
   },
   scopeBtnText: {
     fontSize: 12,
@@ -908,7 +977,8 @@ const styles = StyleSheet.create({
   },
   scopeBtnTextActive: {
     color: '#FFFFFF',
-    fontWeight: '900',
+    fontWeight: '800',
+    fontSize: 12,
   },
   emptyRegistryCard: {
     backgroundColor: '#FFFFFF',

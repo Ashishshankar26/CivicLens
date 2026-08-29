@@ -23,6 +23,7 @@ import { scheduleCivicNotification } from '@/services/notifications/notification
 import { UserReputation, UserPrivacySettings, Badge } from '@/types/gamification';
 import { BadgeDetailModal } from '@/components/gamification/BadgeDetailModal';
 import { RealBadgeEmblem } from '@/components/ui/RealBadgeEmblem';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import {
   Flame,
@@ -130,7 +131,12 @@ export default function ModernYouScreen() {
         <Text style={styles.topPageTitle}>Profile</Text>
 
         {/* 1. PUBLIC CITIZEN PROFILE HERO */}
-        <View style={styles.spotterCard}>
+        <LinearGradient
+          colors={['#0F172A', '#1E293B', '#0C2340']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.spotterCard}
+        >
           <View style={styles.spotterTopRow}>
             {/* Glowing Avatar */}
             <View style={styles.glowAvatarCircle}>
@@ -169,7 +175,7 @@ export default function ModernYouScreen() {
               <Text style={styles.statLabel}>Badges</Text>
             </View>
           </View>
-        </View>
+        </LinearGradient>
 
         {/* 2. GITHUB / LEETCODE STYLE CONTRIBUTION ACTIVITY GRAPH */}
         <View style={styles.githubCard}>
@@ -521,12 +527,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   spotterCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: RADIUS.xl,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.subtle,
+    borderRadius: 24,
+    padding: SPACING.lg,
+    ...SHADOWS.large,
   },
   spotterTopRow: {
     flexDirection: 'row',
@@ -538,11 +541,11 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: COLORS.primaryLight,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: COLORS.primary,
+    borderColor: 'rgba(96, 165, 250, 0.5)',
     ...SHADOWS.small,
   },
   glowAvatarEmoji: {
@@ -550,23 +553,31 @@ const styles = StyleSheet.create({
   },
   spotterInfoCol: {
     flex: 1,
-    gap: 2,
+    gap: 3,
   },
   spotterBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'flex-start',
     gap: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   spotterBadgeText: {
     fontSize: 10,
     fontWeight: '900',
-    color: COLORS.primary,
+    color: '#93C5FD',
     letterSpacing: 0.6,
   },
   spotterName: {
-    fontSize: 19,
+    fontSize: 20,
     fontWeight: '900',
-    color: COLORS.textPrimary,
+    color: '#FFFFFF',
+    marginTop: 2,
   },
   verifiedRow: {
     flexDirection: 'row',
@@ -577,33 +588,33 @@ const styles = StyleSheet.create({
   verifiedText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#059669',
+    color: '#34D399',
   },
   spotterStatsRow: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingTop: 12,
+    borderTopColor: 'rgba(255, 255, 255, 0.15)',
+    paddingTop: 14,
   },
   statCol: {
     flex: 1,
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '900',
-    color: COLORS.textPrimary,
+    color: '#FFFFFF',
   },
   statLabel: {
-    fontSize: 10,
-    color: COLORS.textMuted,
+    fontSize: 11,
+    color: '#94A3B8',
     marginTop: 2,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   statDivider: {
     width: 1,
     height: 24,
-    backgroundColor: COLORS.border,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
   githubCard: {
     backgroundColor: '#FFFFFF',

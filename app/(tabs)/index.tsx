@@ -177,7 +177,10 @@ export default function ModernMapScreen() {
                 <View style={[styles.dot, { backgroundColor: '#F59E0B' }]} />
                 <View style={[styles.dot, { backgroundColor: '#EF4444' }]} />
               </View>
-              <ChevronDown size={14} color={COLORS.textPrimary} />
+              <View style={styles.dropdownCountBadge}>
+                <Text style={styles.dropdownCountText}>{filteredIssues.length}</Text>
+              </View>
+              <ChevronDown size={13} color={COLORS.textPrimary} />
             </TouchableOpacity>
 
             {/* Status Filter Dropdown Menu */}
@@ -313,14 +316,15 @@ export default function ModernMapScreen() {
         </ScrollView>
       </View>
 
-      {/* Floating Bottom-Right Current Location Button (Directly above bottom navigation bar) */}
+      {/* Floating Bottom-Right Current Location Button */}
       {!selectedIssue && (
         <TouchableOpacity
           style={[styles.floatingLocationFab, { bottom: insets.bottom + 90 }]}
           onPress={handleRecenterGPS}
           activeOpacity={0.85}
         >
-          <LocateFixed size={22} color={COLORS.primary} strokeWidth={2.4} />
+          <View style={styles.fabPulseRing} />
+          <LocateFixed size={20} color={COLORS.primary} strokeWidth={2.4} />
         </TouchableOpacity>
       )}
 
@@ -355,6 +359,13 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     zIndex: 25,
     ...SHADOWS.medium,
+  },
+  fabPulseRing: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 102, 255, 0.08)',
   },
   floatingTopContainer: {
     position: 'absolute',
@@ -406,13 +417,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.96)',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
     borderRadius: RADIUS.full,
-    gap: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
+    gap: 6,
     ...SHADOWS.small,
+  },
+  dropdownCountBadge: {
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: RADIUS.full,
+  },
+  dropdownCountText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: COLORS.primaryDark,
   },
   dotsRow: {
     flexDirection: 'row',

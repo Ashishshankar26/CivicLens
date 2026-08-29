@@ -44,9 +44,10 @@ export default function ModernMyReportsScreen() {
   const renderItem = ({ item }: { item: CivicIssue }) => {
     const priorityScore = item.priorityScore || 50;
     const isUrgent = priorityScore >= 80;
+    const priorityBorderColor = isUrgent ? '#EF4444' : priorityScore >= 60 ? '#F97316' : '#0066FF';
     return (
       <TouchableOpacity
-        style={styles.reportCard}
+        style={[styles.reportCard, { borderLeftWidth: 3.5, borderLeftColor: priorityBorderColor }]}
         onPress={() =>
           router.push({
             pathname: '/issue/[id]',

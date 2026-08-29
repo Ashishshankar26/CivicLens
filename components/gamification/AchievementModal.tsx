@@ -11,7 +11,7 @@ import {
 import { Badge } from '@/types/gamification';
 import { RealBadgeEmblem } from '@/components/ui/RealBadgeEmblem';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
-import { CheckCircle2, Award, Sparkles, Star, ArrowRight } from 'lucide-react-native';
+import { CheckCircle2, Award, Sparkles, Star, ArrowRight, Share2 } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -143,7 +143,7 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
             </Text>
           )}
 
-          {/* High-Contrast Action Button */}
+          {/* High-Contrast Primary Action Button */}
           <TouchableOpacity
             style={styles.actionBtn}
             onPress={onClose}
@@ -151,6 +151,16 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
           >
             <Text style={styles.actionBtnText}>Continue Scouting</Text>
             <ArrowRight size={15} color="#FFFFFF" strokeWidth={2.4} />
+          </TouchableOpacity>
+
+          {/* Secondary Action */}
+          <TouchableOpacity
+            style={styles.secondaryShareBtn}
+            onPress={onClose}
+            activeOpacity={0.8}
+          >
+            <Share2 size={13} color={COLORS.primaryDark} strokeWidth={2.2} />
+            <Text style={styles.secondaryShareText}>Share Achievement</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -325,5 +335,18 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '900',
     fontSize: 14,
+  },
+  secondaryShareBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    gap: 6,
+    marginTop: 4,
+  },
+  secondaryShareText: {
+    color: COLORS.primaryDark,
+    fontWeight: '800',
+    fontSize: 12.5,
   },
 });

@@ -28,6 +28,7 @@ import { ModernAlertModal, ModernAlertConfig } from '@/components/ui/ModernAlert
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import {
   Flame,
+  Shield,
   ShieldCheck,
   Crown,
   ChevronRight,
@@ -235,6 +236,7 @@ export default function ModernYouScreen() {
 
         {/* 1. PUBLIC CITIZEN PROFILE HERO */}
         <View style={styles.spotterCard}>
+          <View style={styles.spotterCardTopStripe} />
           <View style={styles.spotterTopRow}>
             {/* Glowing Avatar */}
             <View style={styles.glowAvatarCircle}>
@@ -252,6 +254,12 @@ export default function ModernYouScreen() {
               <View style={styles.verifiedRow}>
                 <ShieldCheck size={12} color="#059669" />
                 <Text style={styles.verifiedText}>Verified Citizen • Active Contributor</Text>
+              </View>
+              <View style={styles.trustMeterRow}>
+                <Shield size={11} color={COLORS.primary} />
+                <Text style={styles.trustMeterText}>
+                  Trust Rating: {reputation?.trustScore || 85}% • {reputation?.trustTier || 'Verified Guardian'}
+                </Text>
               </View>
             </View>
           </View>
@@ -743,6 +751,32 @@ const styles = StyleSheet.create({
     ...SHADOWS.subtle,
     overflow: 'hidden',
     position: 'relative',
+  },
+  spotterCardTopStripe: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    backgroundColor: COLORS.primary,
+  },
+  trustMeterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: RADIUS.full,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  trustMeterText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: COLORS.primaryDark,
   },
   xpProgressContainer: {
     marginTop: 14,

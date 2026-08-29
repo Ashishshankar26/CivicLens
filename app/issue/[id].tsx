@@ -510,10 +510,13 @@ export default function IssueDetailsScreen() {
                   <>
                     <CheckCircle2 size={17} color={hasConfirmed ? '#FFFFFF' : COLORS.primary} strokeWidth={2.4} />
                     <Text style={[styles.verifyOptionText, hasConfirmed && styles.verifyOptionTextActive]}>
-                      {hasConfirmed
-                        ? `Confirmed Active (${liveIssue.confirmationCount || 1})`
-                        : `Confirm Issue Active (${liveIssue.confirmationCount || 0})`}
+                      {hasConfirmed ? 'Confirmed Active' : 'Confirm Issue Active'}
                     </Text>
+                    <View style={[styles.confirmCountBubble, hasConfirmed && styles.confirmCountBubbleActive]}>
+                      <Text style={[styles.confirmCountBubbleText, hasConfirmed && styles.confirmCountBubbleTextActive]}>
+                        {liveIssue.confirmationCount || 0}
+                      </Text>
+                    </View>
                   </>
                 )}
               </TouchableOpacity>
@@ -1040,12 +1043,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
     backgroundColor: '#EFF6FF',
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
+    paddingVertical: 14,
     borderRadius: RADIUS.lg,
-    paddingVertical: 12,
+    gap: 8,
+    borderWidth: 1.5,
+    borderColor: '#BFDBFE',
+  },
+  confirmCountBubble: {
+    backgroundColor: '#DBEAFE',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: RADIUS.full,
+  },
+  confirmCountBubbleActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  confirmCountBubbleText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: COLORS.primaryDark,
+  },
+  confirmCountBubbleTextActive: {
+    color: '#FFFFFF',
   },
   verifyOptionBtnActive: {
     backgroundColor: COLORS.primary,

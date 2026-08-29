@@ -149,7 +149,7 @@ export const IssueBottomSheet: React.FC<IssueBottomSheetProps> = ({
           onPress={() => onViewDetails(issue.id)}
           activeOpacity={0.85}
         >
-          <Text style={styles.viewDetailsText}>View Full Dossier</Text>
+          <Text style={styles.viewDetailsText}>View Details</Text>
           <ArrowRight size={13} color="#FFFFFF" strokeWidth={2.4} />
         </TouchableOpacity>
       </View>

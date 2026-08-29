@@ -21,6 +21,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { IssueTimeline } from '@/components/issue/IssueTimeline';
 import { AchievementModal } from '@/components/gamification/AchievementModal';
 import { ResolutionPhotoModal } from '@/components/issue/ResolutionPhotoModal';
+import { ModernAlertModal, ModernAlertConfig } from '@/components/ui/ModernAlertModal';
 import { logUserCivicAction } from '@/services/gamification/gamificationService';
 import {
   sendRepairVerifiedPushNotification,
@@ -69,6 +70,7 @@ export default function IssueDetailsScreen() {
   const [achievementModalVisible, setAchievementModalVisible] = useState(false);
   const [resolutionModalVisible, setResolutionModalVisible] = useState(false);
   const [unlockedBadge, setUnlockedBadge] = useState<Badge | undefined>(undefined);
+  const [alertConfig, setAlertConfig] = useState<ModernAlertConfig | null>(null);
 
   useEffect(() => {
     if (liveIssue) {
@@ -118,7 +120,14 @@ export default function IssueDetailsScreen() {
         if (gamificationRes.unlockedBadge) setUnlockedBadge(gamificationRes.unlockedBadge);
         setAchievementModalVisible(true);
       } else {
-        Alert.alert('Notice', res.message);
+        setAlertConfig({
+          visible: true,
+          title: 'Notice',
+          message: res.message,
+          icon: 'info',
+          confirmText: 'OK',
+          onConfirm: () => setAlertConfig(null),
+        });
       }
     } finally {
       setIsConfirming(false);
@@ -138,9 +147,24 @@ export default function IssueDetailsScreen() {
           { userId: user?.uid }
         );
         sendHazardAlertPushNotification(liveIssue.category, liveIssue.locationName, true).catch((e) => console.warn(e));
-        Alert.alert('Hazard Escalated', 'Urgent hazard alert flagged to all neighboring citizens!');
+        setAlertConfig({
+          visible: true,
+          title: 'Hazard Escalated',
+          message: 'Urgent hazard alert flagged to all neighboring citizens and response crews!',
+          icon: 'warning',
+          confirmText: 'Got It',
+          confirmVariant: 'primary',
+          onConfirm: () => setAlertConfig(null),
+        });
       } else {
-        Alert.alert('Notice', res.message);
+        setAlertConfig({
+          visible: true,
+          title: 'Notice',
+          message: res.message,
+          icon: 'info',
+          confirmText: 'OK',
+          onConfirm: () => setAlertConfig(null),
+        });
       }
     } finally {
       setIsEscalating(false);
@@ -149,7 +173,15 @@ export default function IssueDetailsScreen() {
 
   const handleOpenResolutionModal = () => {
     if (hasResolved && isResolved) {
-      Alert.alert('Already Restored', 'This issue has already been marked as restored.');
+      setAlertConfig({
+        visible: true,
+        title: 'Already Restored',
+        message: 'This issue has already been verified and marked as restored.',
+        icon: 'success',
+        confirmText: 'Great',
+        confirmVariant: 'success',
+        onConfirm: () => setAlertConfig(null),
+      });
       return;
     }
     setResolutionModalVisible(true);
@@ -159,7 +191,14 @@ export default function IssueDetailsScreen() {
     setResolutionModalVisible(false);
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Camera access is required to capture resolution proof.');
+      setAlertConfig({
+        visible: true,
+        title: 'Permission Required',
+        message: 'Camera access is required to capture resolution proof.',
+        icon: 'camera',
+        confirmText: 'OK',
+        onConfirm: () => setAlertConfig(null),
+      });
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
@@ -205,7 +244,14 @@ export default function IssueDetailsScreen() {
         sendRepairVerifiedPushNotification(liveIssue.category, liveIssue.locationName).catch((e) => console.warn(e));
         setAchievementModalVisible(true);
       } else {
-        Alert.alert('Notice', res.message);
+        setAlertConfig({
+          visible: true,
+          title: 'Notice',
+          message: res.message,
+          icon: 'info',
+          confirmText: 'OK',
+          onConfirm: () => setAlertConfig(null),
+        });
       }
     } finally {
       setIsResolving(false);
@@ -470,6 +516,16 @@ export default function IssueDetailsScreen() {
         unlockedBadge={unlockedBadge}
         onClose={() => setAchievementModalVisible(false)}
       />
+
+      {/* Modern Alert Modal */}
+      {alertConfig && (
+        <ModernAlertModal
+          {...alertConfig}
+          visible={Boolean(alertConfig)}
+          onConfirm={alertConfig.onConfirm || (() => setAlertConfig(null))}
+          onCancel={alertConfig.onCancel || (() => setAlertConfig(null))}
+        />
+      )}
     </SafeAreaView>
   );
 }

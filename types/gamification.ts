@@ -7,10 +7,21 @@ export interface Badge {
   icon: string;
   unlockedAt?: string;
   isUnlocked: boolean;
-  category: 'reporting' | 'verification' | 'resolution' | 'reputation' | 'streak' | 'scouting';
+  category:
+    | 'onboarding'
+    | 'potholes'
+    | 'lighting'
+    | 'waste'
+    | 'verification'
+    | 'resolution'
+    | 'streak'
+    | 'milestones'
+    | 'reporting'
+    | 'reputation'
+    | 'scouting';
   requiredCount?: number;
   currentCount?: number;
-  tier?: 'bronze' | 'silver' | 'gold' | 'platinum';
+  tier?: 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'master';
   rewardTitle?: string;
 }
 

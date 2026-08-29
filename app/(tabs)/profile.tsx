@@ -23,6 +23,7 @@ import { scheduleCivicNotification } from '@/services/notifications/notification
 import { UserReputation, UserPrivacySettings, Badge } from '@/types/gamification';
 import { BadgeDetailModal } from '@/components/gamification/BadgeDetailModal';
 import { RealBadgeEmblem } from '@/components/ui/RealBadgeEmblem';
+import { ModernAlertModal, ModernAlertConfig } from '@/components/ui/ModernAlertModal';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import {
   Flame,
@@ -43,6 +44,7 @@ import {
   Compass,
   RefreshCw,
   Bell,
+  Layers,
 } from 'lucide-react-native';
 
 export default function ModernYouScreen() {
@@ -52,6 +54,8 @@ export default function ModernYouScreen() {
   const [reputation, setReputation] = useState<UserReputation | null>(null);
   const [exportModalVisible, setExportModalVisible] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+  const [badgeCategoryFilter, setBadgeCategoryFilter] = useState<string>('all');
+  const [alertConfig, setAlertConfig] = useState<ModernAlertConfig | null>(null);
 
   useEffect(() => {
     loadUserData();
@@ -107,17 +111,21 @@ export default function ModernYouScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign Out',
-        style: 'destructive',
-        onPress: async () => {
-          await logout();
-          router.replace('/(auth)/login');
-        },
+    setAlertConfig({
+      visible: true,
+      title: 'Sign Out',
+      message: 'Are you sure you want to sign out of CivicLens on this device?',
+      icon: 'logout',
+      confirmText: 'Sign Out',
+      cancelText: 'Cancel',
+      confirmVariant: 'danger',
+      onConfirm: async () => {
+        setAlertConfig(null);
+        await logout();
+        router.replace('/(auth)/login');
       },
-    ]);
+      onCancel: () => setAlertConfig(null),
+    });
   };
 
   return (
@@ -274,34 +282,69 @@ export default function ModernYouScreen() {
             <Text style={styles.cardHeaderTitle}>Citizen Badges & Milestones</Text>
           </View>
           <Text style={styles.cardSubtext}>
-            {badgesCount} of {reputation?.badges.length || 10} unlocked • Tap any badge to view milestone requirements.
+            {badgesCount} of {reputation?.badges.length || 54} unlocked • Tap any badge to view milestone requirements.
           </Text>
+
+          {/* Badge Category Filter Tabs */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.badgeFiltersRow}
+          >
+            {[
+              { id: 'all', label: `All (${reputation?.badges.length || 54})` },
+              { id: 'onboarding', label: '🌱 Onboarding' },
+              { id: 'potholes', label: '🕳️ Roads' },
+              { id: 'lighting', label: '💡 Lighting' },
+              { id: 'waste', label: '♻️ Cleanliness' },
+              { id: 'verification', label: '🛡️ Verifications' },
+              { id: 'resolution', label: '🛠️ Repairs' },
+              { id: 'streak', label: '⚡ Streaks' },
+              { id: 'milestones', label: '🏆 Milestones' },
+            ].map((cat) => {
+              const isActive = badgeCategoryFilter === cat.id;
+              return (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[styles.badgeFilterPill, isActive && styles.badgeFilterPillActive]}
+                  onPress={() => setBadgeCategoryFilter(cat.id)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.badgeFilterText, isActive && styles.badgeFilterTextActive]}>
+                    {cat.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
 
           {/* Badges Grid */}
           <View style={styles.badgesGrid}>
-            {reputation?.badges.map((b) => (
-              <TouchableOpacity
-                key={b.id}
-                style={styles.badgeGridItem}
-                onPress={() => setSelectedBadge(b)}
-                activeOpacity={0.75}
-              >
-                <View style={styles.badgeEmblemWrapper}>
-                  <RealBadgeEmblem id={b.id} size={50} isUnlocked={b.isUnlocked} />
-                  {!b.isUnlocked && (
-                    <View style={styles.badgeLockPill}>
-                      <Lock size={8} color="#FFFFFF" />
-                    </View>
-                  )}
-                </View>
-                <Text style={[styles.badgeItemTitle, !b.isUnlocked && { color: COLORS.textMuted }]} numberOfLines={1}>
-                  {b.title}
-                </Text>
-                <Text style={styles.badgeItemTier}>
-                  {b.isUnlocked ? 'Unlocked' : `${b.currentCount || 0}/${b.requiredCount || 1}`}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {(reputation?.badges || [])
+              .filter((b) => badgeCategoryFilter === 'all' || b.category === badgeCategoryFilter)
+              .map((b) => (
+                <TouchableOpacity
+                  key={b.id}
+                  style={styles.badgeGridItem}
+                  onPress={() => setSelectedBadge(b)}
+                  activeOpacity={0.75}
+                >
+                  <View style={styles.badgeEmblemWrapper}>
+                    <RealBadgeEmblem id={b.id} size={52} isUnlocked={b.isUnlocked} />
+                    {!b.isUnlocked && (
+                      <View style={styles.badgeLockPill}>
+                        <Lock size={8} color="#FFFFFF" />
+                      </View>
+                    )}
+                  </View>
+                  <Text style={[styles.badgeItemTitle, !b.isUnlocked && { color: COLORS.textMuted }]} numberOfLines={1}>
+                    {b.title}
+                  </Text>
+                  <Text style={styles.badgeItemTier}>
+                    {b.isUnlocked ? 'Unlocked' : `${b.currentCount || 0}/${b.requiredCount || 1}`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
           </View>
         </View>
 
@@ -391,7 +434,15 @@ export default function ModernYouScreen() {
                 body: 'A high-severity road issue was confirmed near Connaught Circus. Tap to open map.',
                 data: { test: true },
               });
-              Alert.alert('Push Alert Triggered', 'A test notification was sent to your device tray!');
+              setAlertConfig({
+                visible: true,
+                title: 'Push Notification Sent',
+                message: 'A test live road alert was sent directly to your device notification tray!',
+                icon: 'bell',
+                confirmText: 'Great',
+                confirmVariant: 'primary',
+                onConfirm: () => setAlertConfig(null),
+              });
             }}
             activeOpacity={0.7}
           >
@@ -431,6 +482,16 @@ export default function ModernYouScreen() {
         badge={selectedBadge}
         onClose={() => setSelectedBadge(null)}
       />
+
+      {/* MODERN REUSABLE ALERT MODAL */}
+      {alertConfig && (
+        <ModernAlertModal
+          {...alertConfig}
+          visible={Boolean(alertConfig)}
+          onConfirm={alertConfig.onConfirm || (() => setAlertConfig(null))}
+          onCancel={alertConfig.onCancel || (() => setAlertConfig(null))}
+        />
+      )}
 
       {/* JSON DATA EXPORT MODAL */}
       <Modal
@@ -491,7 +552,15 @@ export default function ModernYouScreen() {
               style={styles.closeModalBtn}
               onPress={() => {
                 setExportModalVisible(false);
-                Alert.alert('Data Exported', 'Your data export is ready.');
+                setAlertConfig({
+                  visible: true,
+                  title: 'Data Summary Ready',
+                  message: 'Your personal activity data summary has been compiled successfully.',
+                  icon: 'success',
+                  confirmText: 'Done',
+                  confirmVariant: 'success',
+                  onConfirm: () => setAlertConfig(null),
+                });
               }}
               activeOpacity={0.85}
             >
@@ -769,6 +838,32 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: COLORS.textSecondary,
     marginBottom: 12,
+  },
+  badgeFiltersRow: {
+    gap: 8,
+    paddingBottom: 12,
+    marginBottom: 4,
+  },
+  badgeFilterPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.surfaceHighlight,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  badgeFilterPillActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  badgeFilterText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+  badgeFilterTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '800',
   },
   badgesGrid: {
     flexDirection: 'row',

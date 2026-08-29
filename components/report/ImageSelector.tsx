@@ -1,16 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   Image,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { Camera, ImagePlus, RefreshCw, Trash2, CheckCircle2 } from 'lucide-react-native';
+import { ModernAlertModal, ModernAlertConfig } from '@/components/ui/ModernAlertModal';
 
 interface ImageSelectorProps {
   imageUri: string | null;
@@ -27,14 +27,21 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
   isAnalyzing = false,
   isLoading = false,
 }) => {
+  const [alertConfig, setAlertConfig] = useState<ModernAlertConfig | null>(null);
+
   const handleTakePhoto = async () => {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
-          'Camera Permission Required',
-          'CivicLens requires camera access to capture photos of road hazards.'
-        );
+        setAlertConfig({
+          visible: true,
+          title: 'Camera Permission Required',
+          message: 'CivicLens requires camera access to capture on-site photos of road hazards.',
+          icon: 'camera',
+          confirmText: 'OK',
+          confirmVariant: 'primary',
+          onConfirm: () => setAlertConfig(null),
+        });
         return;
       }
 
@@ -48,7 +55,15 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
         onImageSelected(result.assets[0].uri);
       }
     } catch (error: any) {
-      Alert.alert('Camera Error', error?.message || 'Unable to capture photo. Please try again.');
+      setAlertConfig({
+        visible: true,
+        title: 'Camera Error',
+        message: error?.message || 'Unable to capture photo. Please try again.',
+        icon: 'warning',
+        confirmText: 'OK',
+        confirmVariant: 'danger',
+        onConfirm: () => setAlertConfig(null),
+      });
     }
   };
 
@@ -56,10 +71,15 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
-          'Gallery Permission Required',
-          'CivicLens requires photo library access to upload photos.'
-        );
+        setAlertConfig({
+          visible: true,
+          title: 'Gallery Permission Required',
+          message: 'CivicLens requires photo library access to select photos of road hazards.',
+          icon: 'camera',
+          confirmText: 'OK',
+          confirmVariant: 'primary',
+          onConfirm: () => setAlertConfig(null),
+        });
         return;
       }
 
@@ -72,7 +92,15 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
         onImageSelected(result.assets[0].uri);
       }
     } catch (error: any) {
-      Alert.alert('Gallery Error', error?.message || 'Unable to select photo. Please try again.');
+      setAlertConfig({
+        visible: true,
+        title: 'Gallery Error',
+        message: error?.message || 'Unable to select photo. Please try again.',
+        icon: 'warning',
+        confirmText: 'OK',
+        confirmVariant: 'danger',
+        onConfirm: () => setAlertConfig(null),
+      });
     }
   };
 
@@ -164,6 +192,15 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
           <Text style={styles.secondaryActionText}>From Gallery</Text>
         </TouchableOpacity>
       </View>
+
+      {alertConfig && (
+        <ModernAlertModal
+          {...alertConfig}
+          visible={Boolean(alertConfig)}
+          onConfirm={alertConfig.onConfirm || (() => setAlertConfig(null))}
+          onCancel={alertConfig.onCancel || (() => setAlertConfig(null))}
+        />
+      )}
     </View>
   );
 };

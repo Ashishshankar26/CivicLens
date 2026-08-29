@@ -62,7 +62,7 @@ export default function SpotdexScreen() {
   const totalSightings = issues.reduce((acc, i) => acc + (i.confirmationCount || 0), 0);
   const totalPhotos = myReports.filter((i) => Boolean(i.imageUrl)).length;
   const totalBadgesEarned = reputation?.badges.filter((b) => b.isUnlocked).length || 0;
-  const totalBadgesCount = reputation?.badges.length || 10;
+  const totalBadgesCount = reputation?.badges.length || 54;
 
   const percentClaimed = totalAreaHazards > 0
     ? Math.min(100, Math.round((totalUserLogged / totalAreaHazards) * 100))

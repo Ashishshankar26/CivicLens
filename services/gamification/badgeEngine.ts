@@ -38,22 +38,52 @@ export const DEMO_REPUTATION: UserReputation = {
   streakWeeks: 3,
   activeDaysThisWeek: ['Mon', 'Wed', 'Thu', 'Today'],
   activityDates: generateDemoActivityDates(),
-  reportsCount: 8,
-  confirmationsCount: 16,
-  resolvedCount: 3,
+  reportsCount: 14,
+  confirmationsCount: 22,
+  resolvedCount: 6,
   impactRadiusKm: 5.4,
   badges: ALL_CIVIC_BADGES.map((b) => {
-    if (b.id === 'first_spot' || b.id === 'road_scout' || b.id === 'first_verifier' || b.id === 'ai_visionary' || b.id === 'road_restorer') {
+    // Unlock key introductory and progression badges for demo account
+    const unlockedIds = [
+      'first_step',
+      'sharp_eye',
+      'first_verifier',
+      'ready_scout',
+      'location_scout',
+      'pothole_novice',
+      'pothole_patrol',
+      'lamp_spotter',
+      'eco_starter',
+      'eco_warrior',
+      'verify_bronze',
+      'fix_witness',
+      'streak_3',
+      'milestone_10',
+      'ai_visionary',
+    ];
+
+    if (unlockedIds.includes(b.id)) {
       return {
         ...b,
         isUnlocked: true,
-        unlockedAt: '2026-08-22',
+        unlockedAt: '2026-08-24',
         currentCount: b.requiredCount,
       };
     }
+
+    // Set realistic progress on locked badges
+    let progress = 0;
+    if (b.category === 'potholes') progress = 8;
+    else if (b.category === 'lighting') progress = 3;
+    else if (b.category === 'waste') progress = 6;
+    else if (b.category === 'verification') progress = 22;
+    else if (b.category === 'resolution') progress = 6;
+    else if (b.category === 'streak') progress = 4;
+    else if (b.category === 'milestones') progress = 14;
+
     return {
       ...b,
-      currentCount: b.id === 'community_sentinel' ? 8 : b.id === 'civic_guardian' ? 16 : 0,
+      currentCount: Math.min(progress, b.requiredCount || 1),
       isUnlocked: false,
     };
   }),
@@ -110,151 +140,189 @@ export const INITIAL_REPUTATION = DEMO_REPUTATION;
 
 function getStorageKey(userId?: string): string {
   if (!userId || userId === 'user-demo-citizen') {
-    return '@civiclens_user_reputation_demo_v6';
+    return '@civiclens_user_reputation_demo_v7';
   }
   const cleanId = userId.replace(/[^a-zA-Z0-9_-]/g, '_');
-  return `@civiclens_user_reputation_${cleanId}_v6`;
+  return `@civiclens_user_reputation_${cleanId}_v7`;
 }
 
 function sanitizeForFirestore(obj: any): any {
   if (obj === null || obj === undefined) return null;
+  if (typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map(sanitizeForFirestore);
-  if (typeof obj === 'object') {
-    const res: Record<string, any> = {};
-    for (const [k, v] of Object.entries(obj)) {
-      if (v !== undefined) {
-        res[k] = sanitizeForFirestore(v);
-      }
+  const clean: Record<string, any> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== undefined) {
+      clean[k] = sanitizeForFirestore(v);
     }
-    return res;
   }
-  return obj;
+  return clean;
 }
 
 /**
- * Load user reputation state with live badge synchronization scoped per user
+ * Loads user reputation from Cloud Firestore (with local fallback).
+ * Merges missing badges from ALL_CIVIC_BADGES so new badge updates immediately appear!
  */
 export async function getLiveUserReputation(userId?: string): Promise<UserReputation> {
-  const key = getStorageKey(userId);
+  const isDemo = !userId || userId === 'user-demo-citizen';
 
-  // 1. Try fetching from Firestore if live
-  if (isLiveFirebase && db && userId && userId !== 'user-demo-citizen') {
+  // Try Firestore first if live
+  if (isLiveFirebase && db && !isDemo) {
     try {
-      const snap = await getDoc(doc(db, 'reputations', userId));
-      if (snap.exists()) {
-        const firestoreData = snap.data() as UserReputation;
-        await AsyncStorage.setItem(key, JSON.stringify(firestoreData));
-        return syncBadgesWithSchema(firestoreData);
+      const userDocRef = doc(db, 'users', userId);
+      const snapshot = await getDoc(userDocRef);
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data && data.reputation) {
+          const rep = data.reputation as UserReputation;
+          rep.badges = mergeBadgesWithCatalog(rep.badges);
+          await AsyncStorage.setItem(getStorageKey(userId), JSON.stringify(rep));
+          return rep;
+        }
       }
     } catch (err) {
-      console.warn('[Reputation] Firestore read notice:', err);
+      console.warn('[BadgeEngine] Firestore fetch failed, checking local storage:', err);
     }
   }
 
-  // 2. Load from local cache
+  // Local storage fallback
   try {
-    const raw = await AsyncStorage.getItem(key);
-    if (!raw) {
-      const initial = (!userId || userId === 'user-demo-citizen')
-        ? DEMO_REPUTATION
-        : createNewUserReputation(userId);
-      await AsyncStorage.setItem(key, JSON.stringify(initial));
-      return initial;
+    const raw = await AsyncStorage.getItem(getStorageKey(userId));
+    if (raw) {
+      const parsed = JSON.parse(raw) as UserReputation;
+      parsed.badges = mergeBadgesWithCatalog(parsed.badges);
+      return parsed;
     }
-    const parsed: UserReputation = JSON.parse(raw);
-    return syncBadgesWithSchema(parsed);
   } catch (err) {
-    console.warn('Error reading reputation state:', err);
-    return createNewUserReputation(userId || 'guest');
+    console.warn('[BadgeEngine] Local storage load failed:', err);
   }
+
+  // Baseline initialization
+  const initial = isDemo ? DEMO_REPUTATION : createNewUserReputation(userId || 'user-new');
+  await saveLiveUserReputation(initial, userId);
+  return initial;
 }
 
-function syncBadgesWithSchema(rep: UserReputation): UserReputation {
-  const existingBadgesMap = new Map((rep.badges || []).map((b) => [b.id, b]));
-  const mergedBadges = ALL_CIVIC_BADGES.map((template) => {
-    const existing = existingBadgesMap.get(template.id);
+/**
+ * Merges existing user badges with the latest 54 badge catalog
+ */
+function mergeBadgesWithCatalog(userBadges?: Badge[]): Badge[] {
+  const userMap = new Map<string, Badge>();
+  (userBadges || []).forEach((b) => userMap.set(b.id, b));
+
+  return ALL_CIVIC_BADGES.map((catalogBadge) => {
+    const existing = userMap.get(catalogBadge.id);
     if (existing) {
       return {
-        ...template,
-        ...existing,
-        icon: template.icon,
-        title: template.title,
-        description: template.description,
-        requiredCount: template.requiredCount,
-        tier: template.tier,
-        rewardTitle: template.rewardTitle,
+        ...catalogBadge,
+        isUnlocked: existing.isUnlocked,
+        unlockedAt: existing.unlockedAt,
+        currentCount: existing.currentCount ?? 0,
       };
     }
-    return template;
+    return { ...catalogBadge, currentCount: 0, isUnlocked: false };
   });
-
-  return {
-    ...rep,
-    badges: mergedBadges,
-    activityDates: rep.activityDates || {},
-    streakDays: rep.streakDays || 0,
-    maxStreakDays: rep.maxStreakDays || rep.streakDays || 0,
-    privacySettings: rep.privacySettings || DEFAULT_PRIVACY,
-  };
 }
 
 /**
- * Save user reputation state scoped per user
+ * Saves user reputation to Cloud Firestore and local storage.
  */
-export async function saveLiveUserReputation(rep: UserReputation, userId?: string): Promise<void> {
-  const key = getStorageKey(userId);
-  try {
-    await AsyncStorage.setItem(key, JSON.stringify(rep));
+export async function saveLiveUserReputation(reputation: UserReputation, userId?: string): Promise<void> {
+  const isDemo = !userId || userId === 'user-demo-citizen';
 
-    // Persist to live Firestore database
-    if (isLiveFirebase && db && userId && userId !== 'user-demo-citizen') {
-      const sanitized = sanitizeForFirestore(rep);
-      await setDoc(doc(db, 'reputations', userId), sanitized, { merge: true });
-    }
+  try {
+    await AsyncStorage.setItem(getStorageKey(userId), JSON.stringify(reputation));
   } catch (err) {
-    console.warn('Error persisting reputation state:', err);
+    console.warn('[BadgeEngine] Local save failed:', err);
+  }
+
+  if (isLiveFirebase && db && !isDemo && userId) {
+    try {
+      const userDocRef = doc(db, 'users', userId);
+      await setDoc(
+        userDocRef,
+        {
+          reputation: sanitizeForFirestore(reputation),
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+    } catch (err) {
+      console.warn('[BadgeEngine] Firestore save failed:', err);
+    }
   }
 }
 
-/**
- * Process a citizen action and evaluate badge milestones & level progression
- */
 export async function processCitizenAction(
   action: UserActivityLog['action'],
   category: string,
   title: string,
   locationName: string,
-  extra?: { aiUsed?: boolean; hasPhotoProof?: boolean; userId?: string }
+  extra?: { aiUsed?: boolean; hasPhotoProof?: boolean; hasPhoto?: boolean; hasGps?: boolean; userId?: string }
 ): Promise<{
   newlyUnlockedBadge: Badge | null;
   leveledUp: boolean;
   newLevelTitle: string;
   reputation: UserReputation;
 }> {
-  const userId = extra?.userId;
+  return logUserCivicAction(
+    action as any,
+    {
+      category,
+      title,
+      locationName,
+      aiUsed: extra?.aiUsed,
+      hasPhoto: extra?.hasPhoto || extra?.hasPhotoProof,
+      hasGps: extra?.hasGps,
+    },
+    extra?.userId
+  );
+}
+
+/**
+ * Core dynamic action logger and real-time badge evaluator
+ */
+export async function logUserCivicAction(
+  action: 'submit_report' | 'community_confirm' | 'getting_worse' | 'issue_resolved',
+  extra?: {
+    category?: string;
+    title?: string;
+    locationName?: string;
+    aiUsed?: boolean;
+    hasPhoto?: boolean;
+    hasGps?: boolean;
+  },
+  userId?: string
+): Promise<{
+  newlyUnlockedBadge: Badge | null;
+  leveledUp: boolean;
+  newLevelTitle: string;
+  reputation: UserReputation;
+}> {
   const rep = await getLiveUserReputation(userId);
 
-  // 1. Record Action Log
+  // 1. Add Activity Log entry
   const newLog: UserActivityLog = {
-    id: `act_${Date.now()}`,
+    id: `act_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
     action,
-    category,
-    title,
-    locationName,
+    category: extra?.category || 'general',
+    title: extra?.title || (action === 'submit_report' ? 'Road Hazard Reported' : 'On-Site Verification'),
+    locationName: extra?.locationName || 'Local Area',
     timestamp: new Date().toISOString(),
   };
-  rep.activityLogs = [newLog, ...(rep.activityLogs || [])];
 
-  // 2. Record date in activity heatmap ledger
+  rep.activityLogs = [newLog, ...(rep.activityLogs || [])].slice(0, 50);
+
+  // 2. Register date in activity heatmap
   const todayIso = new Date().toISOString().split('T')[0];
   rep.activityDates = rep.activityDates || {};
   rep.activityDates[todayIso] = (rep.activityDates[todayIso] || 0) + 1;
 
-  // 3. Increment action counters
+  // 3. Increment counters
   if (action === 'submit_report') {
     rep.reportsCount = (rep.reportsCount || 0) + 1;
     rep.impactRadiusKm = +(Number(rep.impactRadiusKm || 0) + 0.3).toFixed(1);
-  } else if (action === 'community_confirm') {
+  } else if (action === 'community_confirm' || action === 'getting_worse') {
     rep.confirmationsCount = (rep.confirmationsCount || 0) + 1;
   } else if (action === 'issue_resolved') {
     rep.resolvedCount = (rep.resolvedCount || 0) + 1;
@@ -281,36 +349,133 @@ export async function processCitizenAction(
     rep.activeDaysThisWeek = [...rep.activeDaysThisWeek, todayDay];
   }
 
-  // 6. Track Badge Progress & Unlocks
+  // 6. Time of day checks
+  const currentHour = new Date().getHours();
+  const isNight = currentHour >= 22 || currentHour < 5;
+  const isDawn = currentHour >= 5 && currentHour < 7;
+  const isWeekend = new Date().getDay() === 0 || new Date().getDay() === 6;
+
+  // 7. Track Badge Progress & Evaluate Unlocks
   let newlyUnlockedBadge: Badge | null = null;
 
   rep.badges = rep.badges.map((badge) => {
     let current = badge.currentCount || 0;
 
     switch (badge.id) {
-      case 'first_spot':
-      case 'road_scout':
-      case 'community_sentinel':
-      case 'hazard_hunter':
+      // Onboarding & Novice
+      case 'first_step':
         current = rep.reportsCount;
         break;
+      case 'sharp_eye':
+        if (extra?.hasPhoto) current = (badge.currentCount || 0) + 1;
+        break;
       case 'first_verifier':
-      case 'civic_guardian':
         current = rep.confirmationsCount;
         break;
-      case 'road_restorer':
-      case 'fixer_champion':
+      case 'ready_scout':
+        current = 1;
+        break;
+      case 'location_scout':
+        if (extra?.hasGps) current = 1;
+        break;
+      case 'quick_responder':
+        if (action === 'community_confirm') current = 1;
+        break;
+
+      // Potholes
+      case 'pothole_novice':
+      case 'pothole_patrol':
+      case 'pothole_hunter':
+      case 'pothole_master':
+      case 'pothole_legend':
+        if (extra?.category === 'pothole') current = (badge.currentCount || 0) + 1;
+        break;
+
+      case 'road_doctor_1':
+      case 'road_doctor_2':
+      case 'road_doctor_3':
+        if (extra?.category === 'road_damage') current = (badge.currentCount || 0) + 1;
+        break;
+
+      // Lighting
+      case 'lamp_spotter':
+      case 'night_watch_1':
+      case 'night_watch_2':
+      case 'night_watch_3':
+        if (extra?.category === 'streetlight') current = (badge.currentCount || 0) + 1;
+        break;
+      case 'midnight_owl':
+        if (isNight) current = 1;
+        break;
+      case 'dawn_patrol':
+        if (isDawn) current = 1;
+        break;
+
+      // Waste
+      case 'eco_starter':
+      case 'eco_warrior':
+      case 'eco_sentinel':
+      case 'eco_champion':
+      case 'eco_legend':
+      case 'speedy_cleaner':
+        if (extra?.category === 'garbage') current = (badge.currentCount || 0) + 1;
+        break;
+
+      // Verifications
+      case 'verify_bronze':
+      case 'verify_silver':
+      case 'verify_gold':
+      case 'verify_platinum':
+      case 'verify_diamond':
+      case 'hawk_eye':
+      case 'peer_trusted':
+        current = rep.confirmationsCount;
+        break;
+      case 'double_check':
+        if (action === 'getting_worse') current = (badge.currentCount || 0) + 1;
+        break;
+
+      // Resolutions
+      case 'fix_witness':
+      case 'fix_agent':
+      case 'fix_champion':
+      case 'fix_legend':
+      case 'before_after':
+      case 'zero_hazard':
         current = rep.resolvedCount;
         break;
-      case 'ai_visionary':
-        if (extra?.aiUsed) {
-          const req = badge.requiredCount || 1;
-          current = Math.min((badge.currentCount || 0) + 1, req);
-        }
-        break;
-      case 'streak_master':
+
+      // Streaks
+      case 'streak_3':
+      case 'streak_7':
+      case 'streak_14':
+      case 'streak_30':
+      case 'streak_60':
+      case 'streak_100':
         current = rep.streakDays || 0;
         break;
+      case 'weekend_hero':
+        if (isWeekend) current = (badge.currentCount || 0) + 1;
+        break;
+      case 'holiday_keeper':
+        current = 1;
+        break;
+
+      // Milestones
+      case 'milestone_10':
+      case 'milestone_25':
+      case 'milestone_50':
+      case 'milestone_100':
+      case 'milestone_250':
+        current = rep.reportsCount;
+        break;
+
+      case 'ai_visionary':
+        if (extra?.aiUsed) {
+          current = (badge.currentCount || 0) + 1;
+        }
+        break;
+
       default:
         break;
     }
@@ -337,20 +502,20 @@ export async function processCitizenAction(
     };
   });
 
-  // 7. Calculate Dynamic Level & Trust Tier
+  // 8. Calculate Dynamic Level & Trust Tier
   const totalActions = rep.reportsCount + rep.confirmationsCount + rep.resolvedCount * 2;
   const oldLevel = rep.level;
   let newLevel: CitizenLevel = 1;
   let newLevelTitle = 'Novice Scout 🌱';
   let trustScore = Math.min(50 + totalActions * 4, 100);
 
-  if (totalActions >= 20) {
+  if (totalActions >= 30) {
     newLevel = 5;
     newLevelTitle = 'Civic Legend 👑';
-  } else if (totalActions >= 12) {
+  } else if (totalActions >= 18) {
     newLevel = 4;
     newLevelTitle = 'Road Guardian 🛡️';
-  } else if (totalActions >= 6) {
+  } else if (totalActions >= 8) {
     newLevel = 3;
     newLevelTitle = 'Active Ranger 🧭';
   } else if (totalActions >= 2) {

@@ -33,6 +33,10 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
 
   const getTierColor = (tier?: string) => {
     switch (tier) {
+      case 'master':
+        return '#EC4899';
+      case 'diamond':
+        return '#6366F1';
       case 'platinum':
         return '#0284C7';
       case 'gold':

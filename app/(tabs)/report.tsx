@@ -20,6 +20,7 @@ import { AiSuggestionCard } from '@/components/report/AiSuggestionCard';
 import { LocationPreviewCard } from '@/components/report/LocationPreviewCard';
 import { DuplicateAlertModal } from '@/components/report/DuplicateAlertModal';
 import { AchievementModal } from '@/components/gamification/AchievementModal';
+import { ModernAlertModal, ModernAlertConfig } from '@/components/ui/ModernAlertModal';
 import { CATEGORY_LIST } from '@/constants/categories';
 import { SEVERITY_LIST } from '@/constants/severities';
 import { getCurrentLocation, LocationResult } from '@/services/location/locationService';
@@ -42,6 +43,12 @@ import {
   Lightbulb,
   Construction,
   TriangleAlert,
+  MapPin,
+  RefreshCw,
+  Clock,
+  ArrowRight,
+  Shield,
+  Layers,
 } from 'lucide-react-native';
 
 export default function ReportIssueScreen() {
@@ -70,6 +77,7 @@ export default function ReportIssueScreen() {
   const [achievementModalVisible, setAchievementModalVisible] = useState<boolean>(false);
   const [unlockedBadge, setUnlockedBadge] = useState<Badge | null>(null);
   const [leveledUp, setLeveledUp] = useState<boolean>(false);
+  const [alertConfig, setAlertConfig] = useState<ModernAlertConfig | null>(null);
 
   // Submission State
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -84,6 +92,9 @@ export default function ReportIssueScreen() {
       const res = await getCurrentLocation();
       setLocation(res.location);
       setGpsPermissionGranted(res.permissionGranted);
+    } catch (err: any) {
+      console.warn('[Report] GPS fetch error:', err?.message);
+      setGpsPermissionGranted(false);
     } finally {
       setIsLoadingGPS(false);
     }
@@ -91,23 +102,18 @@ export default function ReportIssueScreen() {
 
   const handleImageSelected = async (uri: string) => {
     setImageUri(uri);
-    setIsAnalyzingImage(true);
-    setAiSuggestion(null);
     setAiAccepted(false);
+    setAiSuggestion(null);
 
+    // Trigger Gemini AI Vision classification in background
+    setIsAnalyzingImage(true);
     try {
       const analysis = await analyzeCivicImage(uri);
       if (analysis) {
         setAiSuggestion(analysis);
-        setCategory(analysis.category);
-        setSeverity(analysis.suggestedSeverity);
-        if (analysis.suggestedDescription && (!description || description.length < 5)) {
-          setDescription(analysis.suggestedDescription);
-        }
-        setAiAccepted(true);
       }
     } catch (err) {
-      console.warn('Vision analysis failed:', err);
+      console.warn('[Report] AI Vision failed:', err);
     } finally {
       setIsAnalyzingImage(false);
     }
@@ -138,17 +144,44 @@ export default function ReportIssueScreen() {
 
   const handlePreSubmit = () => {
     if (!imageUri) {
-      Alert.alert('Photo Required', 'Please capture or select a photo of the road hazard.');
+      setAlertConfig({
+        visible: true,
+        title: 'Photo Required',
+        message: 'Please capture or upload photo evidence of the road hazard.',
+        icon: 'camera',
+        confirmText: 'Got It',
+        confirmVariant: 'primary',
+        onConfirm: () => setAlertConfig(null),
+      });
       return;
     }
 
     if (!description.trim() || description.trim().length < 5) {
-      Alert.alert('Description Required', 'Please enter a short description (at least 5 characters).');
+      setAlertConfig({
+        visible: true,
+        title: 'Description Required',
+        message: 'Please provide a short description (at least 5 characters) explaining the hazard.',
+        icon: 'warning',
+        confirmText: 'Understood',
+        confirmVariant: 'primary',
+        onConfirm: () => setAlertConfig(null),
+      });
       return;
     }
 
     if (!location || location.latitude === null || location.longitude === null) {
-      Alert.alert('Location Required', 'GPS location is required to place your issue pin on the map.');
+      setAlertConfig({
+        visible: true,
+        title: 'Location Pin Needed',
+        message: 'GPS location is required to place the hazard marker accurately on the community map.',
+        icon: 'warning',
+        confirmText: 'Refresh GPS',
+        confirmVariant: 'primary',
+        onConfirm: () => {
+          setAlertConfig(null);
+          fetchGPSLocation();
+        },
+      });
       return;
     }
 
@@ -184,7 +217,11 @@ export default function ReportIssueScreen() {
         category,
         description.trim(),
         location.locationName || 'Local Road',
-        { aiUsed: Boolean(aiSuggestion), userId: user?.uid }
+        {
+          aiUsed: Boolean(aiSuggestion),
+          hasPhotoProof: true,
+          userId: user?.uid,
+        }
       );
       if (gamificationRes.unlockedBadge) {
         setUnlockedBadge(gamificationRes.unlockedBadge);
@@ -205,7 +242,15 @@ export default function ReportIssueScreen() {
       }
     } catch (error) {
       console.error('Submission error:', error);
-      Alert.alert('Error', 'Could not submit report. Please try again.');
+      setAlertConfig({
+        visible: true,
+        title: 'Submission Error',
+        message: 'Could not submit report right now. Please verify your connection and try again.',
+        icon: 'warning',
+        confirmText: 'OK',
+        confirmVariant: 'danger',
+        onConfirm: () => setAlertConfig(null),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -451,6 +496,16 @@ export default function ReportIssueScreen() {
           router.replace('/(tabs)');
         }}
       />
+
+      {/* Modern Alert Modal */}
+      {alertConfig && (
+        <ModernAlertModal
+          {...alertConfig}
+          visible={Boolean(alertConfig)}
+          onConfirm={alertConfig.onConfirm || (() => setAlertConfig(null))}
+          onCancel={alertConfig.onCancel || (() => setAlertConfig(null))}
+        />
+      )}
     </View>
   );
 }

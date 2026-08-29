@@ -29,7 +29,7 @@ export default function RootLayout() {
               name="issue/[id]"
               options={{
                 headerShown: true,
-                headerTitle: 'Civic Issue Details',
+                headerTitle: 'Issue Details',
                 headerBackTitle: 'Back',
                 headerTintColor: '#0F172A',
                 headerStyle: { backgroundColor: '#FFFFFF' },

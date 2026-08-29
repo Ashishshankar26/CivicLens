@@ -134,7 +134,7 @@ export default function SpotdexScreen() {
           <View style={styles.heroCardHeader}>
             <View style={styles.heroTitleRow}>
               <Sparkles size={14} color={COLORS.primary} />
-              <Text style={styles.heroSubHeading}>CIVIC PROGRESS</Text>
+              <Text style={styles.heroSubHeading}>MY ACTIVITY</Text>
             </View>
             <View style={styles.gridIconCircle}>
               <LayoutGrid size={15} color={COLORS.primary} />

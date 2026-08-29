@@ -263,7 +263,7 @@ export default function LoginScreen() {
             </View>
             <View style={styles.demoTextCol}>
               <Text style={styles.demoTitle}>Instant Demo Account</Text>
-              <Text style={styles.demoSubtitle}>Explore with preloaded civic reports</Text>
+              <Text style={styles.demoSubtitle}>Explore with preloaded sample reports</Text>
             </View>
           </TouchableOpacity>
         </View>

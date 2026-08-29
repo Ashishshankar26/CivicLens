@@ -33,7 +33,7 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
       if (status !== 'granted') {
         Alert.alert(
           'Camera Permission Required',
-          'CivicLens requires camera access to capture photos of civic issues.'
+          'CivicLens requires camera access to capture photos of road hazards.'
         );
         return;
       }

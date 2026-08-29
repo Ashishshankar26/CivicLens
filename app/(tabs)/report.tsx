@@ -138,7 +138,7 @@ export default function ReportIssueScreen() {
 
   const handlePreSubmit = () => {
     if (!imageUri) {
-      Alert.alert('Photo Required', 'Please take or choose a photo of the civic issue.');
+      Alert.alert('Photo Required', 'Please capture or select a photo of the road hazard.');
       return;
     }
 
@@ -411,7 +411,7 @@ export default function ReportIssueScreen() {
           >
             <Send size={18} color="#FFFFFF" />
             <Text style={styles.submitBtnText}>
-              {isSubmitting ? 'Submitting Report...' : 'Submit Civic Report'}
+              {isSubmitting ? 'Submitting Report...' : 'Submit Report'}
             </Text>
           </TouchableOpacity>
         </ScrollView>

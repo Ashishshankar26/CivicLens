@@ -312,7 +312,7 @@ export default function ModernYouScreen() {
             <Text style={styles.cardHeaderTitle}>Privacy & Security Center</Text>
           </View>
           <Text style={styles.cardSubtext}>
-            Control your civic visibility, coordinate precision, and personal data encryption.
+            Control your public visibility, location precision, and privacy settings.
           </Text>
 
           {/* Setting 1: Anonymous Reporting */}
@@ -323,7 +323,7 @@ export default function ModernYouScreen() {
                 <Text style={styles.settingTitle}>Anonymous Public Reporting</Text>
               </View>
               <Text style={styles.settingDesc}>
-                Mask your display name as "Verified Citizen" on public community maps and feeds.
+                Mask your display name as "Verified Member" on public community maps and feeds.
               </Text>
             </View>
             <Switch
@@ -359,7 +359,7 @@ export default function ModernYouScreen() {
               activeOpacity={0.8}
             >
               <Download size={14} color={COLORS.primaryDark} />
-              <Text style={styles.dataActionText}>Export Encrypted Civic Data (JSON)</Text>
+              <Text style={styles.dataActionText}>Export Data Summary (JSON)</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -387,11 +387,11 @@ export default function ModernYouScreen() {
             style={styles.settingsRow}
             onPress={async () => {
               await scheduleCivicNotification({
-                title: '🚨 Live Civic Alert: Pothole Flagged',
+                title: '🚨 Live Hazard Alert: Pothole Flagged',
                 body: 'A high-severity road issue was confirmed near Connaught Circus. Tap to open map.',
                 data: { test: true },
               });
-              Alert.alert('Push Alert Triggered', 'A test civic notification was sent to your device tray!');
+              Alert.alert('Push Alert Triggered', 'A test notification was sent to your device tray!');
             }}
             activeOpacity={0.7}
           >
@@ -411,7 +411,7 @@ export default function ModernYouScreen() {
             activeOpacity={0.7}
           >
             <Sparkles size={16} color={COLORS.primary} />
-            <Text style={styles.settingsText}>Switch to Demo Citizen Account</Text>
+            <Text style={styles.settingsText}>Switch to Demo Account</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -444,7 +444,7 @@ export default function ModernYouScreen() {
             <View style={styles.exportHeader}>
               <View style={styles.exportTitleRow}>
                 <Download size={18} color={COLORS.primary} />
-                <Text style={styles.exportTitle}>Your Encrypted Civic Data</Text>
+                <Text style={styles.exportTitle}>Your Exported Data</Text>
               </View>
               <TouchableOpacity onPress={() => setExportModalVisible(false)}>
                 <X size={20} color={COLORS.textMuted} />
@@ -491,7 +491,7 @@ export default function ModernYouScreen() {
               style={styles.closeModalBtn}
               onPress={() => {
                 setExportModalVisible(false);
-                Alert.alert('Data Exported', 'Your encrypted civic record is ready.');
+                Alert.alert('Data Exported', 'Your data export is ready.');
               }}
               activeOpacity={0.85}
             >

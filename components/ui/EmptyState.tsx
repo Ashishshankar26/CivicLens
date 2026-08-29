@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, SPACING, RADIUS } from '@/constants/theme';
-import { Button } from './Button';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '@/constants/theme';
 import { CheckCircle, AlertTriangle, FileText } from 'lucide-react-native';
 
 interface EmptyStateProps {
@@ -29,11 +28,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   const renderIcon = () => {
     switch (type) {
       case 'success':
-        return <CheckCircle size={44} color={COLORS.success} />;
+        return <CheckCircle size={38} color={COLORS.success} />;
       case 'filter':
-        return <AlertTriangle size={44} color={COLORS.warning} />;
+        return <AlertTriangle size={38} color={COLORS.warning} />;
       default:
-        return <FileText size={44} color={COLORS.primary} />;
+        return <FileText size={38} color={COLORS.primary} />;
     }
   };
 
@@ -43,13 +42,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.description}>{description}</Text>
       {effectiveActionTitle && effectiveOnAction && (
-        <Button
-          title={effectiveActionTitle}
-          onPress={effectiveOnAction}
-          variant="primary"
-          size="md"
+        <TouchableOpacity
           style={styles.btn}
-        />
+          onPress={effectiveOnAction}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.btnText}>{effectiveActionTitle}</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -61,20 +60,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: SPACING.xl,
     backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
+    borderRadius: RADIUS.xl,
     marginVertical: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.subtle,
   },
   iconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: COLORS.surfaceHighlight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: SPACING.md,
   },
   title: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
     color: COLORS.textPrimary,
     marginBottom: 6,
@@ -89,7 +91,16 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   btn: {
-    marginTop: SPACING.sm,
-    minWidth: 160,
+    marginTop: SPACING.xs,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: RADIUS.full,
+    ...SHADOWS.small,
+  },
+  btnText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 13,
   },
 });

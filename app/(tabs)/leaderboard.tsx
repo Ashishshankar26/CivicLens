@@ -22,7 +22,6 @@ import {
   Shield,
   Flame,
   Star,
-  User,
   Zap,
 } from 'lucide-react-native';
 
@@ -33,11 +32,11 @@ export default function ModernLeaderboardScreen() {
 
   useEffect(() => {
     async function loadRep() {
-      const rep = await getUserReputation();
+      const rep = await getUserReputation(user?.uid);
       setReputation(rep);
     }
     loadRep();
-  }, []);
+  }, [user]);
 
   const top3 = leaderboard.slice(0, 3);
   const restUsers = leaderboard.slice(3);

@@ -1,10 +1,15 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, UrlTile, Region, MapType } from 'react-native-maps';
+import { View, StyleSheet, Platform, Text, TouchableOpacity } from 'react-native';
+import MapView, { Marker, Circle, PROVIDER_GOOGLE, Region, MapType } from 'react-native-maps';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { CivicIssue } from '@/types/issue';
 import { IssueMarker } from './IssueMarker';
 import { DEFAULT_REGION } from '@/constants/mockData';
+import {
+  predictPotholeHotspots,
+  PotholePredictionHotspot,
+  RainfallAnalyticsSummary,
+} from '@/services/analytics/potholePredictionService';
 
 interface CivicMapViewProps {
   issues: CivicIssue[];
@@ -13,6 +18,8 @@ interface CivicMapViewProps {
   userCoords?: { latitude: number; longitude: number } | null;
   mapType?: MapType;
   recenterTrigger?: number;
+  showHotspots?: boolean;
+  onSelectHotspot?: (hotspot: PotholePredictionHotspot) => void;
 }
 
 export const CivicMapView: React.FC<CivicMapViewProps> = ({
@@ -22,9 +29,27 @@ export const CivicMapView: React.FC<CivicMapViewProps> = ({
   userCoords,
   mapType = 'standard',
   recenterTrigger,
+  showHotspots = true,
+  onSelectHotspot,
 }) => {
   const mapRef = useRef<MapView>(null);
   const [zoomScale, setZoomScale] = useState<number>(1.0);
+  const [potholeAnalytics, setPotholeAnalytics] = useState<RainfallAnalyticsSummary | null>(null);
+
+  // Load Open-Meteo real historical rain data & predict pothole hotspots
+  useEffect(() => {
+    async function loadPredictiveHotspots() {
+      const lat = userCoords?.latitude || DEFAULT_REGION.latitude;
+      const lng = userCoords?.longitude || DEFAULT_REGION.longitude;
+      try {
+        const summary = await predictPotholeHotspots(lat, lng, issues);
+        setPotholeAnalytics(summary);
+      } catch (e) {
+        console.warn('Failed to load pothole predictions:', e);
+      }
+    }
+    loadPredictiveHotspots();
+  }, [userCoords?.latitude, userCoords?.longitude, issues.length]);
 
   // Check if running inside Expo Go
   const isExpoGo =
@@ -121,6 +146,44 @@ export const CivicMapView: React.FC<CivicMapViewProps> = ({
         showsScale={false}
       >
 
+        {/* Render Predictive Pothole Hotspot Circles & Markers */}
+        {showHotspots &&
+          potholeAnalytics?.hotspots.map((hs) => {
+            const isCritical = hs.riskLevel === 'CRITICAL';
+            const isHigh = hs.riskLevel === 'HIGH';
+            const strokeColor = isCritical
+              ? '#EF4444'
+              : isHigh
+              ? '#F97316'
+              : '#EAB308';
+            const fillColor = isCritical
+              ? 'rgba(239, 68, 68, 0.22)'
+              : isHigh
+              ? 'rgba(249, 115, 22, 0.20)'
+              : 'rgba(234, 179, 8, 0.18)';
+
+            return (
+              <React.Fragment key={hs.id}>
+                <Circle
+                  center={{ latitude: hs.latitude, longitude: hs.longitude }}
+                  radius={hs.radiusMeters}
+                  fillColor={fillColor}
+                  strokeColor={strokeColor}
+                  strokeWidth={2}
+                />
+                <Marker
+                  coordinate={{ latitude: hs.latitude, longitude: hs.longitude }}
+                  onPress={() => onSelectHotspot && onSelectHotspot(hs)}
+                  zIndex={90}
+                >
+                  <View style={[styles.hotspotBadge, { backgroundColor: strokeColor }]}>
+                    <Text style={styles.hotspotText}>⚡ {hs.riskScore}% POTHOLE RISK</Text>
+                  </View>
+                </Marker>
+              </React.Fragment>
+            );
+          })}
+
         {issues.map((issue) => {
           const isSelected = issue.id === selectedIssueId;
           return (
@@ -155,5 +218,23 @@ const styles = StyleSheet.create({
   map: {
     width: '100%',
     height: '100%',
+  },
+  hotspotBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  hotspotText: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
 });

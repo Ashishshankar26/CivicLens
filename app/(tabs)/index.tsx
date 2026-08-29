@@ -19,6 +19,8 @@ import { getCurrentLocation, getLastKnownLocation, LocationResult } from '@/serv
 import { CivicIssue } from '@/types/issue';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { MapType } from 'react-native-maps';
+import { PotholeHotspotModal } from '@/components/map/PotholeHotspotModal';
+import { PotholePredictionHotspot } from '@/services/analytics/potholePredictionService';
 import {
   Search,
   Layers,
@@ -29,6 +31,7 @@ import {
   Check,
   Filter,
   Activity,
+  CloudRain,
 } from 'lucide-react-native';
 
 export default function ModernMapScreen() {
@@ -47,6 +50,10 @@ export default function ModernMapScreen() {
   const [recenterTrigger, setRecenterTrigger] = useState<number>(0);
   const [showStatusDropdown, setShowStatusDropdown] = useState<boolean>(false);
   const [urgentOnly, setUrgentOnly] = useState<boolean>(false);
+
+  // Rain & Pothole Predictive Hotspots State
+  const [showHotspots, setShowHotspots] = useState<boolean>(true);
+  const [selectedHotspot, setSelectedHotspot] = useState<PotholePredictionHotspot | null>(null);
 
   const carouselRef = useRef<MapIssueCarouselRef>(null);
 
@@ -132,6 +139,8 @@ export default function ModernMapScreen() {
         userCoords={userLocation}
         mapType={mapType}
         recenterTrigger={recenterTrigger}
+        showHotspots={showHotspots}
+        onSelectHotspot={(hs) => setSelectedHotspot(hs)}
       />
 
       {/* Floating Top HUD Bar */}
@@ -159,6 +168,21 @@ export default function ModernMapScreen() {
               activeOpacity={0.8}
             >
               <LocateFixed size={16} color={COLORS.primary} strokeWidth={2.4} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.topPillBtn,
+                showHotspots && { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' },
+              ]}
+              onPress={() => setShowHotspots(!showHotspots)}
+              activeOpacity={0.8}
+            >
+              <CloudRain
+                size={16}
+                color={showHotspots ? '#0066FF' : COLORS.textMuted}
+                strokeWidth={2.2}
+              />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -351,6 +375,24 @@ export default function ModernMapScreen() {
           onActiveIssueChange={handleActiveIssueChangeFromCarousel}
         />
       )}
+
+      {/* AI Pothole Risk & Rain Analysis Modal */}
+      <PotholeHotspotModal
+        hotspot={selectedHotspot}
+        visible={Boolean(selectedHotspot)}
+        onClose={() => setSelectedHotspot(null)}
+        onReportEarlyHazard={(hs) => {
+          router.push({
+            pathname: '/report',
+            params: {
+              category: 'pothole',
+              locationName: hs.locationName,
+              latitude: String(hs.latitude),
+              longitude: String(hs.longitude),
+            },
+          });
+        }}
+      />
     </View>
   );
 }

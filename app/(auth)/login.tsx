@@ -16,6 +16,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AuthSession from 'expo-auth-session';
 import { useAuth } from '@/contexts/AuthContext';
+import { executeGoogleAuth } from '@/services/auth/googleAuthService';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { GoogleIcon } from '@/components/ui/GoogleIcon';
 import { ModernAlertModal, ModernAlertConfig } from '@/components/ui/ModernAlertModal';
@@ -27,7 +28,6 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
-  Sparkles,
 } from 'lucide-react-native';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -42,20 +42,32 @@ export default function LoginScreen() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [alertConfig, setAlertConfig] = useState<ModernAlertConfig | null>(null);
 
+  const redirectUri = AuthSession.makeRedirectUri({
+    native: 'https://auth.expo.io/@ashishshankar26/civiclens',
+  });
+
   // Real Google Auth Session Provider
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '1058846613358-kla3rlhm1mgjln8cin78boo485tj23af.apps.googleusercontent.com',
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '1058846613358-kla3rlhm1mgjln8cin78boo485tj23af.apps.googleusercontent.com',
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '207567085375-5f9tgbkigp9mm8blqjf116bh6lu8719r.apps.googleusercontent.com',
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '207567085375-5f9tgbkigp9mm8blqjf116bh6lu8719r.apps.googleusercontent.com',
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '207567085375-5f9tgbkigp9mm8blqjf116bh6lu8719r.apps.googleusercontent.com',
     scopes: ['openid', 'profile', 'email'],
-    redirectUri: AuthSession.makeRedirectUri({
-      native: 'https://auth.expo.io/@anonymous/civiclens',
-    }),
+    redirectUri,
   });
 
   useEffect(() => {
     if (response?.type === 'success' && response.authentication?.accessToken) {
       handleGoogleTokenSuccess(response.authentication.accessToken);
+    } else if (response?.type === 'error') {
+      setAlertConfig({
+        visible: true,
+        title: 'Google Sign-In Error',
+        message: 'Unable to connect to Google OAuth. Please check your network or try email login.',
+        icon: 'warning',
+        confirmText: 'OK',
+        confirmVariant: 'danger',
+        onConfirm: () => setAlertConfig(null),
+      });
     }
   }, [response]);
 
@@ -94,15 +106,21 @@ export default function LoginScreen() {
   const handleGoogleButtonPress = async () => {
     setIsGoogleLoading(true);
     try {
-      if (request) {
-        const res = await promptAsync();
-        if (res?.type === 'success' && res.authentication?.accessToken) {
-          await handleGoogleTokenSuccess(res.authentication.accessToken);
-          return;
-        }
+      const userProfile = await executeGoogleAuth();
+      if (userProfile) {
+        router.replace('/(tabs)');
       }
     } catch (err: any) {
-      console.warn('Browser prompt notice:', err);
+      console.warn('[Google Auth Error]:', err);
+      setAlertConfig({
+        visible: true,
+        title: 'Google Sign-In Error',
+        message: err?.message || 'Failed to complete Google OAuth sign-in session.',
+        icon: 'warning',
+        confirmText: 'OK',
+        confirmVariant: 'danger',
+        onConfirm: () => setAlertConfig(null),
+      });
     } finally {
       setIsGoogleLoading(false);
     }

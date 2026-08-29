@@ -7,16 +7,14 @@ WebBrowser.maybeCompleteAuthSession();
 
 const GOOGLE_CLIENT_ID =
   process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ||
-  '1058846613358-kla3rlhm1mgjln8cin78boo485tj23af.apps.googleusercontent.com';
+  '207567085375-5f9tgbkigp9mm8blqjf116bh6lu8719r.apps.googleusercontent.com';
 
 /**
  * Executes Google OAuth sign-in flow
  */
 export async function executeGoogleAuth(): Promise<UserProfile | null> {
   try {
-    const redirectUri = AuthSession.makeRedirectUri({
-      native: 'https://auth.expo.io/@anonymous/civiclens',
-    });
+    const redirectUri = 'https://auth.expo.io/@ashishshankar26/civiclens';
 
     const authUrl =
       `https://accounts.google.com/o/oauth2/v2/auth?` +

@@ -13,12 +13,34 @@ export interface CitizenEmailRecord {
   type: 'welcome' | 'login' | 'report_submitted' | 'issue_resolved' | 'badge_unlocked';
 }
 
-const MAIL_ENDPOINTS = [
-  'http://10.115.46.228:4001/api/mail/send', // Local Wi-Fi network IP
-  'http://10.0.2.2:4001/api/mail/send',       // Android Emulator host loopback
-  'http://localhost:4001/api/mail/send',      // Web / local fallback
-  'http://127.0.0.1:4001/api/mail/send',
-];
+const getMailEndpoints = (): string[] => {
+  const customUrl = process.env.EXPO_PUBLIC_MAIL_SERVER_URL;
+  const list = [
+    customUrl,
+    'http://172.20.10.2:4001/api/mail/send',    // Active Wi-Fi LAN IP
+    'http://10.115.46.228:4001/api/mail/send',   // Alternate Wi-Fi LAN IP
+    'http://10.0.2.2:4001/api/mail/send',       // Android Emulator host loopback
+    'http://localhost:4001/api/mail/send',      // Web / local fallback
+    'http://127.0.0.1:4001/api/mail/send',
+  ];
+  return Array.from(new Set(list.filter(Boolean))) as string[];
+};
+
+function createTimeoutSignal(ms: number): AbortSignal | undefined {
+  try {
+    if (typeof AbortSignal !== 'undefined' && typeof (AbortSignal as any).timeout === 'function') {
+      return (AbortSignal as any).timeout(ms);
+    }
+    if (typeof AbortController !== 'undefined') {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), ms);
+      return controller.signal;
+    }
+  } catch {
+    // Fallback if AbortController is unavailable
+  }
+  return undefined;
+}
 
 function escapeHtml(value = '') {
   return String(value)
@@ -76,14 +98,15 @@ export async function sendCitizenEmail({
     type,
   };
 
-  // 1. Attempt live SMTP network dispatch
   let dispatched = false;
-  for (const endpoint of MAIL_ENDPOINTS) {
+
+  // 1. Primary: Attempt Freelancer Hub Local Gmail SMTP Relay Server (http://172.20.10.2:4001)
+  for (const endpoint of getMailEndpoints()) {
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(1500),
+        signal: createTimeoutSignal(3000),
         body: JSON.stringify({
           to,
           subject,
@@ -94,11 +117,49 @@ export async function sendCitizenEmail({
 
       if (res.ok) {
         dispatched = true;
-        console.log(`[CivicLens Mailer] Live email delivered to ${to} via ${endpoint}`);
+        console.log(`[CivicLens Mailer] Live email delivered to ${to} via Freelancer Hub SMTP (${endpoint})`);
         break;
       }
     } catch {
-      // Continue to next endpoint fallback
+      // Continue to next endpoint or cloud fallback
+    }
+  }
+
+  // 2. Secondary 24/7 Cloud Fallback: Resend Cloud API
+  if (!dispatched) {
+    const resendApiKey = process.env.EXPO_PUBLIC_RESEND_API_KEY;
+
+    if (resendApiKey) {
+      try {
+        const fromEmail = process.env.EXPO_PUBLIC_MAIL_FROM || 'CivicLens <onboarding@resend.dev>';
+        let targetRecipient = to.trim().toLowerCase();
+
+        if (fromEmail.includes('resend.dev') && !targetRecipient.includes('tonystarm2003@gmail.com')) {
+          targetRecipient = 'tonystarm2003@gmail.com';
+        }
+
+        const resendRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${resendApiKey}`,
+          },
+          signal: createTimeoutSignal(10000),
+          body: JSON.stringify({
+            from: fromEmail,
+            to: [targetRecipient],
+            subject: subject,
+            html: fullHtml,
+          }),
+        });
+
+        if (resendRes.ok) {
+          dispatched = true;
+          console.log(`[CivicLens Mailer] Live email delivered to ${targetRecipient} via Resend Cloud API`);
+        }
+      } catch (err: any) {
+        console.warn('[CivicLens Mailer] Resend dispatch attempt failed:', err?.message);
+      }
     }
   }
 
@@ -106,7 +167,7 @@ export async function sendCitizenEmail({
     console.warn(`[CivicLens Mailer] Notice: Saved to offline ledger for ${to}`);
   }
 
-  // 2. Save to local device communication ledger
+  // Save to local device communication ledger
   try {
     const existingRaw = await AsyncStorage.getItem(EMAIL_STORAGE_KEY);
     const existing: CitizenEmailRecord[] = existingRaw ? JSON.parse(existingRaw) : [];

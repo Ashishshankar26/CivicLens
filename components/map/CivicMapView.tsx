@@ -111,7 +111,7 @@ export const CivicMapView: React.FC<CivicMapViewProps> = ({
       <MapView
         ref={mapRef}
         style={styles.map}
-        provider={isExpoGo || Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         initialRegion={initialRegion}
         mapType={mapType}
         onRegionChangeComplete={handleRegionChangeComplete}
@@ -120,15 +120,6 @@ export const CivicMapView: React.FC<CivicMapViewProps> = ({
         showsCompass={true}
         showsScale={false}
       >
-        {/* Only use tile overlay in standalone builds if Google Play Services is unavailable */}
-        {!isExpoGo && (
-          <UrlTile
-            urlTemplate="https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png"
-            maximumZ={19}
-            flipY={false}
-            zIndex={-1}
-          />
-        )}
 
         {issues.map((issue) => {
           const isSelected = issue.id === selectedIssueId;

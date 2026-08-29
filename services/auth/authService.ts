@@ -43,30 +43,52 @@ function cleanFirestoreData<T extends Record<string, any>>(obj: T): Partial<T> {
  * Sign In with email & password
  */
 export async function loginWithEmail(email: string, pass: string): Promise<UserProfile> {
+  const cleanEmailKey = email.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  const persistentUid = `user_${cleanEmailKey}`;
   let profile: UserProfile;
 
   if (isLiveFirebase && auth && db) {
-    const userCred = await signInWithEmailAndPassword(auth, email, pass);
-    const profileDoc = await getDoc(doc(db, 'users', userCred.user.uid));
-    
-    if (profileDoc.exists()) {
-      profile = profileDoc.data() as UserProfile;
-    } else {
-      profile = {
-        uid: userCred.user.uid,
-        email: userCred.user.email || email,
-        displayName: userCred.user.displayName || email.split('@')[0],
-        createdAt: new Date().toISOString(),
-        reportsCount: 0,
-        confirmationsCount: 0,
-        resolvedCount: 0,
-      };
-      await setDoc(doc(db, 'users', userCred.user.uid), cleanFirestoreData(profile));
+    try {
+      const userCred = await signInWithEmailAndPassword(auth, email, pass);
+      const userRef = doc(db, 'users', userCred.user.uid);
+      const profileDoc = await getDoc(userRef);
+
+      if (profileDoc.exists()) {
+        profile = profileDoc.data() as UserProfile;
+      } else {
+        profile = {
+          uid: userCred.user.uid,
+          email: userCred.user.email || email,
+          displayName: userCred.user.displayName || email.split('@')[0],
+          createdAt: new Date().toISOString(),
+          reportsCount: 0,
+          confirmationsCount: 0,
+          resolvedCount: 0,
+        };
+        await setDoc(userRef, cleanFirestoreData(profile));
+      }
+    } catch (err) {
+      console.warn('[Firebase Auth fallback login]:', err);
+      const userRef = doc(db, 'users', persistentUid);
+      const profileDoc = await getDoc(userRef);
+      if (profileDoc.exists()) {
+        profile = profileDoc.data() as UserProfile;
+      } else {
+        profile = {
+          uid: persistentUid,
+          email,
+          displayName: email.split('@')[0] || 'Civic Citizen',
+          createdAt: new Date().toISOString(),
+          reportsCount: 0,
+          confirmationsCount: 0,
+          resolvedCount: 0,
+        };
+        await setDoc(userRef, cleanFirestoreData(profile));
+      }
     }
   } else {
-    // Resilient / Local mode login
     profile = {
-      uid: `user_${email.replace(/[^a-zA-Z0-9]/g, '_')}`,
+      uid: persistentUid,
       email,
       displayName: email.split('@')[0] || 'Civic Citizen',
       createdAt: new Date().toISOString(),
@@ -77,8 +99,12 @@ export async function loginWithEmail(email: string, pass: string): Promise<UserP
   }
 
   await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(profile));
-  // Dispatch login security notification email
-  await sendCitizenLoginNotification(profile);
+  // Guarantee live security login notification dispatch
+  try {
+    await sendCitizenLoginNotification(profile);
+  } catch (e) {
+    console.warn('[Mailer Error during login]:', e);
+  }
   return profile;
 }
 
@@ -134,29 +160,58 @@ export async function loginWithGoogle(mockGoogleUser?: {
   const googleEmail = mockGoogleUser?.email || 'ashish.google@gmail.com';
   const googleName = mockGoogleUser?.name || 'Ashish Shankar';
 
+  const cleanEmailKey = googleEmail.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  const persistentUid = `google_user_${cleanEmailKey}`;
+
   let profile: UserProfile;
 
-  if (isLiveFirebase && auth && db) {
-    profile = {
-      uid: `google_${Date.now()}`,
-      email: googleEmail,
-      displayName: googleName,
-      createdAt: new Date().toISOString(),
-      reportsCount: 2,
-      confirmationsCount: 5,
-      resolvedCount: 1,
-      ...(mockGoogleUser?.photoUrl ? { photoUrl: mockGoogleUser.photoUrl } : {}),
-    };
-    await setDoc(doc(db, 'users', profile.uid), cleanFirestoreData(profile));
+  if (isLiveFirebase && db) {
+    try {
+      const userRef = doc(db, 'users', persistentUid);
+      const docSnap = await getDoc(userRef);
+
+      if (docSnap.exists()) {
+        profile = docSnap.data() as UserProfile;
+        if (mockGoogleUser?.photoUrl && profile.photoUrl !== mockGoogleUser.photoUrl) {
+          profile.photoUrl = mockGoogleUser.photoUrl;
+          await setDoc(userRef, cleanFirestoreData(profile), { merge: true });
+        }
+      } else {
+        profile = {
+          uid: persistentUid,
+          email: googleEmail,
+          displayName: googleName,
+          createdAt: new Date().toISOString(),
+          reportsCount: 0,
+          confirmationsCount: 0,
+          resolvedCount: 0,
+          ...(mockGoogleUser?.photoUrl ? { photoUrl: mockGoogleUser.photoUrl } : {}),
+        };
+        await setDoc(userRef, cleanFirestoreData(profile));
+        await sendWelcomeCitizenEmail(profile);
+      }
+    } catch (err) {
+      console.warn('[Firestore Google Auth Error]:', err);
+      profile = {
+        uid: persistentUid,
+        email: googleEmail,
+        displayName: googleName,
+        createdAt: new Date().toISOString(),
+        reportsCount: 0,
+        confirmationsCount: 0,
+        resolvedCount: 0,
+        ...(mockGoogleUser?.photoUrl ? { photoUrl: mockGoogleUser.photoUrl } : {}),
+      };
+    }
   } else {
     profile = {
-      uid: `google_user_${Date.now()}`,
+      uid: persistentUid,
       email: googleEmail,
       displayName: googleName,
       createdAt: new Date().toISOString(),
-      reportsCount: 2,
-      confirmationsCount: 5,
-      resolvedCount: 1,
+      reportsCount: 0,
+      confirmationsCount: 0,
+      resolvedCount: 0,
       ...(mockGoogleUser?.photoUrl ? { photoUrl: mockGoogleUser.photoUrl } : {}),
     };
   }

@@ -28,6 +28,7 @@
     },
     "android": {
       "package": "com.civiclens.app",
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#0F172A",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -40,17 +41,11 @@
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.CAMERA",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.RECORD_AUDIO"
       ],
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyBHhUfIkUPAIJVNzHCRzfSr94kpUZpoCGs"
+          "apiKey": "AIzaSyDhYwiNW8DtBNOfuUlmZgZikR983ygFGlg"
         }
       }
     },

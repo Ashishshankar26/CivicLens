@@ -94,6 +94,6 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ error: 'Not found' }));
 });
 
-server.listen(PORT, () => {
-  console.log(`[CivicLens Mailer] Live relay server running on http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`[CivicLens Mailer] Live relay server running on http://0.0.0.0:${PORT} (Access via http://172.20.10.2:${PORT})`);
 });

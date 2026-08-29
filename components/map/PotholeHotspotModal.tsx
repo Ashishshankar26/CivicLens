@@ -11,8 +11,9 @@ import {
   Linking,
 } from 'react-native';
 import { PotholePredictionHotspot } from '@/services/analytics/potholePredictionService';
+import { openGoogleStreetView } from '@/services/location/streetViewService';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
-import { CloudRain, AlertTriangle, ShieldAlert, ArrowRight, X, Droplets, MapPin, Navigation } from 'lucide-react-native';
+import { CloudRain, AlertTriangle, ShieldAlert, ArrowRight, X, Droplets, MapPin, Navigation, Eye } from 'lucide-react-native';
 
 interface PotholeHotspotModalProps {
   hotspot: PotholePredictionHotspot | null;
@@ -116,6 +117,15 @@ export const PotholeHotspotModal: React.FC<PotholeHotspotModalProps> = ({
 
               {/* Action Buttons */}
               <View style={styles.actionRow}>
+                <TouchableOpacity
+                  style={styles.streetViewBtn}
+                  onPress={() => hotspot && openGoogleStreetView(hotspot.latitude, hotspot.longitude, hotspot.locationName)}
+                  activeOpacity={0.8}
+                >
+                  <Eye size={16} color="#475569" />
+                  <Text style={styles.streetViewBtnText}>360° View</Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity style={styles.navBtn} onPress={handleOpenMaps} activeOpacity={0.8}>
                   <Navigation size={16} color="#0066FF" />
                   <Text style={styles.navBtnText}>Navigate</Text>
@@ -129,8 +139,8 @@ export const PotholeHotspotModal: React.FC<PotholeHotspotModalProps> = ({
                   }}
                   activeOpacity={0.85}
                 >
-                  <Text style={styles.reportBtnText}>Report Early Warning</Text>
-                  <ArrowRight size={16} color="#FFFFFF" />
+                  <Text style={styles.reportBtnText}>Report Early</Text>
+                  <ArrowRight size={15} color="#FFFFFF" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -273,8 +283,24 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 6,
     marginTop: 6,
+  },
+  streetViewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: RADIUS.md,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 5,
+  },
+  streetViewBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#475569',
   },
   navBtn: {
     flexDirection: 'row',

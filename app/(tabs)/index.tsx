@@ -24,6 +24,7 @@ import { PotholeHotspotModal } from '@/components/map/PotholeHotspotModal';
 import { AirQualityModal } from '@/components/map/AirQualityModal';
 import { PotholePredictionHotspot } from '@/services/analytics/potholePredictionService';
 import { fetchLiveAirQuality, AirQualityData } from '@/services/analytics/airQualityService';
+import { openGoogleStreetView } from '@/services/location/streetViewService';
 import { DEFAULT_REGION } from '@/constants/mockData';
 import {
   Search,
@@ -37,6 +38,7 @@ import {
   Activity,
   CloudRain,
   Wind,
+  Eye,
 } from 'lucide-react-native';
 
 export default function ModernMapScreen() {
@@ -187,6 +189,22 @@ export default function ModernMapScreen() {
               activeOpacity={0.8}
             >
               <LocateFixed size={16} color={COLORS.primary} strokeWidth={2.4} />
+            </TouchableOpacity>
+
+            {/* 360° Street View Button */}
+            <TouchableOpacity
+              style={styles.topPillBtn}
+              onPress={() => {
+                const target = selectedIssueId
+                  ? filteredIssues.find((i) => i.id === selectedIssueId)
+                  : null;
+                const lat = target?.latitude || userLocation?.latitude || DEFAULT_REGION.latitude;
+                const lng = target?.longitude || userLocation?.longitude || DEFAULT_REGION.longitude;
+                openGoogleStreetView(lat, lng, target?.locationName || '360° Hazard View');
+              }}
+              activeOpacity={0.8}
+            >
+              <Eye size={16} color="#0066FF" strokeWidth={2.2} />
             </TouchableOpacity>
 
             <TouchableOpacity

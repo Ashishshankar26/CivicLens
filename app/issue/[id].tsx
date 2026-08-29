@@ -303,7 +303,7 @@ export default function IssueDetailsScreen() {
 
         {/* DESCRIPTION & METADATA */}
         <View style={styles.detailsCard}>
-          <Text style={styles.sectionHeading}>INCIDENT DETAILS</Text>
+          <Text style={styles.sectionHeading}>ISSUE DETAILS</Text>
           <Text style={styles.descriptionText}>{liveIssue.description}</Text>
 
           {/* Impact Factors Chips */}
@@ -400,7 +400,7 @@ export default function IssueDetailsScreen() {
                   <>
                     <CheckCircle2 size={16} color={hasConfirmed ? '#FFFFFF' : COLORS.primary} />
                     <Text style={[styles.verifyOptionText, hasConfirmed && styles.verifyOptionTextActive]}>
-                      {hasConfirmed ? `Confirmed Present (${liveIssue.confirmationCount})` : 'Confirm Incident Present'}
+                      {hasConfirmed ? `Confirmed Present (${liveIssue.confirmationCount})` : 'Confirm Issue Present'}
                     </Text>
                   </>
                 )}
@@ -447,7 +447,7 @@ export default function IssueDetailsScreen() {
           <View style={styles.resolvedBannerCard}>
             <CheckCircle2 size={24} color="#059669" />
             <View style={{ flex: 1 }}>
-              <Text style={styles.resolvedBannerTitle}>INCIDENT RESOLVED</Text>
+              <Text style={styles.resolvedBannerTitle}>ISSUE RESOLVED</Text>
               <Text style={styles.resolvedBannerSub}>
                 Restored on {liveIssue.resolvedAt ? new Date(liveIssue.resolvedAt).toLocaleDateString() : 'recently'}. Verified by the community.
               </Text>

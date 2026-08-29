@@ -35,7 +35,7 @@ export const LocationPreviewCard: React.FC<LocationPreviewCardProps> = ({
       <View style={styles.headerRow}>
         <View style={styles.titleRow}>
           <MapPin size={16} color={COLORS.primary} />
-          <Text style={styles.title}>INCIDENT LOCATION</Text>
+          <Text style={styles.title}>ISSUE LOCATION</Text>
         </View>
 
         <TouchableOpacity

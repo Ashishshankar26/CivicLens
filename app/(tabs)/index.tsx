@@ -182,7 +182,7 @@ export default function ModernMapScreen() {
                   }}
                 >
                   <Text style={[styles.dropdownItemText, statusFilter === 'all' && styles.dropdownItemTextActive]}>
-                    All Incidents ({issues.length})
+                    All Issues ({issues.length})
                   </Text>
                   {statusFilter === 'all' && <Check size={14} color={COLORS.primary} />}
                 </TouchableOpacity>

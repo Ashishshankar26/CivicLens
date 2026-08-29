@@ -228,7 +228,7 @@ export default function ReportIssueScreen() {
               <Camera size={20} color={COLORS.primary} />
             </View>
             <View style={styles.headerTextCol}>
-              <Text style={styles.headerTitle}>Report Incident</Text>
+              <Text style={styles.headerTitle}>Report an Issue</Text>
               <Text style={styles.headerSub}>
                 Capture or upload photo evidence for automatic AI categorization
               </Text>
@@ -268,7 +268,7 @@ export default function ReportIssueScreen() {
 
           {/* 2. ISSUE CATEGORY */}
           <View style={styles.card}>
-            <Text style={styles.cardSectionLabel}>INCIDENT CATEGORY *</Text>
+            <Text style={styles.cardSectionLabel}>ISSUE CATEGORY *</Text>
             <View style={styles.categoryGrid}>
               {CATEGORY_LIST.map((cat) => {
                 const isSelected = category === cat.id;
@@ -366,7 +366,7 @@ export default function ReportIssueScreen() {
           {/* 4. DESCRIPTION & AI AUTO-FILL */}
           <View style={styles.card}>
             <View style={styles.descHeaderRow}>
-              <Text style={styles.cardSectionLabel}>INCIDENT DESCRIPTION *</Text>
+              <Text style={styles.cardSectionLabel}>ISSUE DESCRIPTION *</Text>
               {aiSuggestion?.suggestedDescription && (
                 <TouchableOpacity
                   style={styles.aiAutoSummaryBtn}
@@ -411,7 +411,7 @@ export default function ReportIssueScreen() {
           >
             <Send size={18} color="#FFFFFF" />
             <Text style={styles.submitBtnText}>
-              {isSubmitting ? 'Submitting Report...' : 'Submit Incident Report'}
+              {isSubmitting ? 'Submitting Report...' : 'Submit Civic Report'}
             </Text>
           </TouchableOpacity>
         </ScrollView>

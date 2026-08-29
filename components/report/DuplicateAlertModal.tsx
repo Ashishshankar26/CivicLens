@@ -60,7 +60,7 @@ export const DuplicateAlertModal: React.FC<DuplicateAlertModalProps> = ({
           </View>
 
           <Text style={styles.explanationText}>
-            A similar <Text style={{ fontWeight: '800', color: COLORS.primaryDark }}>{issue.category.toUpperCase()}</Text> incident was recently reported at this location.
+            A similar <Text style={{ fontWeight: '800', color: COLORS.primaryDark }}>{issue.category.toUpperCase()}</Text> was recently reported at this location.
           </Text>
 
           {/* Existing Issue Preview Card */}
@@ -96,7 +96,7 @@ export const DuplicateAlertModal: React.FC<DuplicateAlertModalProps> = ({
               onPress={onReportAnyway}
               activeOpacity={0.8}
             >
-              <Text style={styles.reportAnywayText}>Submit as New Incident</Text>
+              <Text style={styles.reportAnywayText}>Submit as New Report</Text>
               <ArrowRight size={14} color={COLORS.textSecondary} />
             </TouchableOpacity>
           </View>

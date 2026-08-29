@@ -92,7 +92,7 @@ export default function ModernMyReportsScreen() {
         <View style={styles.headerTextCol}>
           <Text style={styles.headerTitle}>My Reports</Text>
           <Text style={styles.headerSub}>
-            Track the status and community verification of your reported incidents
+            Track the status and community verification of your reported issues
           </Text>
         </View>
       </View>
@@ -170,9 +170,9 @@ export default function ModernMyReportsScreen() {
         }
         ListEmptyComponent={
           <EmptyState
-            title="No Incidents Reported Yet"
+            title="No Issues Reported Yet"
             description="Your submitted reports and their live resolution status will appear here."
-            buttonTitle="Report an Incident"
+            buttonTitle="Report an Issue"
             onButtonPress={() => router.push('/(tabs)/report')}
           />
         }

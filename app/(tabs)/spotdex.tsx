@@ -144,7 +144,7 @@ export default function SpotdexScreen() {
           <Text style={styles.heroCountText}>{totalUserLogged} Reported</Text>
           <View style={styles.heroProgressRow}>
             <Text style={styles.heroProgressSub}>
-              {totalUserLogged} of {totalAreaHazards} district incidents recorded
+              {totalUserLogged} of {totalAreaHazards} district issues recorded
             </Text>
             <Text style={styles.heroPercentText}>{percentClaimed}%</Text>
           </View>
@@ -223,7 +223,7 @@ export default function SpotdexScreen() {
             </View>
 
             <Text style={styles.newestTitle} numberOfLines={1}>
-              {newestPersonalEntry.locationName || 'Local Roadway Incident'}
+              {newestPersonalEntry.locationName || 'Local Roadway Issue'}
             </Text>
             <View style={styles.newestFooterRow}>
               <Text style={styles.newestSub}>
@@ -247,7 +247,7 @@ export default function SpotdexScreen() {
               activeOpacity={0.8}
             >
               <Plus size={15} color="#FFFFFF" strokeWidth={2.4} />
-              <Text style={styles.starterActionText}>Report an Incident</Text>
+              <Text style={styles.starterActionText}>Report an Issue</Text>
             </TouchableOpacity>
           </View>
         )}

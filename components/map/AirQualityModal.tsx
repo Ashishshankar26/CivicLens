@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  TouchableWithoutFeedback,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { AirQualityData } from '@/services/analytics/airQualityService';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
-import { Wind, X, ShieldAlert, CheckCircle2, AlertTriangle, Sparkles, Activity } from 'lucide-react-native';
+import { Wind, X, ShieldAlert, Sparkles, Activity, Info } from 'lucide-react-native';
 
 interface AirQualityModalProps {
   data: AirQualityData | null;
@@ -25,122 +25,143 @@ export const AirQualityModal: React.FC<AirQualityModalProps> = ({
 }) => {
   if (!data) return null;
 
-  // Calculate percentage fill for progress bars (0 to 100 max safe reference)
-  const pm25Pct = Math.min(100, Math.round((data.pm2_5 / 75) * 100));
-  const pm10Pct = Math.min(100, Math.round((data.pm10 / 150) * 100));
+  // Calculate indicator position percentage (0 to 350+ max scale)
+  const aqiPct = Math.min(97, Math.max(3, Math.round((data.aqi / 350) * 100)));
+  const pm25Pct = Math.min(97, Math.max(3, Math.round((data.pm2_5 / 150) * 100)));
+  const pm10Pct = Math.min(97, Math.max(3, Math.round((data.pm10 / 300) * 100)));
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <TouchableOpacity style={styles.dismissOverlay} activeOpacity={1} onPress={onClose} />
-        <View style={styles.modalCard}>
-          {/* Header Handle */}
+        <View style={styles.appleCard}>
+          {/* Top Handle */}
           <View style={styles.handle} />
 
-          {/* Title Header */}
+          {/* Top Header */}
           <View style={styles.headerRow}>
-            <View style={styles.titleGroup}>
-              <View style={[styles.iconCircle, { backgroundColor: data.color + '20' }]}>
-                <Wind size={22} color={data.color} />
-              </View>
-              <View>
-                <Text style={styles.headerTitle}>Live Air Quality (AQI)</Text>
-                <Text style={styles.headerSubtitle}>
-                  Open-Meteo & WAQI Real-Time Telemetry {data.stationTime ? `• ${data.stationTime}` : ''}
-                </Text>
-              </View>
+            <View style={styles.headerTitleGroup}>
+              <Wind size={15} color="#94A3B8" />
+              <Text style={styles.headerCategoryText}>AIR QUALITY</Text>
             </View>
 
-            <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-              <X size={18} color="#64748B" />
+            <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
+              <X size={18} color="#94A3B8" />
             </TouchableOpacity>
           </View>
 
           <ScrollView
             style={styles.scrollContent}
             contentContainerStyle={styles.scrollContainer}
-            showsVerticalScrollIndicator={true}
+            showsVerticalScrollIndicator={false}
             nestedScrollEnabled={true}
           >
-            {/* Giant AQI Meter Card */}
-            <View style={[styles.gaugeCard, { borderColor: data.color + '40' }]}>
-              <View style={[styles.gaugeRing, { borderColor: data.color }]}>
-                <Text style={[styles.aqiNumber, { color: data.color }]}>{data.aqi}</Text>
-                <Text style={styles.aqiUnit}>US AQI</Text>
+            {/* Hero Apple Weather AQI Metric */}
+            <View style={styles.heroSection}>
+              <View style={styles.aqiNumberRow}>
+                <Text style={styles.heroAqiNumber}>{data.aqi}</Text>
+                <View style={styles.heroBadgeWrapper}>
+                  <Text style={[styles.heroStatusText, { color: data.color }]}>
+                    {data.label}
+                  </Text>
+                  <Text style={styles.heroSubText}>US AQI Telemetry</Text>
+                </View>
               </View>
 
-              <View style={styles.gaugeInfo}>
-                <View style={[styles.statusBadge, { backgroundColor: data.color }]}>
-                  <Text style={styles.statusText}>{data.label.toUpperCase()}</Text>
+              <Text style={styles.heroDescText}>
+                Air Quality Index is {data.aqi}, which is classified as {data.status.toLowerCase().replace('_', ' ')}. {data.recommendation}
+              </Text>
+
+              {/* Apple Weather Continuous Multi-Color Spectrum Slider */}
+              <View style={styles.spectrumContainer}>
+                <LinearGradient
+                  colors={['#10B981', '#F59E0B', '#F97316', '#EF4444', '#8B5CF6', '#7F1D1D']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.spectrumBar}
+                />
+                {/* Glowing Indicator Thumb */}
+                <View
+                  style={[
+                    styles.spectrumThumb,
+                    { left: `${aqiPct}%`, backgroundColor: data.color },
+                  ]}
+                />
+              </View>
+
+              <View style={styles.spectrumLabelsRow}>
+                <Text style={styles.spectrumLabel}>0 Good</Text>
+                <Text style={styles.spectrumLabel}>100</Text>
+                <Text style={styles.spectrumLabel}>200</Text>
+                <Text style={styles.spectrumLabel}>300+ Severe</Text>
+              </View>
+            </View>
+
+            {/* Apple Weather Grid: Key Pollutants */}
+            <Text style={styles.sectionHeader}>Pollutant Concentration</Text>
+
+            <View style={styles.pollutantsGrid}>
+              {/* PM2.5 Card */}
+              <View style={styles.pollutantCard}>
+                <View style={styles.cardTopRow}>
+                  <Text style={styles.pollutantTitle}>PM 2.5</Text>
+                  <Text style={styles.pollutantValueText}>{data.pm2_5} µg/m³</Text>
                 </View>
-                <Text style={styles.gaugeSubtitle}>
-                  {data.aqi <= 50
-                    ? 'Clean & Healthy Air'
-                    : data.aqi <= 100
-                    ? 'Acceptable Outdoor Air'
-                    : data.aqi <= 200
-                    ? 'Unhealthy Outdoor Air'
-                    : 'Severe / Hazardous Air Pollution'}
+                <Text style={styles.pollutantDesc}>Fine Particulates</Text>
+
+                {/* Mini Gradient Slider */}
+                <View style={styles.miniSpectrumContainer}>
+                  <LinearGradient
+                    colors={['#10B981', '#F59E0B', '#F97316', '#EF4444', '#7F1D1D']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.miniSpectrumBar}
+                  />
+                  <View style={[styles.miniSpectrumThumb, { left: `${pm25Pct}%` }]} />
+                </View>
+              </View>
+
+              {/* PM10 Card */}
+              <View style={styles.pollutantCard}>
+                <View style={styles.cardTopRow}>
+                  <Text style={styles.pollutantTitle}>PM 10</Text>
+                  <Text style={styles.pollutantValueText}>{data.pm10} µg/m³</Text>
+                </View>
+                <Text style={styles.pollutantDesc}>Coarse Inhalable Particulates</Text>
+
+                {/* Mini Gradient Slider */}
+                <View style={styles.miniSpectrumContainer}>
+                  <LinearGradient
+                    colors={['#10B981', '#F59E0B', '#F97316', '#EF4444', '#7F1D1D']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.miniSpectrumBar}
+                  />
+                  <View style={[styles.miniSpectrumThumb, { left: `${pm10Pct}%` }]} />
+                </View>
+              </View>
+            </View>
+
+            {/* Apple Weather Health Advice Box */}
+            <View style={[styles.appleAdviceCard, { borderColor: data.color + '50' }]}>
+              <View style={styles.adviceHeaderRow}>
+                <ShieldAlert size={18} color={data.color} />
+                <Text style={[styles.adviceTitle, { color: data.color }]}>
+                  Health Guidance
                 </Text>
               </View>
-            </View>
-
-            {/* Pollutants Breakdown Section */}
-            <Text style={styles.sectionTitle}>Key Air Pollutants</Text>
-
-            <View style={styles.pollutantsList}>
-              {/* PM2.5 */}
-              <View style={styles.pollutantRow}>
-                <View style={styles.pollutantInfo}>
-                  <Text style={styles.pollutantName}>PM 2.5 (Fine Particulates)</Text>
-                  <Text style={styles.pollutantVal}>{data.pm2_5} µg/m³</Text>
-                </View>
-                <View style={styles.progressTrack}>
-                  <View
-                    style={[
-                      styles.progressBar,
-                      {
-                        width: `${pm25Pct}%`,
-                        backgroundColor: pm25Pct > 60 ? '#EF4444' : pm25Pct > 35 ? '#F59E0B' : '#10B981',
-                      },
-                    ]}
-                  />
-                </View>
-              </View>
-
-              {/* PM10 */}
-              <View style={styles.pollutantRow}>
-                <View style={styles.pollutantInfo}>
-                  <Text style={styles.pollutantName}>PM 10 (Coarse Particulates)</Text>
-                  <Text style={styles.pollutantVal}>{data.pm10} µg/m³</Text>
-                </View>
-                <View style={styles.progressTrack}>
-                  <View
-                    style={[
-                      styles.progressBar,
-                      {
-                        width: `${pm10Pct}%`,
-                        backgroundColor: pm10Pct > 60 ? '#EF4444' : pm10Pct > 35 ? '#F59E0B' : '#10B981',
-                      },
-                    ]}
-                  />
-                </View>
-              </View>
-            </View>
-
-            {/* Health Guidance Card */}
-            <View style={[styles.healthCard, { backgroundColor: data.color + '12', borderColor: data.color + '35' }]}>
-              <View style={styles.healthHeader}>
-                <Sparkles size={16} color={data.color} />
-                <Text style={[styles.healthTitle, { color: data.color }]}>Citizen Health Guidance</Text>
-              </View>
-              <Text style={styles.healthText}>{data.recommendation}</Text>
+              <Text style={styles.adviceBodyText}>{data.recommendation}</Text>
+              {data.stationTime && (
+                <Text style={styles.attributionText}>
+                  Recorded at {data.stationTime} via Open-Meteo & WAQI Real-Time Telemetry
+                </Text>
+              )}
             </View>
           </ScrollView>
 
           {/* Close Action Button */}
           <TouchableOpacity style={styles.doneBtn} onPress={onClose} activeOpacity={0.85}>
-            <Text style={styles.doneBtnText}>Close Dashboard</Text>
+            <Text style={styles.doneBtnText}>Done</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -151,187 +172,222 @@ export const AirQualityModal: React.FC<AirQualityModalProps> = ({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+    backgroundColor: 'rgba(10, 15, 30, 0.70)',
     justifyContent: 'flex-end',
   },
   dismissOverlay: {
     ...StyleSheet.absoluteFillObject,
   },
-  modalCard: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+  appleCard: {
+    backgroundColor: '#0F172A',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     padding: SPACING.lg,
-    maxHeight: '85%',
-    gap: 14,
+    maxHeight: '88%',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#334155',
     ...SHADOWS.large,
   },
   handle: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#475569',
     alignSelf: 'center',
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingBottom: 4,
   },
-  titleGroup: {
+  headerTitleGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 6,
   },
-  iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 17,
+  headerCategoryText: {
+    fontSize: 12,
     fontWeight: '800',
-    color: COLORS.textPrimary,
-  },
-  headerSubtitle: {
-    fontSize: 11,
-    color: COLORS.textMuted,
-    fontWeight: '600',
+    color: '#94A3B8',
+    letterSpacing: 1.2,
   },
   closeBtn: {
-    padding: 4,
+    padding: 6,
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
   },
   scrollContent: {
-    maxHeight: 450,
+    maxHeight: 460,
   },
   scrollContainer: {
-    paddingBottom: 18,
-  },
-  gaugeCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: RADIUS.lg,
-    padding: 16,
-    borderWidth: 1.5,
+    paddingBottom: 16,
     gap: 16,
-    marginBottom: 14,
   },
-  gaugeRing: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+  heroSection: {
+    backgroundColor: '#1E293B',
+    borderRadius: RADIUS.xl || 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#334155',
+    gap: 10,
   },
-  aqiNumber: {
-    fontSize: 26,
-    fontWeight: '900',
+  aqiNumberRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 12,
   },
-  aqiUnit: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: COLORS.textMuted,
-    marginTop: -2,
-  },
-  gaugeInfo: {
-    flex: 1,
-    gap: 6,
-  },
-  statusBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-  },
-  statusText: {
-    fontSize: 10,
+  heroAqiNumber: {
+    fontSize: 52,
     fontWeight: '900',
     color: '#FFFFFF',
-    letterSpacing: 0.4,
+    letterSpacing: -1,
   },
-  gaugeSubtitle: {
+  heroBadgeWrapper: {
+    gap: 2,
+  },
+  heroStatusText: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  heroSubText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  heroDescText: {
     fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: '#94A3B8',
+    lineHeight: 19,
+    fontWeight: '500',
   },
-  sectionTitle: {
+  spectrumContainer: {
+    height: 10,
+    marginTop: 6,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  spectrumBar: {
+    height: 6,
+    borderRadius: 3,
+    width: '100%',
+  },
+  spectrumThumb: {
+    position: 'absolute',
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    marginTop: -4,
+    transform: [{ translateX: -7 }],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  spectrumLabelsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 2,
+  },
+  spectrumLabel: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  sectionHeader: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.textPrimary,
-    marginBottom: 8,
-    letterSpacing: 0.2,
+    color: '#F1F5F9',
+    letterSpacing: 0.3,
+    marginTop: 4,
   },
-  pollutantsList: {
+  pollutantsGrid: {
     gap: 10,
-    marginBottom: 14,
   },
-  pollutantRow: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: RADIUS.md,
-    padding: 12,
+  pollutantCard: {
+    backgroundColor: '#1E293B',
+    borderRadius: RADIUS.lg,
+    padding: 14,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#334155',
     gap: 6,
   },
-  pollutantInfo: {
+  cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  pollutantName: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-  pollutantVal: {
-    fontSize: 12,
+  pollutantTitle: {
+    fontSize: 14,
     fontWeight: '800',
-    color: COLORS.textPrimary,
+    color: '#FFFFFF',
   },
-  progressTrack: {
-    height: 6,
-    backgroundColor: '#E2E8F0',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  healthCard: {
-    borderRadius: RADIUS.lg,
-    padding: 14,
-    borderWidth: 1,
-    gap: 6,
-    marginBottom: 6,
-  },
-  healthHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  healthTitle: {
-    fontSize: 13,
+  pollutantValueText: {
+    fontSize: 13.5,
     fontWeight: '800',
+    color: '#F1F5F9',
   },
-  healthText: {
-    fontSize: 12.5,
-    color: COLORS.textSecondary,
-    lineHeight: 18,
+  pollutantDesc: {
+    fontSize: 11,
+    color: '#64748B',
     fontWeight: '500',
   },
+  miniSpectrumContainer: {
+    height: 8,
+    marginTop: 4,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  miniSpectrumBar: {
+    height: 4,
+    borderRadius: 2,
+    width: '100%',
+  },
+  miniSpectrumThumb: {
+    position: 'absolute',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    backgroundColor: '#F1F5F9',
+    marginTop: -3,
+    transform: [{ translateX: -5 }],
+  },
+  appleAdviceCard: {
+    backgroundColor: '#1E293B',
+    borderRadius: RADIUS.lg,
+    padding: 16,
+    borderWidth: 1,
+    gap: 8,
+  },
+  adviceHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  adviceTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  adviceBodyText: {
+    fontSize: 13,
+    color: '#CBD5E1',
+    lineHeight: 19,
+    fontWeight: '500',
+  },
+  attributionText: {
+    fontSize: 10,
+    color: '#64748B',
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
   doneBtn: {
-    backgroundColor: '#0F172A',
+    backgroundColor: '#38BDF8',
     paddingVertical: 14,
     borderRadius: RADIUS.md,
     alignItems: 'center',
@@ -339,8 +395,8 @@ const styles = StyleSheet.create({
     ...SHADOWS.small,
   },
   doneBtnText: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#0F172A',
   },
 });

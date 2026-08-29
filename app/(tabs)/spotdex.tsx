@@ -32,6 +32,10 @@ import {
   Construction,
   TriangleAlert,
   BadgeCheck,
+  Compass,
+  Plus,
+  User,
+  Globe,
 } from 'lucide-react-native';
 
 export default function SpotdexScreen() {
@@ -40,6 +44,7 @@ export default function SpotdexScreen() {
   const { issues, myReports, refreshIssues, isLoading } = useIssues();
   const [reputation, setReputation] = useState<UserReputation | null>(null);
   const [topSegment, setTopSegment] = useState<'grid' | 'route'>('grid');
+  const [registryScope, setRegistryScope] = useState<'my' | 'community'>('my');
   const [logFilter, setLogFilter] = useState<string>('all');
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
 
@@ -63,9 +68,11 @@ export default function SpotdexScreen() {
     ? Math.min(100, Math.round((totalUserLogged / totalAreaHazards) * 100))
     : 0;
 
-  const newestEntry = myReports[0] || issues[0];
+  const newestPersonalEntry = myReports[0];
 
-  const filteredLog = issues.filter((i) => {
+  const currentDataset = registryScope === 'my' ? myReports : issues;
+
+  const filteredLog = currentDataset.filter((i) => {
     if (logFilter === 'all') return true;
     return i.category === logFilter;
   });
@@ -168,21 +175,21 @@ export default function SpotdexScreen() {
           </View>
         </View>
 
-        {/* NEWEST ENTRY CARD */}
-        {newestEntry && (
+        {/* LATEST DISCOVERY CARD (Personal Discovery or Starter Prompt) */}
+        {newestPersonalEntry ? (
           <TouchableOpacity
             style={styles.newestCard}
             onPress={() =>
               router.push({
                 pathname: '/issue/[id]',
-                params: { id: newestEntry.id },
+                params: { id: newestPersonalEntry.id },
               })
             }
             activeOpacity={0.85}
           >
             <View style={styles.newestBadge}>
               <Sparkles size={11} color={COLORS.primary} />
-              <Text style={styles.newestBadgeText}>NEWEST ENTRY</Text>
+              <Text style={styles.newestBadgeText}>YOUR LATEST DISCOVERY</Text>
             </View>
 
             <View style={styles.newestIconCenter}>
@@ -191,24 +198,24 @@ export default function SpotdexScreen() {
                   styles.newestIconWrap,
                   {
                     backgroundColor:
-                      newestEntry.category === 'pothole'
+                      newestPersonalEntry.category === 'pothole'
                         ? '#EFF6FF'
-                        : newestEntry.category === 'garbage'
+                        : newestPersonalEntry.category === 'garbage'
                         ? '#ECFDF5'
-                        : newestEntry.category === 'streetlight'
+                        : newestPersonalEntry.category === 'streetlight'
                         ? '#FEF3C7'
                         : '#FEE2E2',
                   },
                 ]}
               >
                 {renderCategoryIcon(
-                  newestEntry.category,
+                  newestPersonalEntry.category,
                   36,
-                  newestEntry.category === 'pothole'
+                  newestPersonalEntry.category === 'pothole'
                     ? '#0066FF'
-                    : newestEntry.category === 'garbage'
+                    : newestPersonalEntry.category === 'garbage'
                     ? '#059669'
-                    : newestEntry.category === 'streetlight'
+                    : newestPersonalEntry.category === 'streetlight'
                     ? '#D97706'
                     : '#DC2626'
                 )}
@@ -216,15 +223,33 @@ export default function SpotdexScreen() {
             </View>
 
             <Text style={styles.newestTitle} numberOfLines={1}>
-              {newestEntry.locationName || 'Local Roadway Hazard'}
+              {newestPersonalEntry.locationName || 'Local Roadway Hazard'}
             </Text>
             <View style={styles.newestFooterRow}>
               <Text style={styles.newestSub}>
-                {newestEntry.category.toUpperCase()} • Priority {newestEntry.priorityScore || 75}/100
+                {newestPersonalEntry.category.toUpperCase()} • Priority {newestPersonalEntry.priorityScore || 75}/100
               </Text>
-              <Text style={styles.newestTime}>{formatRelativeTime(newestEntry.createdAt)}</Text>
+              <Text style={styles.newestTime}>{formatRelativeTime(newestPersonalEntry.createdAt)}</Text>
             </View>
           </TouchableOpacity>
+        ) : (
+          <View style={styles.starterDiscoveryCard}>
+            <View style={styles.starterIconCircle}>
+              <Compass size={28} color={COLORS.primary} strokeWidth={2.2} />
+            </View>
+            <Text style={styles.starterTitle}>No Discoveries Logged Yet</Text>
+            <Text style={styles.starterSub}>
+              Spot a pothole, waste pile, or dark street lamp to record your first field discovery.
+            </Text>
+            <TouchableOpacity
+              style={styles.starterActionBtn}
+              onPress={() => router.push('/(tabs)/report')}
+              activeOpacity={0.8}
+            >
+              <Plus size={15} color="#FFFFFF" strokeWidth={2.4} />
+              <Text style={styles.starterActionText}>Report a Hazard</Text>
+            </TouchableOpacity>
+          </View>
         )}
 
         {/* BADGES SECTION WITH INTERACTIVE MODAL */}
@@ -245,7 +270,7 @@ export default function SpotdexScreen() {
             {totalBadgesEarned} of {totalBadgesCount} earned • Tap any badge to view milestone
           </Text>
           <Text style={styles.nextBadgeHint}>
-            Level {reputation?.level || 4}: {reputation?.levelTitle || 'Road Guardian'}
+            Level {reputation?.level || 1}: {reputation?.levelTitle || 'Novice Scout'}
           </Text>
 
           {/* Badges Horizontal Row with Live Progress */}
@@ -273,19 +298,46 @@ export default function SpotdexScreen() {
           </ScrollView>
         </View>
 
-        {/* LOGBOOK SECTION (Live database items) */}
+        {/* CIVIC FIELD REGISTRY (Dynamic Scope + Filters) */}
         <View style={styles.logbookSection}>
           <View style={styles.logbookTitleRow}>
-            <Text style={styles.sectionTitle}>Logbook</Text>
+            <Text style={styles.sectionTitle}>Civic Field Registry</Text>
             <View style={styles.countBubble}>
-              <Text style={styles.countBubbleText}>{issues.length}</Text>
+              <Text style={styles.countBubbleText}>{currentDataset.length}</Text>
             </View>
           </View>
           <Text style={styles.logbookSub}>
-            Real-time public community feed of recorded hazards and repaired roads.
+            {registryScope === 'my'
+              ? 'Your personal catalog of reported road hazards and confirmed sightings.'
+              : 'Public district-wide feed of reported road issues and verified repairs.'}
           </Text>
 
-          {/* Filter Pills */}
+          {/* Scope Segment Selector: My Discoveries vs Citywide Feed */}
+          <View style={styles.scopeSegmentRow}>
+            <TouchableOpacity
+              style={[styles.scopeBtn, registryScope === 'my' && styles.scopeBtnActive]}
+              onPress={() => setRegistryScope('my')}
+              activeOpacity={0.8}
+            >
+              <User size={13} color={registryScope === 'my' ? '#FFFFFF' : COLORS.textSecondary} />
+              <Text style={[styles.scopeBtnText, registryScope === 'my' && styles.scopeBtnTextActive]}>
+                My Discoveries ({myReports.length})
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.scopeBtn, registryScope === 'community' && styles.scopeBtnActive]}
+              onPress={() => setRegistryScope('community')}
+              activeOpacity={0.8}
+            >
+              <Globe size={13} color={registryScope === 'community' ? '#FFFFFF' : COLORS.textSecondary} />
+              <Text style={[styles.scopeBtnText, registryScope === 'community' && styles.scopeBtnTextActive]}>
+                Citywide Feed ({issues.length})
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Category Filter Pills */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.logFilterRow}>
             <TouchableOpacity
               style={[styles.filterPill, logFilter === 'all' && styles.filterPillActive]}
@@ -293,7 +345,7 @@ export default function SpotdexScreen() {
               activeOpacity={0.8}
             >
               <Text style={[styles.filterPillText, logFilter === 'all' && styles.filterPillTextActive]}>
-                All {issues.length}
+                All {currentDataset.length}
               </Text>
             </TouchableOpacity>
 
@@ -303,7 +355,7 @@ export default function SpotdexScreen() {
               activeOpacity={0.8}
             >
               <Text style={[styles.filterPillText, logFilter === 'pothole' && styles.filterPillTextActive]}>
-                Potholes ({issues.filter((i) => i.category === 'pothole').length})
+                Potholes ({currentDataset.filter((i) => i.category === 'pothole').length})
               </Text>
             </TouchableOpacity>
 
@@ -313,7 +365,7 @@ export default function SpotdexScreen() {
               activeOpacity={0.8}
             >
               <Text style={[styles.filterPillText, logFilter === 'garbage' && styles.filterPillTextActive]}>
-                Waste ({issues.filter((i) => i.category === 'garbage').length})
+                Waste ({currentDataset.filter((i) => i.category === 'garbage').length})
               </Text>
             </TouchableOpacity>
 
@@ -323,69 +375,93 @@ export default function SpotdexScreen() {
               activeOpacity={0.8}
             >
               <Text style={[styles.filterPillText, logFilter === 'streetlight' && styles.filterPillTextActive]}>
-                Lighting ({issues.filter((i) => i.category === 'streetlight').length})
+                Lighting ({currentDataset.filter((i) => i.category === 'streetlight').length})
               </Text>
             </TouchableOpacity>
           </ScrollView>
 
-          {/* LOGBOOK GRID CARDS */}
-          <View style={styles.logGrid}>
-            {filteredLog.map((item, idx) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.logCard}
-                onPress={() =>
-                  router.push({
-                    pathname: '/issue/[id]',
-                    params: { id: item.id },
-                  })
-                }
-                activeOpacity={0.85}
-              >
-                <View style={styles.logCardTop}>
-                  <Text style={styles.logCardNum}>#{String(idx + 1).padStart(3, '0')}</Text>
-                  {item.status === 'resolved' ? (
-                    <BadgeCheck size={16} color="#10B981" />
-                  ) : (
-                    <View style={[styles.activeDot, { backgroundColor: (item.priorityScore || 50) >= 80 ? '#EF4444' : '#0066FF' }]} />
-                  )}
-                </View>
-
-                <View
-                  style={[
-                    styles.logIconBox,
-                    {
-                      backgroundColor:
-                        item.category === 'pothole'
-                          ? '#EFF6FF'
-                          : item.category === 'garbage'
-                          ? '#ECFDF5'
-                          : item.category === 'streetlight'
-                          ? '#FEF3C7'
-                          : '#FEE2E2',
-                    },
-                  ]}
+          {/* REGISTRY GRID CARDS OR EMPTY STATE */}
+          {filteredLog.length === 0 ? (
+            <View style={styles.emptyRegistryCard}>
+              <Compass size={32} color={COLORS.textMuted} strokeWidth={1.8} />
+              <Text style={styles.emptyRegistryTitle}>
+                {registryScope === 'my' ? 'No Personal Discoveries Yet' : 'No District Hazards Found'}
+              </Text>
+              <Text style={styles.emptyRegistrySub}>
+                {registryScope === 'my'
+                  ? 'Submit your first road issue report to record an entry in your personal catalog.'
+                  : 'No hazards found for the selected category filter.'}
+              </Text>
+              {registryScope === 'my' && (
+                <TouchableOpacity
+                  style={styles.emptyReportBtn}
+                  onPress={() => router.push('/(tabs)/report')}
+                  activeOpacity={0.8}
                 >
-                  {renderCategoryIcon(
-                    item.category,
-                    26,
-                    item.category === 'pothole'
-                      ? '#0066FF'
-                      : item.category === 'garbage'
-                      ? '#059669'
-                      : item.category === 'streetlight'
-                      ? '#D97706'
-                      : '#DC2626'
-                  )}
-                </View>
+                  <Plus size={14} color="#FFFFFF" strokeWidth={2.4} />
+                  <Text style={styles.emptyReportBtnText}>Report Road Hazard</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            <View style={styles.logGrid}>
+              {filteredLog.map((item, idx) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.logCard}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/issue/[id]',
+                      params: { id: item.id },
+                    })
+                  }
+                  activeOpacity={0.85}
+                >
+                  <View style={styles.logCardTop}>
+                    <Text style={styles.logCardNum}>#{String(idx + 1).padStart(3, '0')}</Text>
+                    {item.status === 'resolved' ? (
+                      <BadgeCheck size={16} color="#10B981" />
+                    ) : (
+                      <View style={[styles.activeDot, { backgroundColor: (item.priorityScore || 50) >= 80 ? '#EF4444' : '#0066FF' }]} />
+                    )}
+                  </View>
 
-                <Text style={styles.logCardTitle} numberOfLines={1}>
-                  {item.locationName}
-                </Text>
-                <Text style={styles.logCardTime}>{formatRelativeTime(item.createdAt)}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+                  <View
+                    style={[
+                      styles.logIconBox,
+                      {
+                        backgroundColor:
+                          item.category === 'pothole'
+                            ? '#EFF6FF'
+                            : item.category === 'garbage'
+                            ? '#ECFDF5'
+                            : item.category === 'streetlight'
+                            ? '#FEF3C7'
+                            : '#FEE2E2',
+                      },
+                    ]}
+                  >
+                    {renderCategoryIcon(
+                      item.category,
+                      26,
+                      item.category === 'pothole'
+                        ? '#0066FF'
+                        : item.category === 'garbage'
+                        ? '#059669'
+                        : item.category === 'streetlight'
+                        ? '#D97706'
+                        : '#DC2626'
+                    )}
+                  </View>
+
+                  <Text style={styles.logCardTitle} numberOfLines={1}>
+                    {item.locationName}
+                  </Text>
+                  <Text style={styles.logCardTime}>{formatRelativeTime(item.createdAt)}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -754,5 +830,122 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: COLORS.textMuted,
     marginTop: 2,
+  },
+  starterDiscoveryCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: RADIUS.xl,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    textAlign: 'center',
+    gap: 8,
+    ...SHADOWS.subtle,
+  },
+  starterIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  starterTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: COLORS.textPrimary,
+  },
+  starterSub: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
+    paddingHorizontal: SPACING.md,
+  },
+  starterActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: RADIUS.full,
+    marginTop: 6,
+    ...SHADOWS.small,
+  },
+  starterActionText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  scopeSegmentRow: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: RADIUS.lg,
+    padding: 4,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginVertical: 4,
+  },
+  scopeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    borderRadius: RADIUS.md,
+    gap: 6,
+  },
+  scopeBtnActive: {
+    backgroundColor: COLORS.primary,
+  },
+  scopeBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+  scopeBtnTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+  },
+  emptyRegistryCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: RADIUS.xl,
+    padding: SPACING.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    gap: 8,
+    marginVertical: 6,
+    ...SHADOWS.subtle,
+  },
+  emptyRegistryTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+  },
+  emptyRegistrySub: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    lineHeight: 18,
+    paddingHorizontal: SPACING.sm,
+  },
+  emptyReportBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: RADIUS.full,
+    marginTop: 6,
+  },
+  emptyReportBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
 });

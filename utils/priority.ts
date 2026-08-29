@@ -122,8 +122,8 @@ export function generateIssueTimeline(issue: Partial<CivicIssue>) {
     },
     {
       id: 'step_resolved',
-      title: 'Resolved & Restored',
-      subtitle: isResolved ? 'Confirmed repaired with citizen photo proof' : 'Awaiting restoration by community or road crew',
+      title: 'Issue Resolved',
+      subtitle: isResolved ? 'Confirmed resolved with citizen photo proof' : 'Awaiting resolution by community or city maintenance crew',
       timestamp: issue.resolvedAt || 'Pending',
       completed: isResolved,
       current: isResolved,

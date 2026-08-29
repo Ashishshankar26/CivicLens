@@ -299,7 +299,7 @@ export default function IssueDetailsScreen() {
           <View style={styles.appBarStatusRow}>
             <View style={[styles.statusMiniDot, { backgroundColor: isResolved ? '#10B981' : isUrgent ? '#EF4444' : '#0066FF' }]} />
             <Text style={styles.appBarSub}>
-              {isResolved ? 'RESTORED' : isUrgent ? 'CRITICAL HAZARD' : 'ACTIVE REPORT'}
+              {isResolved ? 'RESOLVED' : isUrgent ? 'CRITICAL HAZARD' : 'ACTIVE REPORT'}
             </Text>
           </View>
         </View>
@@ -351,7 +351,7 @@ export default function IssueDetailsScreen() {
                 <CheckCircle2 size={16} color="#FFFFFF" strokeWidth={2.8} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.resolvedProofTitle}>RESTORATION VERIFICATION PROOF</Text>
+                <Text style={styles.resolvedProofTitle}>ISSUE RESOLVED • PHOTO EVIDENCE</Text>
                 <Text style={styles.resolvedProofSub}>
                   Verified on-site camera evidence confirming safe road conditions.
                 </Text>
@@ -567,9 +567,9 @@ export default function IssueDetailsScreen() {
               <CheckCircle2 size={24} color="#FFFFFF" strokeWidth={2.8} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.resolvedBannerTitle}>ROAD RESTORATION VERIFIED</Text>
+              <Text style={styles.resolvedBannerTitle}>ISSUE RESOLVED</Text>
               <Text style={styles.resolvedBannerSub}>
-                Hazard marked as repaired on {liveIssue.resolvedAt ? new Date(liveIssue.resolvedAt).toLocaleDateString() : 'recently'}. Verified by community evidence.
+                Hazard marked as resolved on {liveIssue.resolvedAt ? new Date(liveIssue.resolvedAt).toLocaleDateString() : 'recently'}. Verified by community evidence.
               </Text>
             </View>
           </View>

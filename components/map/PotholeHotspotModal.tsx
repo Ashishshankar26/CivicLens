@@ -117,17 +117,17 @@ export const PotholeHotspotModal: React.FC<PotholeHotspotModalProps> = ({
 
               {/* Action Buttons */}
               <View style={styles.actionRow}>
+                {/* 360° Street View Compact Eye Button */}
                 <TouchableOpacity
-                  style={styles.streetViewBtn}
+                  style={styles.streetViewSquareBtn}
                   onPress={() => hotspot && openGoogleStreetView(hotspot.latitude, hotspot.longitude, hotspot.locationName)}
                   activeOpacity={0.8}
                 >
-                  <Eye size={16} color="#475569" />
-                  <Text style={styles.streetViewBtnText}>360° View</Text>
+                  <Eye size={18} color="#475569" />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.navBtn} onPress={handleOpenMaps} activeOpacity={0.8}>
-                  <Navigation size={16} color="#0066FF" />
+                  <Navigation size={15} color="#0066FF" />
                   <Text style={styles.navBtnText}>Navigate</Text>
                 </TouchableOpacity>
 
@@ -139,7 +139,7 @@ export const PotholeHotspotModal: React.FC<PotholeHotspotModalProps> = ({
                   }}
                   activeOpacity={0.85}
                 >
-                  <Text style={styles.reportBtnText}>Report Early</Text>
+                  <Text style={styles.reportBtnText}>Report Early Warning</Text>
                   <ArrowRight size={15} color="#FFFFFF" />
                 </TouchableOpacity>
               </View>
@@ -283,35 +283,30 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: 'row',
-    gap: 6,
+    alignItems: 'center',
+    gap: 8,
     marginTop: 6,
   },
-  streetViewBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+  streetViewSquareBtn: {
+    width: 46,
+    height: 46,
     borderRadius: RADIUS.md,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    gap: 5,
-  },
-  streetViewBtnText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#475569',
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   navBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 13,
+    paddingHorizontal: 14,
     borderRadius: RADIUS.md,
     backgroundColor: '#EFF6FF',
     borderWidth: 1,
     borderColor: '#BFDBFE',
-    gap: 6,
+    gap: 5,
   },
   navBtnText: {
     fontSize: 13.5,

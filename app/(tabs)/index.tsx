@@ -14,7 +14,7 @@ import { useIssues } from '@/contexts/IssuesContext';
 import { CivicMapView } from '@/components/map/CivicMapView';
 import { IssueBottomSheet } from '@/components/map/IssueBottomSheet';
 import { CATEGORY_LIST } from '@/constants/categories';
-import { getCurrentLocation, LocationResult } from '@/services/location/locationService';
+import { getCurrentLocation, getLastKnownLocation, LocationResult } from '@/services/location/locationService';
 import { CivicIssue } from '@/types/issue';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { MapType } from 'react-native-maps';
@@ -47,13 +47,20 @@ export default function ModernMapScreen() {
   const [urgentOnly, setUrgentOnly] = useState<boolean>(false);
 
   useEffect(() => {
-    async function fetchGPS() {
+    async function initLocation() {
+      // 1. Instant cache load
+      const cached = await getLastKnownLocation();
+      if (cached) {
+        setUserLocation(cached);
+      }
+
+      // 2. High-precision live GPS
       const res = await getCurrentLocation();
       if (res.location) {
         setUserLocation(res.location);
       }
     }
-    fetchGPS();
+    initLocation();
   }, []);
 
   // Top Left Button 1: Cycle Map Type
@@ -297,6 +304,17 @@ export default function ModernMapScreen() {
         </ScrollView>
       </View>
 
+      {/* Floating Bottom-Right Current Location Button (Directly above bottom navigation bar) */}
+      {!selectedIssue && (
+        <TouchableOpacity
+          style={[styles.floatingLocationFab, { bottom: insets.bottom + 90 }]}
+          onPress={handleRecenterGPS}
+          activeOpacity={0.85}
+        >
+          <LocateFixed size={22} color={COLORS.primary} strokeWidth={2.4} />
+        </TouchableOpacity>
+      )}
+
       {/* Selected Marker Floating Bottom Sheet (Live state updated in real-time) */}
       {selectedIssue && (
         <IssueBottomSheet
@@ -314,6 +332,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  floatingLocationFab: {
+    position: 'absolute',
+    right: 18,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    zIndex: 25,
+    ...SHADOWS.medium,
   },
   floatingTopContainer: {
     position: 'absolute',

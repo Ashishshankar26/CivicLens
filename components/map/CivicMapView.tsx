@@ -32,6 +32,23 @@ export const CivicMapView: React.FC<CivicMapViewProps> = ({
     longitudeDelta: DEFAULT_REGION.longitudeDelta,
   };
 
+  const hasAutoCentered = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (userCoords && mapRef.current && !hasAutoCentered.current) {
+      hasAutoCentered.current = true;
+      mapRef.current.animateToRegion(
+        {
+          latitude: userCoords.latitude,
+          longitude: userCoords.longitude,
+          latitudeDelta: 0.018,
+          longitudeDelta: 0.018,
+        },
+        700
+      );
+    }
+  }, [userCoords?.latitude, userCoords?.longitude]);
+
   useEffect(() => {
     if (recenterTrigger && mapRef.current) {
       const target = userCoords || {

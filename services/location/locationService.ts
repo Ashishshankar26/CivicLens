@@ -1,11 +1,23 @@
 import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DEFAULT_REGION } from '@/constants/mockData';
+
+const LAST_LOCATION_KEY = '@civiclens_last_known_location';
 
 export interface LocationResult {
   latitude: number;
   longitude: number;
   locationName: string;
   accuracy?: number | null;
+}
+
+export async function getLastKnownLocation(): Promise<LocationResult | null> {
+  try {
+    const raw = await AsyncStorage.getItem(LAST_LOCATION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -22,11 +34,12 @@ export async function getCurrentLocation(): Promise<{
     const { status } = await Location.requestForegroundPermissionsAsync();
 
     if (status !== 'granted') {
+      const cached = await getLastKnownLocation();
       return {
         success: false,
         permissionGranted: false,
         errorMessage: 'Location permission is required to automatically locate your report.',
-        location: {
+        location: cached || {
           latitude: DEFAULT_REGION.latitude,
           longitude: DEFAULT_REGION.longitude,
           locationName: 'Central Civic District (Default)',
@@ -64,22 +77,32 @@ export async function getCurrentLocation(): Promise<{
       // Reverse geocoding optional fallback
     }
 
+    const locResult: LocationResult = {
+      latitude,
+      longitude,
+      locationName,
+      accuracy,
+    };
+
+    // Cache the location for immediate startup on next launch
+    try {
+      await AsyncStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(locResult));
+    } catch {
+      // Storage cache optional
+    }
+
     return {
       success: true,
       permissionGranted: true,
-      location: {
-        latitude,
-        longitude,
-        locationName,
-        accuracy,
-      },
+      location: locResult,
     };
   } catch (error: any) {
+    const cached = await getLastKnownLocation();
     return {
       success: false,
       permissionGranted: false,
       errorMessage: error?.message || 'Unable to retrieve GPS coordinates.',
-      location: {
+      location: cached || {
         latitude: DEFAULT_REGION.latitude,
         longitude: DEFAULT_REGION.longitude,
         locationName: 'Central Civic District (Fallback)',

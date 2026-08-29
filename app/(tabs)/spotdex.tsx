@@ -298,10 +298,10 @@ export default function SpotdexScreen() {
           </ScrollView>
         </View>
 
-        {/* CIVIC FIELD REGISTRY (Dynamic Scope + Filters) */}
+        {/* LOGS (Dynamic Scope + Filters) */}
         <View style={styles.logbookSection}>
           <View style={styles.logbookTitleRow}>
-            <Text style={styles.sectionTitle}>Civic Field Registry</Text>
+            <Text style={styles.sectionTitle}>Logs</Text>
             <View style={styles.countBubble}>
               <Text style={styles.countBubbleText}>{currentDataset.length}</Text>
             </View>

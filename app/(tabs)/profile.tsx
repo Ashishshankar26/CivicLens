@@ -22,6 +22,7 @@ import { checkAndApplyAppUpdate, getAppUpdateInfo } from '@/services/updates/upd
 import { scheduleCivicNotification } from '@/services/notifications/notificationService';
 import { UserReputation, UserPrivacySettings, Badge } from '@/types/gamification';
 import { BadgeDetailModal } from '@/components/gamification/BadgeDetailModal';
+import { AllBadgesModal } from '@/components/gamification/AllBadgesModal';
 import { RealBadgeEmblem } from '@/components/ui/RealBadgeEmblem';
 import { ModernAlertModal, ModernAlertConfig } from '@/components/ui/ModernAlertModal';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
@@ -45,6 +46,7 @@ import {
   RefreshCw,
   Bell,
   Layers,
+  ArrowRight,
 } from 'lucide-react-native';
 
 export default function ModernYouScreen() {
@@ -54,7 +56,7 @@ export default function ModernYouScreen() {
   const [reputation, setReputation] = useState<UserReputation | null>(null);
   const [exportModalVisible, setExportModalVisible] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
-  const [badgeCategoryFilter, setBadgeCategoryFilter] = useState<string>('all');
+  const [allBadgesModalVisible, setAllBadgesModalVisible] = useState(false);
   const [alertConfig, setAlertConfig] = useState<ModernAlertConfig | null>(null);
 
   useEffect(() => {
@@ -275,77 +277,96 @@ export default function ModernYouScreen() {
           </View>
         </View>
 
-        {/* 3. CITIZEN BADGES & MILESTONES SHOWCASE */}
+        {/* 3. RECENT BADGES & MILESTONES (COMPACT SHOWCASE) */}
         <View style={styles.cardSection}>
           <View style={styles.cardHeaderRow}>
-            <Award size={16} color={COLORS.primary} />
-            <Text style={styles.cardHeaderTitle}>Citizen Badges & Milestones</Text>
+            <View style={styles.headerLeftGroup}>
+              <Award size={16} color={COLORS.primary} />
+              <Text style={styles.cardHeaderTitle}>Recent Badges & Milestones</Text>
+            </View>
+            <View style={styles.badgeCountBadge}>
+              <Text style={styles.badgeCountBadgeText}>
+                {badgesCount}/{reputation?.badges.length || 54} EARNED
+              </Text>
+            </View>
           </View>
           <Text style={styles.cardSubtext}>
-            {badgesCount} of {reputation?.badges.length || 54} unlocked • Tap any badge to view milestone requirements.
+            Your latest unlocked achievements and active milestone progression.
           </Text>
 
-          {/* Badge Category Filter Tabs */}
+          {/* Compact Horizontal Badges Carousel */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.badgeFiltersRow}
+            contentContainerStyle={styles.recentBadgesRow}
           >
-            {[
-              { id: 'all', label: `All (${reputation?.badges.length || 54})` },
-              { id: 'onboarding', label: '🌱 Onboarding' },
-              { id: 'potholes', label: '🕳️ Roads' },
-              { id: 'lighting', label: '💡 Lighting' },
-              { id: 'waste', label: '♻️ Cleanliness' },
-              { id: 'verification', label: '🛡️ Verifications' },
-              { id: 'resolution', label: '🛠️ Repairs' },
-              { id: 'streak', label: '⚡ Streaks' },
-              { id: 'milestones', label: '🏆 Milestones' },
-            ].map((cat) => {
-              const isActive = badgeCategoryFilter === cat.id;
-              return (
-                <TouchableOpacity
-                  key={cat.id}
-                  style={[styles.badgeFilterPill, isActive && styles.badgeFilterPillActive]}
-                  onPress={() => setBadgeCategoryFilter(cat.id)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={[styles.badgeFilterText, isActive && styles.badgeFilterTextActive]}>
-                    {cat.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-
-          {/* Badges Grid */}
-          <View style={styles.badgesGrid}>
             {(reputation?.badges || [])
-              .filter((b) => badgeCategoryFilter === 'all' || b.category === badgeCategoryFilter)
+              .filter((b) => b.isUnlocked)
+              .slice(0, 4)
               .map((b) => (
                 <TouchableOpacity
                   key={b.id}
-                  style={styles.badgeGridItem}
+                  style={styles.recentBadgePill}
                   onPress={() => setSelectedBadge(b)}
-                  activeOpacity={0.75}
+                  activeOpacity={0.8}
                 >
-                  <View style={styles.badgeEmblemWrapper}>
-                    <RealBadgeEmblem id={b.id} size={52} isUnlocked={b.isUnlocked} />
-                    {!b.isUnlocked && (
-                      <View style={styles.badgeLockPill}>
-                        <Lock size={8} color="#FFFFFF" />
-                      </View>
-                    )}
+                  <View style={styles.recentEmblemCenter}>
+                    <RealBadgeEmblem id={b.id} size={48} isUnlocked={true} />
                   </View>
-                  <Text style={[styles.badgeItemTitle, !b.isUnlocked && { color: COLORS.textMuted }]} numberOfLines={1}>
+                  <Text style={styles.recentBadgeTitle} numberOfLines={1}>
                     {b.title}
                   </Text>
-                  <Text style={styles.badgeItemTier}>
-                    {b.isUnlocked ? 'Unlocked' : `${b.currentCount || 0}/${b.requiredCount || 1}`}
-                  </Text>
+                  <View style={styles.earnedTag}>
+                    <Text style={styles.earnedTagText}>UNLOCKED</Text>
+                  </View>
                 </TouchableOpacity>
               ))}
-          </View>
+
+            {/* Next upcoming locked target preview */}
+            {(reputation?.badges || [])
+              .filter((b) => !b.isUnlocked)
+              .slice(0, 2)
+              .map((b) => (
+                <TouchableOpacity
+                  key={b.id}
+                  style={[styles.recentBadgePill, styles.recentBadgePillLocked]}
+                  onPress={() => setSelectedBadge(b)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.recentEmblemCenter}>
+                    <RealBadgeEmblem id={b.id} size={48} isUnlocked={false} />
+                    <View style={styles.miniLockOverlay}>
+                      <Lock size={7} color="#FFFFFF" />
+                    </View>
+                  </View>
+                  <Text style={[styles.recentBadgeTitle, { color: COLORS.textMuted }]} numberOfLines={1}>
+                    {b.title}
+                  </Text>
+                  <View style={styles.lockedProgressTag}>
+                    <Text style={styles.lockedProgressText}>
+                      {b.currentCount || 0}/{b.requiredCount || 1}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+          </ScrollView>
+
+          {/* View All 54 Badges Action Button */}
+          <TouchableOpacity
+            style={styles.viewAllBadgesBtn}
+            onPress={() => setAllBadgesModalVisible(true)}
+            activeOpacity={0.85}
+          >
+            <View style={styles.viewAllLeftRow}>
+              <View style={styles.viewAllIconBubble}>
+                <Sparkles size={14} color={COLORS.primary} />
+              </View>
+              <Text style={styles.viewAllBadgesBtnText}>
+                View All {reputation?.badges.length || 54} Badges & Categories
+              </Text>
+            </View>
+            <ChevronRight size={16} color={COLORS.primary} />
+          </TouchableOpacity>
         </View>
 
         {/* 4. PRIVACY & SECURITY CONTROL CENTER */}
@@ -481,6 +502,13 @@ export default function ModernYouScreen() {
         visible={Boolean(selectedBadge)}
         badge={selectedBadge}
         onClose={() => setSelectedBadge(null)}
+      />
+
+      {/* ALL 54 BADGES CATEGORICAL SLIDE-UP MODAL */}
+      <AllBadgesModal
+        visible={allBadgesModalVisible}
+        badges={reputation?.badges || []}
+        onClose={() => setAllBadgesModalVisible(false)}
       />
 
       {/* MODERN REUSABLE ALERT MODAL */}
@@ -826,7 +854,7 @@ const styles = StyleSheet.create({
   cardHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'space-between',
     marginBottom: 4,
   },
   cardHeaderTitle: {
@@ -839,78 +867,119 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginBottom: 12,
   },
-  badgeFiltersRow: {
-    gap: 8,
-    paddingBottom: 12,
-    marginBottom: 4,
-  },
-  badgeFilterPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: RADIUS.full,
-    backgroundColor: COLORS.surfaceHighlight,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  badgeFilterPillActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  badgeFilterText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-  badgeFilterTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-  },
-  badgesGrid: {
+  headerLeftGroup: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    justifyContent: 'space-between',
-  },
-  badgeGridItem: {
-    width: '30%',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
+    flex: 1,
+  },
+  badgeCountBadge: {
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  badgeCountBadgeText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: COLORS.primary,
+    letterSpacing: 0.4,
+  },
+  recentBadgesRow: {
+    gap: 10,
+    paddingVertical: 4,
+    paddingBottom: 12,
+  },
+  recentBadgePill: {
+    width: 90,
     backgroundColor: COLORS.surfaceHighlight,
-    padding: 10,
     borderRadius: RADIUS.lg,
+    padding: 8,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  badgeEmblemWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    marginVertical: 4,
+  recentBadgePillLocked: {
+    backgroundColor: '#F8FAFC',
+    borderColor: '#E2E8F0',
   },
-  badgeLockPill: {
+  recentEmblemCenter: {
+    position: 'relative',
+    marginVertical: 2,
+  },
+  miniLockOverlay: {
     position: 'absolute',
     bottom: -2,
     right: -2,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     backgroundColor: '#64748B',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeEmoji: {
-    fontSize: 22,
-  },
-  badgeItemTitle: {
-    fontSize: 10.5,
+  recentBadgeTitle: {
+    fontSize: 9.5,
     fontWeight: '800',
     color: COLORS.textPrimary,
     textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 3,
   },
-  badgeItemTier: {
-    fontSize: 9.5,
+  earnedTag: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: RADIUS.full,
+  },
+  earnedTagText: {
+    fontSize: 8,
+    fontWeight: '900',
+    color: '#059669',
+  },
+  lockedProgressTag: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: RADIUS.full,
+  },
+  lockedProgressText: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: COLORS.textMuted,
+  },
+  viewAllBadgesBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#EFF6FF',
+    borderRadius: RADIUS.lg,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    marginTop: 2,
+  },
+  viewAllLeftRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  viewAllIconBubble: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  viewAllBadgesBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
     color: COLORS.primary,
-    fontWeight: '700',
   },
   settingToggleRow: {
     flexDirection: 'row',

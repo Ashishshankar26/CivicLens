@@ -1,5 +1,18 @@
 export type CitizenLevel = 1 | 2 | 3 | 4 | 5;
 
+export type BadgeCategory =
+  | 'onboarding'
+  | 'potholes'
+  | 'lighting'
+  | 'waste'
+  | 'verification'
+  | 'resolution'
+  | 'streak'
+  | 'milestones'
+  | 'reporting'
+  | 'reputation'
+  | 'scouting';
+
 export interface Badge {
   id: string;
   title: string;
@@ -7,18 +20,7 @@ export interface Badge {
   icon: string;
   unlockedAt?: string;
   isUnlocked: boolean;
-  category:
-    | 'onboarding'
-    | 'potholes'
-    | 'lighting'
-    | 'waste'
-    | 'verification'
-    | 'resolution'
-    | 'streak'
-    | 'milestones'
-    | 'reporting'
-    | 'reputation'
-    | 'scouting';
+  category: BadgeCategory;
   requiredCount?: number;
   currentCount?: number;
   tier?: 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'master';

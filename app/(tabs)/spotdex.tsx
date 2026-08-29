@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getUserReputation } from '@/services/gamification/gamificationService';
 import { UserReputation, Badge } from '@/types/gamification';
 import { BadgeDetailModal } from '@/components/gamification/BadgeDetailModal';
+import { AllBadgesModal } from '@/components/gamification/AllBadgesModal';
 import { RealBadgeEmblem } from '@/components/ui/RealBadgeEmblem';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import { formatRelativeTime } from '@/utils/formatters';
@@ -47,6 +48,7 @@ export default function SpotdexScreen() {
   const [registryScope, setRegistryScope] = useState<'my' | 'community'>('my');
   const [logFilter, setLogFilter] = useState<string>('all');
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+  const [allBadgesModalVisible, setAllBadgesModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
     loadReputationData();
@@ -258,10 +260,10 @@ export default function SpotdexScreen() {
             <Text style={styles.sectionTitle}>Badges & Milestones</Text>
             <TouchableOpacity
               style={styles.seeAllBtn}
-              onPress={() => router.push('/(tabs)/profile')}
+              onPress={() => setAllBadgesModalVisible(true)}
               activeOpacity={0.7}
             >
-              <Text style={styles.seeAllText}>See all</Text>
+              <Text style={styles.seeAllText}>See all ({totalBadgesCount})</Text>
               <ChevronRight size={14} color={COLORS.primary} />
             </TouchableOpacity>
           </View>
@@ -470,6 +472,13 @@ export default function SpotdexScreen() {
         visible={Boolean(selectedBadge)}
         badge={selectedBadge}
         onClose={() => setSelectedBadge(null)}
+      />
+
+      {/* ALL 54 BADGES SLIDE-UP MODAL */}
+      <AllBadgesModal
+        visible={allBadgesModalVisible}
+        badges={reputation?.badges || []}
+        onClose={() => setAllBadgesModalVisible(false)}
       />
     </View>
   );

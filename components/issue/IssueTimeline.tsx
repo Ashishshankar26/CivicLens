@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { IssueTimelineStep } from '@/types/issue';
-import { COLORS, RADIUS, SPACING } from '@/constants/theme';
-import { CheckCircle2, Clock, CircleDot, AlertTriangle } from 'lucide-react-native';
+import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
+import { CheckCircle2, CircleDot, Activity, ShieldCheck } from 'lucide-react-native';
 
 interface IssueTimelineProps {
   timeline: IssueTimelineStep[];
@@ -11,7 +11,16 @@ interface IssueTimelineProps {
 export const IssueTimeline: React.FC<IssueTimelineProps> = ({ timeline }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>ISSUE HEALTH LIFECYCLE</Text>
+      <View style={styles.headerRow}>
+        <View style={styles.headerTitleRow}>
+          <Activity size={16} color={COLORS.primary} strokeWidth={2.4} />
+          <Text style={styles.sectionTitle}>LIFECYCLE TIMELINE</Text>
+        </View>
+        <View style={styles.liveBadge}>
+          <View style={styles.liveDot} />
+          <Text style={styles.liveBadgeText}>LIVE TELEMETRY</Text>
+        </View>
+      </View>
 
       <View style={styles.timelineList}>
         {timeline.map((step, idx) => {
@@ -31,9 +40,9 @@ export const IssueTimeline: React.FC<IssueTimelineProps> = ({ timeline }) => {
                   ]}
                 >
                   {isCompleted ? (
-                    <CheckCircle2 size={14} color="#FFFFFF" strokeWidth={2.5} />
+                    <CheckCircle2 size={13} color="#FFFFFF" strokeWidth={2.8} />
                   ) : isCurrent ? (
-                    <CircleDot size={14} color={COLORS.primary} />
+                    <CircleDot size={13} color="#FFFFFF" strokeWidth={2.8} />
                   ) : (
                     <View style={styles.emptyDot} />
                   )}
@@ -75,19 +84,50 @@ export const IssueTimeline: React.FC<IssueTimelineProps> = ({ timeline }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
+    backgroundColor: '#FFFFFF',
+    borderRadius: RADIUS.xl,
     padding: SPACING.md,
     borderWidth: 1,
     borderColor: COLORS.border,
-    marginVertical: SPACING.sm,
+    ...SHADOWS.subtle,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   sectionTitle: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: COLORS.textMuted,
-    letterSpacing: 0.6,
-    marginBottom: 12,
+    fontSize: 12,
+    fontWeight: '900',
+    color: COLORS.textPrimary,
+    letterSpacing: 0.5,
+  },
+  liveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: RADIUS.full,
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.primary,
+  },
+  liveBadgeText: {
+    fontSize: 8.5,
+    fontWeight: '900',
+    color: COLORS.primary,
+    letterSpacing: 0.3,
   },
   timelineList: {
     gap: 0,
@@ -99,29 +139,33 @@ const styles = StyleSheet.create({
   },
   indicatorCol: {
     alignItems: 'center',
-    width: 22,
+    width: 24,
   },
   nodeCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#E2E8F0',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 2,
+    borderColor: '#CBD5E1',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 2,
   },
   nodeCompleted: {
-    backgroundColor: COLORS.success,
+    backgroundColor: '#10B981',
+    borderColor: '#059669',
+    ...SHADOWS.subtle,
   },
   nodeCurrent: {
-    backgroundColor: COLORS.primaryLight,
-    borderWidth: 2,
-    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primary,
+    borderColor: '#0047B3',
+    ...SHADOWS.subtle,
   },
   emptyDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
     backgroundColor: '#94A3B8',
   },
   connectorLine: {
@@ -131,7 +175,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   connectorCompleted: {
-    backgroundColor: COLORS.success,
+    backgroundColor: '#10B981',
   },
   textCol: {
     flex: 1,
@@ -153,17 +197,18 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   stepTitleCurrent: {
-    color: COLORS.primaryDark,
+    color: COLORS.primary,
     fontWeight: '900',
   },
   stepTimestamp: {
     fontSize: 10,
     color: COLORS.textMuted,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   stepSubtitle: {
-    fontSize: 11,
+    fontSize: 11.5,
     color: COLORS.textSecondary,
-    lineHeight: 15,
+    lineHeight: 16,
+    marginTop: 1,
   },
 });

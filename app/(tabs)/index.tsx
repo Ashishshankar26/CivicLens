@@ -185,9 +185,9 @@ export default function ModernMapScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.dotsRow}>
-                <View style={[styles.dot, { backgroundColor: COLORS.error }]} />
-                <View style={[styles.dot, { backgroundColor: COLORS.primary }]} />
-                <View style={[styles.dot, { backgroundColor: COLORS.success }]} />
+                <View style={[styles.appleDot, { backgroundColor: '#FF5F56', borderColor: '#E0443E' }]} />
+                <View style={[styles.appleDot, { backgroundColor: '#007AFF', borderColor: '#0062CC' }]} />
+                <View style={[styles.appleDot, { backgroundColor: '#27C93F', borderColor: '#1AAB29' }]} />
               </View>
               <ChevronDown size={14} color={COLORS.textSecondary} />
             </TouchableOpacity>
@@ -445,13 +445,20 @@ const styles = StyleSheet.create({
   },
   dotsRow: {
     flexDirection: 'row',
-    gap: 4,
+    gap: 5,
     alignItems: 'center',
+    paddingHorizontal: 2,
   },
   dot: {
     width: 7,
     height: 7,
     borderRadius: 3.5,
+  },
+  appleDot: {
+    width: 8.5,
+    height: 8.5,
+    borderRadius: 4.25,
+    borderWidth: 0.75,
   },
   dropdownMenu: {
     position: 'absolute',

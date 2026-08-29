@@ -65,65 +65,84 @@ export async function logUserCivicAction(
   };
 }
 
-export const SEEDED_LEADERBOARD: LeaderboardUser[] = [
-  {
-    id: 'user_lead_1',
-    displayName: 'Ananya Sharma',
-    points: 2450,
-    level: 5 as CitizenLevel,
-    levelTitle: 'Civic Legend 👑',
-    trustScore: 98,
-    streakWeeks: 7,
-    rank: 1,
-    reportsCount: 28,
-    resolvedCount: 14,
-  },
-  {
-    id: 'user_lead_2',
-    displayName: 'Rajesh Kumar',
-    points: 1980,
-    level: 5 as CitizenLevel,
-    levelTitle: 'Civic Legend 👑',
-    trustScore: 94,
-    streakWeeks: 5,
-    rank: 2,
-    reportsCount: 22,
-    resolvedCount: 9,
-  },
-  {
-    id: 'user_lead_3',
-    displayName: 'Ashish Shankar',
-    points: 1240,
-    level: 4 as CitizenLevel,
-    levelTitle: 'Road Guardian 🛡️',
-    trustScore: 92,
-    streakWeeks: 3,
-    rank: 3,
-    reportsCount: 8,
-    resolvedCount: 3,
-  },
-  {
-    id: 'user_lead_4',
-    displayName: 'Priya Verma',
-    points: 890,
-    level: 3 as CitizenLevel,
-    levelTitle: 'Active Ranger 🧭',
-    trustScore: 84,
-    streakWeeks: 2,
-    rank: 4,
-    reportsCount: 6,
-    resolvedCount: 2,
-  },
-  {
-    id: 'user_lead_5',
-    displayName: 'Kabir Mehta',
-    points: 620,
-    level: 2 as CitizenLevel,
-    levelTitle: 'Apprentice Scout 🔍',
-    trustScore: 78,
-    streakWeeks: 1,
-    rank: 5,
-    reportsCount: 4,
-    resolvedCount: 1,
-  },
-];
+import { collection, getDocs } from 'firebase/firestore';
+import { db, isLiveFirebase } from '../firebase/config';
+import { getIssues } from '../issues/issueService';
+
+/**
+ * Dynamically queries real registered users from Firestore and real reporters from issues database
+ */
+export async function getLiveLeaderboard(): Promise<LeaderboardUser[]> {
+  const usersMap = new Map<string, LeaderboardUser>();
+
+  // 1. Fetch live users from Firestore if connected
+  if (isLiveFirebase && db) {
+    try {
+      const usersRef = collection(db, 'users');
+      const snap = await getDocs(usersRef);
+      snap.forEach((docSnap) => {
+        const data = docSnap.data();
+        const rep = data.reputation as UserReputation | undefined;
+        const reportsCount = rep?.reportsCount ?? data.reportsCount ?? 0;
+        const confirmationsCount = rep?.confirmationsCount ?? data.confirmationsCount ?? 0;
+        const resolvedCount = rep?.resolvedCount ?? data.resolvedCount ?? 0;
+        const points = (reportsCount * 50) + (confirmationsCount * 25) + (resolvedCount * 100);
+
+        const level = (rep?.level || (points > 1000 ? 5 : points > 600 ? 4 : points > 300 ? 3 : points > 100 ? 2 : 1)) as CitizenLevel;
+        const levelTitle = rep?.levelTitle || (level === 5 ? 'Civic Legend 👑' : level === 4 ? 'Road Guardian 🛡️' : level === 3 ? 'Active Ranger 🧭' : level === 2 ? 'Apprentice Scout 🔍' : 'Novice Scout 🌱');
+        const trustScore = rep?.trustScore || Math.min(99, 60 + Math.round(points / 20));
+
+        usersMap.set(docSnap.id, {
+          id: docSnap.id,
+          displayName: data.displayName || data.email?.split('@')[0] || 'Civic Scout',
+          points,
+          level,
+          levelTitle,
+          trustScore,
+          streakWeeks: rep?.streakWeeks || 0,
+          rank: 1,
+          reportsCount,
+          resolvedCount,
+        });
+      });
+    } catch (e) {
+      console.warn('[Leaderboard] Firestore query notice:', e);
+    }
+  }
+
+  // 2. Aggregate active reporters from real issues in the database
+  try {
+    const issues = await getIssues();
+    issues.forEach((issue) => {
+      if (issue.reportedBy) {
+        const existing = usersMap.get(issue.reportedBy);
+        if (existing) {
+          existing.reportsCount = Math.max(existing.reportsCount, 1);
+          if (issue.status === 'resolved') existing.resolvedCount++;
+          existing.points = (existing.reportsCount * 50) + (existing.resolvedCount * 100);
+        } else {
+          usersMap.set(issue.reportedBy, {
+            id: issue.reportedBy,
+            displayName: issue.reportedBy.startsWith('user_') ? issue.reportedBy.replace(/^user_/, '').replace(/_/g, ' ') : 'Citizen Scout',
+            points: 50 + (issue.status === 'resolved' ? 100 : 0),
+            level: 1 as CitizenLevel,
+            levelTitle: 'Novice Scout 🌱',
+            trustScore: 75,
+            streakWeeks: 0,
+            rank: 1,
+            reportsCount: 1,
+            resolvedCount: issue.status === 'resolved' ? 1 : 0,
+          });
+        }
+      }
+    });
+  } catch (e) {}
+
+  // 3. Sort by points descending and assign genuine ranks
+  const sorted = Array.from(usersMap.values()).sort((a, b) => b.points - a.points);
+  sorted.forEach((u, index) => {
+    u.rank = index + 1;
+  });
+
+  return sorted;
+}

@@ -21,9 +21,9 @@ export const DEMO_USER: UserProfile = {
   email: 'citizen@civiclens.org',
   displayName: 'Ashish Shankar',
   createdAt: new Date().toISOString(),
-  reportsCount: 4,
-  confirmationsCount: 12,
-  resolvedCount: 3,
+  reportsCount: 0,
+  confirmationsCount: 0,
+  resolvedCount: 0,
 };
 
 /**
@@ -70,9 +70,9 @@ export async function loginWithEmail(email: string, pass: string): Promise<UserP
       email,
       displayName: email.split('@')[0] || 'Civic Citizen',
       createdAt: new Date().toISOString(),
-      reportsCount: 1,
-      confirmationsCount: 3,
-      resolvedCount: 1,
+      reportsCount: 0,
+      confirmationsCount: 0,
+      resolvedCount: 0,
     };
   }
 

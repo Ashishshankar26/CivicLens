@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  SEEDED_LEADERBOARD,
+  getLiveLeaderboard,
   getUserReputation,
 } from '@/services/gamification/gamificationService';
 import { LeaderboardUser, UserReputation } from '@/types/gamification';
@@ -28,18 +28,39 @@ import {
 export default function ModernLeaderboardScreen() {
   const { user } = useAuth();
   const [reputation, setReputation] = useState<UserReputation | null>(null);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>(SEEDED_LEADERBOARD);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    async function loadRep() {
-      const rep = await getUserReputation(user?.uid);
-      setReputation(rep);
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const [rep, lead] = await Promise.all([
+          getUserReputation(user?.uid),
+          getLiveLeaderboard(),
+        ]);
+        setReputation(rep);
+        setLeaderboard(lead);
+      } catch (err) {
+        console.warn('Leaderboard fetch notice:', err);
+      } finally {
+        setIsLoading(false);
+      }
     }
-    loadRep();
+    loadData();
   }, [user]);
 
   const top3 = leaderboard.slice(0, 3);
   const restUsers = leaderboard.slice(3);
+
+  const currentUserEntry = leaderboard.find((u) => u.id === user?.uid);
+  const currentUserRank = currentUserEntry ? `#${currentUserEntry.rank}` : '#1';
+  const userLevel = reputation?.level || 1;
+  const userLevelTitle = reputation?.levelTitle || 'Novice Scout 🌱';
+  const userPoints = currentUserEntry
+    ? currentUserEntry.points
+    : (reputation?.reportsCount || 0) * 50 + (reputation?.confirmationsCount || 0) * 25 + (reputation?.resolvedCount || 0) * 100;
+  const userStreakWeeks = reputation?.streakWeeks || (reputation?.streakDays ? Math.floor(reputation.streakDays / 7) : 0);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -100,8 +121,8 @@ export default function ModernLeaderboardScreen() {
           {/* Rank 3 - Bronze */}
           {top3[2] && (
             <View style={styles.podiumItem}>
-              <View style={[styles.avatarRing, { borderColor: '#D97706' }]}>
-                <Text style={styles.avatarRankText}>3</Text>
+              <View style={[styles.avatarRing, { borderColor: '#B45309' }]}>
+                <Text style={[styles.avatarRankText, { color: '#B45309' }]}>3</Text>
               </View>
               <Text style={styles.podiumName} numberOfLines={1}>
                 {top3[2].displayName}
@@ -109,75 +130,79 @@ export default function ModernLeaderboardScreen() {
               <Text style={styles.podiumPoints}>{top3[2].points.toLocaleString()} pts</Text>
               <View style={[styles.podiumStand, styles.stand3]}>
                 <Medal size={22} color="#B45309" />
-                <Text style={styles.standRankLabel}>#3</Text>
+                <Text style={[styles.standRankLabel, { color: '#B45309' }]}>#3</Text>
               </View>
             </View>
           )}
         </View>
 
         {/* RANKINGS LIST */}
-        <Text style={styles.listSectionHeading}>DISTRICT COMMUNITY RANKINGS</Text>
-        <View style={styles.listCard}>
-          {restUsers.map((item) => {
-            const isMe = item.isCurrentUser;
-            return (
-              <View
-                key={item.id}
-                style={[styles.rankRow, isMe && styles.rankRowMe]}
-              >
-                <View style={[styles.rankBadge, isMe && styles.rankBadgeMe]}>
-                  <Text style={[styles.rankBadgeNum, isMe && styles.rankBadgeNumMe]}>
-                    #{item.rank}
-                  </Text>
-                </View>
+        {restUsers.length > 0 && (
+          <>
+            <Text style={styles.listSectionHeading}>DISTRICT COMMUNITY RANKINGS</Text>
+            <View style={styles.listCard}>
+              {restUsers.map((item) => {
+                const isMe = item.id === user?.uid;
+                return (
+                  <View
+                    key={item.id}
+                    style={[styles.rankRow, isMe && styles.rankRowMe]}
+                  >
+                    <View style={[styles.rankBadge, isMe && styles.rankBadgeMe]}>
+                      <Text style={[styles.rankBadgeNum, isMe && styles.rankBadgeNumMe]}>
+                        #{item.rank}
+                      </Text>
+                    </View>
 
-                <View style={styles.rankInfoCol}>
-                  <View style={styles.rankNameRow}>
-                    <Text style={[styles.rankName, isMe && styles.rankNameMe]}>
-                      {item.displayName}
-                    </Text>
-                    {isMe && (
-                      <View style={styles.meTag}>
-                        <Text style={styles.meTagText}>YOU</Text>
+                    <View style={styles.rankInfoCol}>
+                      <View style={styles.rankNameRow}>
+                        <Text style={[styles.rankName, isMe && styles.rankNameMe]}>
+                          {item.displayName}
+                        </Text>
+                        {isMe && (
+                          <View style={styles.meTag}>
+                            <Text style={styles.meTagText}>YOU</Text>
+                          </View>
+                        )}
                       </View>
-                    )}
+                      <Text style={styles.rankLevelSub}>{item.levelTitle}</Text>
+                    </View>
+
+                    {/* Trust Score */}
+                    <View style={styles.trustScorePill}>
+                      <Shield size={11} color={COLORS.primary} />
+                      <Text style={styles.trustScoreText}>{item.trustScore}</Text>
+                    </View>
+
+                    {/* Points */}
+                    <View style={styles.pointsCol}>
+                      <Text style={styles.pointsVal}>{item.points.toLocaleString()}</Text>
+                      <Text style={styles.pointsLabel}>pts</Text>
+                    </View>
                   </View>
-                  <Text style={styles.rankLevelSub}>{item.levelTitle}</Text>
-                </View>
-
-                {/* Trust Score */}
-                <View style={styles.trustScorePill}>
-                  <Shield size={11} color={COLORS.primary} />
-                  <Text style={styles.trustScoreText}>{item.trustScore}</Text>
-                </View>
-
-                {/* Points */}
-                <View style={styles.pointsCol}>
-                  <Text style={styles.pointsVal}>{item.points.toLocaleString()}</Text>
-                  <Text style={styles.pointsLabel}>pts</Text>
-                </View>
-              </View>
-            );
-          })}
-        </View>
+                );
+              })}
+            </View>
+          </>
+        )}
       </ScrollView>
 
-      {/* STICKY BOTTOM USER STATUS CARD (Tesla Style) */}
+      {/* STICKY BOTTOM USER STATUS CARD */}
       <View style={styles.stickyBar}>
         <View style={styles.stickyRankCircle}>
-          <Text style={styles.stickyRankNum}>#4</Text>
+          <Text style={styles.stickyRankNum}>{currentUserRank}</Text>
         </View>
 
         <View style={styles.stickyInfoCol}>
-          <Text style={styles.stickyName}>{user?.displayName || 'Ashish Shankar'}</Text>
+          <Text style={styles.stickyName}>{user?.displayName || 'Citizen Scout'}</Text>
           <Text style={styles.stickySub}>
-            Level 4: Road Guardian • {reputation?.points || 1250} pts
+            Level {userLevel}: {userLevelTitle} • {userPoints.toLocaleString()} pts
           </Text>
         </View>
 
         <View style={styles.streakPill}>
           <Flame size={14} color="#DC2626" />
-          <Text style={styles.streakText}>{reputation?.streakWeeks || 3}w streak</Text>
+          <Text style={styles.streakText}>{userStreakWeeks}w streak</Text>
         </View>
       </View>
     </SafeAreaView>

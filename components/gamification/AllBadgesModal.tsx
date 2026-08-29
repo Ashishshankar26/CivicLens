@@ -18,12 +18,15 @@ import {
   X,
   Sparkles,
   Lock,
-  Award,
-  ChevronRight,
-  Shield,
-  Zap,
-  Flame,
+  Compass,
+  Construction,
+  Lightbulb,
+  Recycle,
+  ShieldCheck,
   CheckCircle2,
+  Flame,
+  Trophy,
+  LucideIcon,
 } from 'lucide-react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -34,7 +37,7 @@ interface CategoryMeta {
   subtitle: string;
   accentColor: string;
   headerBg: string;
-  iconEmoji: string;
+  icon: LucideIcon;
 }
 
 const CATEGORY_SECTIONS: CategoryMeta[] = [
@@ -44,7 +47,7 @@ const CATEGORY_SECTIONS: CategoryMeta[] = [
     subtitle: 'First steps on the scout trail',
     accentColor: '#0284C7',
     headerBg: '#E0F2FE',
-    iconEmoji: '🌱',
+    icon: Compass,
   },
   {
     id: 'potholes',
@@ -52,7 +55,7 @@ const CATEGORY_SECTIONS: CategoryMeta[] = [
     subtitle: 'Crater spotters & surface medics',
     accentColor: '#EA580C',
     headerBg: '#FFEDD5',
-    iconEmoji: '🕳️',
+    icon: Construction,
   },
   {
     id: 'lighting',
@@ -60,7 +63,7 @@ const CATEGORY_SECTIONS: CategoryMeta[] = [
     subtitle: 'Luminary spotters & dark watches',
     accentColor: '#D97706',
     headerBg: '#FEF3C7',
-    iconEmoji: '💡',
+    icon: Lightbulb,
   },
   {
     id: 'waste',
@@ -68,7 +71,7 @@ const CATEGORY_SECTIONS: CategoryMeta[] = [
     subtitle: 'Eco sentinels & waste trackers',
     accentColor: '#059669',
     headerBg: '#ECFDF5',
-    iconEmoji: '♻️',
+    icon: Recycle,
   },
   {
     id: 'verification',
@@ -76,7 +79,7 @@ const CATEGORY_SECTIONS: CategoryMeta[] = [
     subtitle: 'Field inspectors & validators',
     accentColor: '#4F46E5',
     headerBg: '#EEF2FF',
-    iconEmoji: '🛡️',
+    icon: ShieldCheck,
   },
   {
     id: 'resolution',
@@ -84,7 +87,7 @@ const CATEGORY_SECTIONS: CategoryMeta[] = [
     subtitle: 'Repair witnesses & city restorers',
     accentColor: '#DB2777',
     headerBg: '#FCE7F3',
-    iconEmoji: '🛠️',
+    icon: CheckCircle2,
   },
   {
     id: 'streak',
@@ -92,7 +95,7 @@ const CATEGORY_SECTIONS: CategoryMeta[] = [
     subtitle: 'Daily momentum & weekend scouts',
     accentColor: '#DC2626',
     headerBg: '#FEE2E2',
-    iconEmoji: '⚡',
+    icon: Flame,
   },
   {
     id: 'milestones',
@@ -100,7 +103,7 @@ const CATEGORY_SECTIONS: CategoryMeta[] = [
     subtitle: 'Milestone clubs & neural scans',
     accentColor: '#9333EA',
     headerBg: '#FAF5FF',
-    iconEmoji: '🏆',
+    icon: Trophy,
   },
 ];
 
@@ -205,7 +208,7 @@ export const AllBadgesModal: React.FC<AllBadgesModalProps> = ({
                           { backgroundColor: '#FFFFFF', borderColor: section.accentColor },
                         ]}
                       >
-                        <Text style={styles.categoryEmoji}>{section.iconEmoji}</Text>
+                        <section.icon size={15} color={section.accentColor} strokeWidth={2.4} />
                       </View>
                       <View style={styles.categoryTitleGroup}>
                         <Text style={[styles.categoryTitle, { color: section.accentColor }]}>

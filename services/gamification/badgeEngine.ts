@@ -17,7 +17,7 @@ const DEFAULT_PRIVACY: UserPrivacySettings = {
  */
 export const DEMO_REPUTATION: UserReputation = {
   level: 1,
-  levelTitle: 'Novice Scout 🌱',
+  levelTitle: 'Novice Scout',
   trustScore: 70,
   trustTier: 'Active Citizen',
   streakDays: 0,
@@ -45,7 +45,7 @@ export const DEMO_REPUTATION: UserReputation = {
 export function createNewUserReputation(userId: string): UserReputation {
   return {
     level: 1,
-    levelTitle: 'Novice Scout 🌱',
+    levelTitle: 'Novice Scout',
     trustScore: 50,
     trustTier: 'New Scout',
     streakDays: 0,
@@ -294,23 +294,23 @@ export function crossVerifyBadgesWithUserActivity(
   const unlockedCount = rep.badges.filter((b) => b.isUnlocked).length;
   if (unlockedCount >= 20 || points >= 1200) {
     rep.level = 5;
-    rep.levelTitle = 'Civic Legend 👑';
+    rep.levelTitle = 'Civic Legend';
     rep.trustTier = 'Verified Guardian';
   } else if (unlockedCount >= 10 || points >= 600) {
     rep.level = 4;
-    rep.levelTitle = 'Road Guardian 🛡️';
+    rep.levelTitle = 'Road Guardian';
     rep.trustTier = 'Verified Guardian';
   } else if (unlockedCount >= 5 || points >= 300) {
     rep.level = 3;
-    rep.levelTitle = 'Active Ranger 🧭';
+    rep.levelTitle = 'Active Ranger';
     rep.trustTier = 'Active Citizen';
   } else if (unlockedCount >= 2 || points >= 100) {
     rep.level = 2;
-    rep.levelTitle = 'Apprentice Scout 🔍';
+    rep.levelTitle = 'Apprentice Scout';
     rep.trustTier = 'Active Citizen';
   } else {
     rep.level = 1;
-    rep.levelTitle = 'Novice Scout 🌱';
+    rep.levelTitle = 'Novice Scout';
     rep.trustTier = 'New Scout';
   }
 
@@ -690,21 +690,21 @@ export async function logUserCivicAction(
   const totalActions = rep.reportsCount + rep.confirmationsCount + rep.resolvedCount * 2;
   const oldLevel = rep.level;
   let newLevel: CitizenLevel = 1;
-  let newLevelTitle = 'Novice Scout 🌱';
+  let newLevelTitle = 'Novice Scout';
   let trustScore = Math.min(50 + totalActions * 4, 100);
 
   if (totalActions >= 30) {
     newLevel = 5;
-    newLevelTitle = 'Civic Legend 👑';
+    newLevelTitle = 'Civic Legend';
   } else if (totalActions >= 18) {
     newLevel = 4;
-    newLevelTitle = 'Road Guardian 🛡️';
+    newLevelTitle = 'Road Guardian';
   } else if (totalActions >= 8) {
     newLevel = 3;
-    newLevelTitle = 'Active Ranger 🧭';
+    newLevelTitle = 'Active Ranger';
   } else if (totalActions >= 2) {
     newLevel = 2;
-    newLevelTitle = 'Apprentice Scout 🔍';
+    newLevelTitle = 'Apprentice Scout';
   }
 
   rep.level = newLevel;

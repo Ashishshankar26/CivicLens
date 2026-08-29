@@ -129,9 +129,12 @@ export const IssueBottomSheet: React.FC<IssueBottomSheetProps> = ({
           </View>
 
           {/* Location / Coordinates Subtitle */}
-          <Text style={styles.coordsText} numberOfLines={1}>
-            📍 {issue.locationName || `${issue.latitude.toFixed(4)}, ${issue.longitude.toFixed(4)}`}
-          </Text>
+          <View style={styles.locationRow}>
+            <MapPin size={11} color={COLORS.textMuted} />
+            <Text style={styles.coordsText} numberOfLines={1}>
+              {issue.locationName || `${issue.latitude.toFixed(4)}, ${issue.longitude.toFixed(4)}`}
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -268,10 +271,16 @@ const styles = StyleSheet.create({
     color: '#DC2626',
     fontWeight: '800',
   },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
   coordsText: {
     fontSize: 10.5,
     color: COLORS.textMuted,
     fontWeight: '600',
+    flex: 1,
   },
   footerRow: {
     flexDirection: 'row',

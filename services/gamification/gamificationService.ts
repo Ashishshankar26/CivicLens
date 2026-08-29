@@ -91,7 +91,7 @@ export async function getLiveLeaderboard(): Promise<LeaderboardUser[]> {
         const points = (reportsCount * 50) + (confirmationsCount * 25) + (resolvedCount * 100);
 
         const level = (rep?.level || (points > 1000 ? 5 : points > 600 ? 4 : points > 300 ? 3 : points > 100 ? 2 : 1)) as CitizenLevel;
-        const levelTitle = rep?.levelTitle || (level === 5 ? 'Civic Legend 👑' : level === 4 ? 'Road Guardian 🛡️' : level === 3 ? 'Active Ranger 🧭' : level === 2 ? 'Apprentice Scout 🔍' : 'Novice Scout 🌱');
+        const levelTitle = rep?.levelTitle || (level === 5 ? 'Civic Legend' : level === 4 ? 'Road Guardian' : level === 3 ? 'Active Ranger' : level === 2 ? 'Apprentice Scout' : 'Novice Scout');
         const trustScore = rep?.trustScore || Math.min(99, 60 + Math.round(points / 20));
 
         usersMap.set(docSnap.id, {
@@ -128,7 +128,7 @@ export async function getLiveLeaderboard(): Promise<LeaderboardUser[]> {
             displayName: issue.reportedBy.startsWith('user_') ? issue.reportedBy.replace(/^user_/, '').replace(/_/g, ' ') : 'Citizen Scout',
             points: 50 + (issue.status === 'resolved' ? 100 : 0),
             level: 1 as CitizenLevel,
-            levelTitle: 'Novice Scout 🌱',
+            levelTitle: 'Novice Scout',
             trustScore: 75,
             streakWeeks: 0,
             rank: 1,

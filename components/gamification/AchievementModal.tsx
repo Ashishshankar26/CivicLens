@@ -130,7 +130,7 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
           {leveledUp && (
             <View style={styles.levelDetailBox}>
               <Text style={styles.levelSub}>New Citizen Rank</Text>
-              <Text style={styles.newLevelName}>{newLevelTitle || 'Road Guardian 🛡️'}</Text>
+              <Text style={styles.newLevelName}>{newLevelTitle || 'Road Guardian'}</Text>
               <Text style={styles.levelHint}>
                 Your road verifications carry higher community weight.
               </Text>

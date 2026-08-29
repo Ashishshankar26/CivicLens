@@ -56,7 +56,7 @@ export default function ModernLeaderboardScreen() {
   const currentUserEntry = leaderboard.find((u) => u.id === user?.uid);
   const currentUserRank = currentUserEntry ? `#${currentUserEntry.rank}` : '#1';
   const userLevel = reputation?.level || 1;
-  const userLevelTitle = reputation?.levelTitle || 'Novice Scout 🌱';
+  const userLevelTitle = reputation?.levelTitle || 'Novice Scout';
   const userPoints = currentUserEntry
     ? currentUserEntry.points
     : (reputation?.reportsCount || 0) * 50 + (reputation?.confirmationsCount || 0) * 25 + (reputation?.resolvedCount || 0) * 100;

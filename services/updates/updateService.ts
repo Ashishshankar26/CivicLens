@@ -60,7 +60,7 @@ export async function checkAndApplyAppUpdate(manual = false): Promise<boolean> {
     if (update.isAvailable) {
       if (manual) {
         Alert.alert(
-          'Update Available 🚀',
+          'Update Available',
           'A new version of CivicLens is available. Would you like to download and install it now?',
           [
             { text: 'Later', style: 'cancel' },
@@ -81,7 +81,7 @@ export async function checkAndApplyAppUpdate(manual = false): Promise<boolean> {
         // Automatic silent background download
         await Updates.fetchUpdateAsync();
         Alert.alert(
-          'CivicLens Updated 🌟',
+          'CivicLens Updated',
           'An OTA update has been downloaded. Restart the app to apply the latest features.',
           [
             { text: 'Later', style: 'cancel' },
@@ -92,7 +92,7 @@ export async function checkAndApplyAppUpdate(manual = false): Promise<boolean> {
       return true;
     } else {
       if (manual) {
-        Alert.alert('Up to Date ✨', 'You are already running the latest version of CivicLens.');
+        Alert.alert('Up to Date', 'You are already running the latest version of CivicLens.');
       }
       return false;
     }

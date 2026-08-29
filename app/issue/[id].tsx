@@ -407,14 +407,14 @@ export default function IssueDetailsScreen() {
                   <View key={idx} style={styles.impactTag}>
                     <Text style={styles.impactTagText}>
                       {imp === 'two_wheeler_danger'
-                        ? '🏍️ 2-Wheeler Risk'
+                        ? 'Two-Wheeler Risk'
                         : imp === 'vehicle_damage'
-                        ? '🚗 Vehicle Damage'
+                        ? 'Vehicle Damage'
                         : imp === 'pedestrian_danger'
-                        ? '🚶 Pedestrian Risk'
+                        ? 'Pedestrian Risk'
                         : imp === 'traffic_slowdown'
-                        ? '🚦 Traffic Slowdown'
-                        : '⚠️ Road Hazard'}
+                        ? 'Traffic Slowdown'
+                        : 'Road Hazard'}
                     </Text>
                   </View>
                 ))}

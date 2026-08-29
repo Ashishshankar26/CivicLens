@@ -61,9 +61,9 @@ export async function sendHazardAlertPushNotification(
   locationName: string,
   isUrgent = false
 ) {
-  const emoji = isUrgent ? '🚨 URGENT' : '⚠️ CIVIC ALERT';
+  const prefix = isUrgent ? 'URGENT' : 'CIVIC ALERT';
   await scheduleCivicNotification({
-    title: `${emoji}: New ${category.replace('_', ' ').toUpperCase()} Reported`,
+    title: `${prefix}: New ${category.replace('_', ' ').toUpperCase()} Reported`,
     body: `A road safety issue was flagged near ${locationName}. Tap to view location on map.`,
     data: { type: 'hazard_alert', category, locationName },
   });
@@ -77,7 +77,7 @@ export async function sendRepairVerifiedPushNotification(
   locationName: string
 ) {
   await scheduleCivicNotification({
-    title: `✅ Road Restored: ${category.replace('_', ' ').toUpperCase()}`,
+    title: `Issue Resolved: ${category.replace('_', ' ').toUpperCase()}`,
     body: `Civic repairs completed near ${locationName}. Photo proof has been verified!`,
     data: { type: 'repair_verified', category, locationName },
   });
@@ -88,8 +88,8 @@ export async function sendRepairVerifiedPushNotification(
  */
 export async function sendBadgeUnlockedPushNotification(badgeTitle: string) {
   await scheduleCivicNotification({
-    title: `🏆 Milestone Unlocked: ${badgeTitle}`,
-    body: `Congratulations! You unlocked a new civic badge and earned citizen reputation points.`,
+    title: `Milestone Unlocked: ${badgeTitle}`,
+    body: `Congratulations! You unlocked a new badge and earned citizen reputation points.`,
     data: { type: 'badge_unlocked', badgeTitle },
   });
 }
@@ -99,7 +99,7 @@ export async function sendBadgeUnlockedPushNotification(badgeTitle: string) {
  */
 export async function sendOtaUpdatePushNotification(version = '1.0.0') {
   await scheduleCivicNotification({
-    title: `📲 CivicLens Update Available`,
+    title: `CivicLens Update Available`,
     body: `Version ${version} is ready with fresh map features and bug fixes. Tap to apply.`,
     data: { type: 'ota_update', version },
   });

@@ -535,7 +535,7 @@ export default function ReportIssueScreen() {
         visible={achievementModalVisible}
         unlockedBadge={unlockedBadge}
         leveledUp={leveledUp}
-        newLevelTitle="Road Guardian 🛡️"
+        newLevelTitle="Road Guardian"
         onClose={() => {
           setAchievementModalVisible(false);
           setImageUri(null);

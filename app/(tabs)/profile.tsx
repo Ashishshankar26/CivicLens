@@ -369,7 +369,7 @@ export default function ModernYouScreen() {
               </View>
             </View>
 
-            {/* GitHub Style Legend: Less 🟩🟩🟩 More */}
+            {/* Contribution Intensity Legend */}
             <View style={styles.githubLegendRow}>
               <Text style={styles.githubLegendText}>Contribution activity</Text>
               <View style={styles.legendScale}>
@@ -576,7 +576,7 @@ export default function ModernYouScreen() {
             style={styles.settingsRow}
             onPress={async () => {
               await scheduleCivicNotification({
-                title: '🚨 Live Hazard Alert: Pothole Flagged',
+                title: 'Live Hazard Alert: Pothole Flagged',
                 body: 'A high-severity road issue was confirmed near Connaught Circus. Tap to open map.',
                 data: { test: true },
               });

@@ -39,8 +39,10 @@ export interface UserReputation {
   trustScore: number; // 0 to 100
   trustTier: 'Verified Guardian' | 'Active Citizen' | 'Community Contributor' | 'New Scout' | 'Trusted Citizen' | 'Active Contributor';
   streakDays: number;
+  maxStreakDays?: number;
   streakWeeks: number;
   activeDaysThisWeek: string[]; // e.g. ['Mon', 'Wed', 'Fri']
+  activityDates?: Record<string, number>; // Mapping of YYYY-MM-DD to count
   reportsCount: number;
   confirmationsCount: number;
   resolvedCount: number;

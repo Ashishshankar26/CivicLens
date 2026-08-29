@@ -65,11 +65,39 @@ export default function ModernYouScreen() {
   const totalCaught = myReports.length;
   const badgesCount = reputation?.badges.filter((b) => b.isUnlocked).length || 0;
   const impactRadius = reputation?.impactRadiusKm || 0.0;
-  const totalContributions = (reputation?.reportsCount || 0) + (reputation?.confirmationsCount || 0);
+  const totalContributions = reputation?.activityDates
+    ? Object.values(reputation.activityDates).reduce((a, b) => a + b, 0)
+    : (reputation?.reportsCount || 0) + (reputation?.confirmationsCount || 0) + (reputation?.resolvedCount || 0);
+  const currentStreak = reputation?.streakDays || 0;
+  const maxStreak = reputation?.maxStreakDays || currentStreak;
 
   // GitHub Style Matrix Configuration (20 weeks, 7 days per week)
   const heatmapCols = 20;
-  const months = ['Apr', 'May', 'Jun', 'Jul', 'Aug'];
+  const today = new Date();
+  const currentDayOfWeek = (today.getDay() + 6) % 7; // 0 = Mon, 6 = Sun
+
+  const getCellContributionLevel = (colIdx: number, rowIdx: number) => {
+    const weeksAgo = 19 - colIdx;
+    const daysAgo = weeksAgo * 7 + (currentDayOfWeek - rowIdx);
+    if (daysAgo < 0) return 0;
+
+    const cellDate = new Date(today);
+    cellDate.setDate(cellDate.getDate() - daysAgo);
+    const dateStr = cellDate.toISOString().split('T')[0];
+    return reputation?.activityDates?.[dateStr] || 0;
+  };
+
+  // Generate dynamic 5 months labels based on past 20 weeks
+  const getDynamicMonthLabels = () => {
+    const labels: string[] = [];
+    for (let i = 4; i >= 0; i--) {
+      const d = new Date(today);
+      d.setMonth(d.getMonth() - i);
+      labels.push(d.toLocaleDateString('en-US', { month: 'short' }));
+    }
+    return labels;
+  };
+  const months = getDynamicMonthLabels();
 
   const handleTogglePrivacy = async (key: keyof UserPrivacySettings) => {
     if (!reputation) return;
@@ -184,9 +212,10 @@ export default function ModernYouScreen() {
                 {Array.from({ length: heatmapCols }).map((_, cIdx) => (
                   <View key={cIdx} style={styles.heatmapCol}>
                     {Array.from({ length: 7 }).map((_, rIdx) => {
-                      const isHeavy = (cIdx === 19 && (rIdx === 1 || rIdx === 3 || rIdx === 4)) || (cIdx === 18 && rIdx === 2);
-                      const isMedium = (cIdx === 17 && rIdx === 4) || (cIdx === 19 && rIdx === 0) || (cIdx === 15 && rIdx === 1);
-                      const isLight = (cIdx === 16 && rIdx === 3) || (cIdx === 14 && rIdx === 2) || (cIdx === 18 && rIdx === 5) || (cIdx === 12 && rIdx === 1);
+                      const count = getCellContributionLevel(cIdx, rIdx);
+                      const isLight = count === 1;
+                      const isMedium = count === 2;
+                      const isHeavy = count >= 3;
 
                       return (
                         <View
@@ -222,12 +251,12 @@ export default function ModernYouScreen() {
           {/* Activity Telemetry */}
           <View style={styles.activityStatsRow}>
             <View style={styles.activityStatBox}>
-              <Text style={styles.activityStatNum}>{reputation?.streakDays || 4} days</Text>
+              <Text style={styles.activityStatNum}>{currentStreak} days</Text>
               <Text style={styles.activityStatLabel}>Current streak</Text>
             </View>
             <View style={styles.activityStatDivider} />
             <View style={styles.activityStatBox}>
-              <Text style={styles.activityStatNum}>12 days</Text>
+              <Text style={styles.activityStatNum}>{maxStreak} days</Text>
               <Text style={styles.activityStatLabel}>Max streak</Text>
             </View>
             <View style={styles.activityStatDivider} />

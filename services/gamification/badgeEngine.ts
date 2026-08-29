@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db, isLiveFirebase } from '../firebase/config';
 import { UserReputation, Badge, CitizenLevel, UserActivityLog, UserPrivacySettings } from '@/types/gamification';
 import { ALL_CIVIC_BADGES } from '@/constants/badges';
 
@@ -9,6 +11,20 @@ const DEFAULT_PRIVACY: UserPrivacySettings = {
   shareTelemetry: true,
 };
 
+// Generate seeded activity dates for the Demo presentation user
+function generateDemoActivityDates(): Record<string, number> {
+  const dates: Record<string, number> = {};
+  const today = new Date();
+  const sampleOffsets = [0, 1, 2, 4, 7, 8, 12, 15, 18, 22, 28, 35, 42, 50, 65, 80];
+  sampleOffsets.forEach((offset, idx) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - offset);
+    const iso = d.toISOString().split('T')[0];
+    dates[iso] = (idx % 3) + 1;
+  });
+  return dates;
+}
+
 /**
  * Pre-seeded reputation for the Demo Citizen presentation account
  */
@@ -18,8 +34,10 @@ export const DEMO_REPUTATION: UserReputation = {
   trustScore: 92,
   trustTier: 'Verified Guardian',
   streakDays: 4,
+  maxStreakDays: 12,
   streakWeeks: 3,
   activeDaysThisWeek: ['Mon', 'Wed', 'Thu', 'Today'],
+  activityDates: generateDemoActivityDates(),
   reportsCount: 8,
   confirmationsCount: 16,
   resolvedCount: 3,
@@ -61,7 +79,7 @@ export const DEMO_REPUTATION: UserReputation = {
 };
 
 /**
- * Clean baseline reputation for new registered citizens
+ * Clean baseline reputation for new registered citizens (100% fresh, 0 days streak, 0 contributions)
  */
 export function createNewUserReputation(userId: string): UserReputation {
   return {
@@ -70,8 +88,10 @@ export function createNewUserReputation(userId: string): UserReputation {
     trustScore: 50,
     trustTier: 'New Scout',
     streakDays: 0,
+    maxStreakDays: 0,
     streakWeeks: 0,
     activeDaysThisWeek: [],
+    activityDates: {},
     reportsCount: 0,
     confirmationsCount: 0,
     resolvedCount: 0,
@@ -90,10 +110,25 @@ export const INITIAL_REPUTATION = DEMO_REPUTATION;
 
 function getStorageKey(userId?: string): string {
   if (!userId || userId === 'user-demo-citizen') {
-    return '@civiclens_user_reputation_demo_v5';
+    return '@civiclens_user_reputation_demo_v6';
   }
   const cleanId = userId.replace(/[^a-zA-Z0-9_-]/g, '_');
-  return `@civiclens_user_reputation_${cleanId}_v5`;
+  return `@civiclens_user_reputation_${cleanId}_v6`;
+}
+
+function sanitizeForFirestore(obj: any): any {
+  if (obj === null || obj === undefined) return null;
+  if (Array.isArray(obj)) return obj.map(sanitizeForFirestore);
+  if (typeof obj === 'object') {
+    const res: Record<string, any> = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (v !== undefined) {
+        res[k] = sanitizeForFirestore(v);
+      }
+    }
+    return res;
+  }
+  return obj;
 }
 
 /**
@@ -101,6 +136,22 @@ function getStorageKey(userId?: string): string {
  */
 export async function getLiveUserReputation(userId?: string): Promise<UserReputation> {
   const key = getStorageKey(userId);
+
+  // 1. Try fetching from Firestore if live
+  if (isLiveFirebase && db && userId && userId !== 'user-demo-citizen') {
+    try {
+      const snap = await getDoc(doc(db, 'reputations', userId));
+      if (snap.exists()) {
+        const firestoreData = snap.data() as UserReputation;
+        await AsyncStorage.setItem(key, JSON.stringify(firestoreData));
+        return syncBadgesWithSchema(firestoreData);
+      }
+    } catch (err) {
+      console.warn('[Reputation] Firestore read notice:', err);
+    }
+  }
+
+  // 2. Load from local cache
   try {
     const raw = await AsyncStorage.getItem(key);
     if (!raw) {
@@ -111,35 +162,40 @@ export async function getLiveUserReputation(userId?: string): Promise<UserReputa
       return initial;
     }
     const parsed: UserReputation = JSON.parse(raw);
-
-    // Merge any newly added badges from constants
-    const existingBadgesMap = new Map((parsed.badges || []).map((b) => [b.id, b]));
-    const mergedBadges = ALL_CIVIC_BADGES.map((template) => {
-      const existing = existingBadgesMap.get(template.id);
-      if (existing) {
-        return {
-          ...template,
-          ...existing,
-          icon: template.icon,
-          title: template.title,
-          description: template.description,
-          requiredCount: template.requiredCount,
-          tier: template.tier,
-          rewardTitle: template.rewardTitle,
-        };
-      }
-      return template;
-    });
-
-    return {
-      ...parsed,
-      badges: mergedBadges,
-      privacySettings: parsed.privacySettings || DEFAULT_PRIVACY,
-    };
+    return syncBadgesWithSchema(parsed);
   } catch (err) {
     console.warn('Error reading reputation state:', err);
     return createNewUserReputation(userId || 'guest');
   }
+}
+
+function syncBadgesWithSchema(rep: UserReputation): UserReputation {
+  const existingBadgesMap = new Map((rep.badges || []).map((b) => [b.id, b]));
+  const mergedBadges = ALL_CIVIC_BADGES.map((template) => {
+    const existing = existingBadgesMap.get(template.id);
+    if (existing) {
+      return {
+        ...template,
+        ...existing,
+        icon: template.icon,
+        title: template.title,
+        description: template.description,
+        requiredCount: template.requiredCount,
+        tier: template.tier,
+        rewardTitle: template.rewardTitle,
+      };
+    }
+    return template;
+  });
+
+  return {
+    ...rep,
+    badges: mergedBadges,
+    activityDates: rep.activityDates || {},
+    streakDays: rep.streakDays || 0,
+    maxStreakDays: rep.maxStreakDays || rep.streakDays || 0,
+    privacySettings: rep.privacySettings || DEFAULT_PRIVACY,
+  };
 }
 
 /**
@@ -149,6 +205,12 @@ export async function saveLiveUserReputation(rep: UserReputation, userId?: strin
   const key = getStorageKey(userId);
   try {
     await AsyncStorage.setItem(key, JSON.stringify(rep));
+
+    // Persist to live Firestore database
+    if (isLiveFirebase && db && userId && userId !== 'user-demo-citizen') {
+      const sanitized = sanitizeForFirestore(rep);
+      await setDoc(doc(db, 'reputations', userId), sanitized, { merge: true });
+    }
   } catch (err) {
     console.warn('Error persisting reputation state:', err);
   }
@@ -181,26 +243,45 @@ export async function processCitizenAction(
     locationName,
     timestamp: new Date().toISOString(),
   };
-  rep.activityLogs = [newLog, ...rep.activityLogs];
+  rep.activityLogs = [newLog, ...(rep.activityLogs || [])];
 
-  // 2. Increment action counters
+  // 2. Record date in activity heatmap ledger
+  const todayIso = new Date().toISOString().split('T')[0];
+  rep.activityDates = rep.activityDates || {};
+  rep.activityDates[todayIso] = (rep.activityDates[todayIso] || 0) + 1;
+
+  // 3. Increment action counters
   if (action === 'submit_report') {
-    rep.reportsCount += 1;
-    rep.impactRadiusKm = +(rep.impactRadiusKm + 0.3).toFixed(1);
+    rep.reportsCount = (rep.reportsCount || 0) + 1;
+    rep.impactRadiusKm = +(Number(rep.impactRadiusKm || 0) + 0.3).toFixed(1);
   } else if (action === 'community_confirm') {
-    rep.confirmationsCount += 1;
+    rep.confirmationsCount = (rep.confirmationsCount || 0) + 1;
   } else if (action === 'issue_resolved') {
-    rep.resolvedCount += 1;
+    rep.resolvedCount = (rep.resolvedCount || 0) + 1;
   }
 
-  // 3. Update dynamic active days
+  // 4. Calculate live consecutive day streak & max streak
+  let currentStreak = 0;
+  const checkDate = new Date();
+  while (true) {
+    const dateStr = checkDate.toISOString().split('T')[0];
+    if (rep.activityDates[dateStr] && rep.activityDates[dateStr] > 0) {
+      currentStreak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  rep.streakDays = currentStreak;
+  rep.maxStreakDays = Math.max(rep.maxStreakDays || 0, currentStreak);
+
+  // 5. Update dynamic active days
   const todayDay = new Date().toLocaleDateString('en-US', { weekday: 'short' });
   if (!rep.activeDaysThisWeek.includes(todayDay)) {
     rep.activeDaysThisWeek = [...rep.activeDaysThisWeek, todayDay];
-    rep.streakDays = (rep.streakDays || 0) + 1;
   }
 
-  // 4. Track Badge Progress & Unlocks
+  // 6. Track Badge Progress & Unlocks
   let newlyUnlockedBadge: Badge | null = null;
 
   rep.badges = rep.badges.map((badge) => {
@@ -256,7 +337,7 @@ export async function processCitizenAction(
     };
   });
 
-  // 5. Calculate Dynamic Level & Trust Tier
+  // 7. Calculate Dynamic Level & Trust Tier
   const totalActions = rep.reportsCount + rep.confirmationsCount + rep.resolvedCount * 2;
   const oldLevel = rep.level;
   let newLevel: CitizenLevel = 1;

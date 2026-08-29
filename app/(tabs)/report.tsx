@@ -314,33 +314,6 @@ export default function ReportIssueScreen() {
             <Text style={styles.aiBannerText}>Powered by Gemini Vision AI — auto-categorization & severity detection</Text>
           </View>
 
-          {/* Form Progress Step Indicator */}
-          <View style={styles.stepProgressRow}>
-            {[
-              { num: 1, label: 'Photo', done: Boolean(imageUri) },
-              { num: 2, label: 'Category', done: Boolean(category) },
-              { num: 3, label: 'Severity', done: Boolean(severity) },
-              { num: 4, label: 'Details', done: description.trim().length >= 5 },
-              { num: 5, label: 'Location', done: Boolean(location?.latitude) },
-            ].map((step, idx) => (
-              <React.Fragment key={step.num}>
-                <View style={styles.stepItem}>
-                  <View style={[styles.stepCircle, step.done && styles.stepCircleDone]}>
-                    {step.done ? (
-                      <Check size={10} color="#FFFFFF" strokeWidth={3} />
-                    ) : (
-                      <Text style={styles.stepNumText}>{step.num}</Text>
-                    )}
-                  </View>
-                  <Text style={[styles.stepLabelText, step.done && styles.stepLabelTextDone]}>
-                    {step.label}
-                  </Text>
-                </View>
-                {idx < 4 && <View style={[styles.stepConnector, step.done && styles.stepConnectorDone]} />}
-              </React.Fragment>
-            ))}
-          </View>
-
           {/* 1. PHOTO EVIDENCE WITH GEMINI VISION */}
           <View style={styles.card}>
             <ImageSelector
@@ -662,60 +635,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#6D28D9',
     flex: 1,
-  },
-  stepProgressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.subtle,
-  },
-  stepItem: {
-    alignItems: 'center',
-    gap: 3,
-  },
-  stepCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: COLORS.surfaceHighlight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  stepCircleDone: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  stepNumText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: COLORS.textMuted,
-  },
-  stepLabelText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: COLORS.textMuted,
-  },
-  stepLabelTextDone: {
-    color: COLORS.primaryDark,
-    fontWeight: '800',
-  },
-  stepConnector: {
-    flex: 1,
-    height: 2,
-    backgroundColor: '#E2E8F0',
-    marginHorizontal: 4,
-    marginBottom: 12,
-  },
-  stepConnectorDone: {
-    backgroundColor: COLORS.primary,
   },
   cardSectionLabel: {
     fontSize: 10,

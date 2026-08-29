@@ -315,48 +315,36 @@ export default function IssueDetailsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* 1. HERO PHOTO VIEWPORT */}
-        <View style={styles.heroViewport}>
-          <Image
-            source={{ uri: liveIssue.imageUrl }}
-            style={styles.heroImage}
-            resizeMode="cover"
+        {/* 1. PHOTO VIEWPORT / BEFORE-AFTER COMPARISON */}
+        {isResolved && liveIssue.resolvedImageUrl ? (
+          <ResolutionComparisonCard
+            beforeImageUrl={liveIssue.imageUrl}
+            afterImageUrl={liveIssue.resolvedImageUrl}
+            resolvedAt={liveIssue.resolvedAt}
+            resolvedBy={liveIssue.resolvedBy}
+            resolutionProofNote="Verified on-site community repair evidence."
           />
-
-          {/* Top Overlays */}
-          <View style={styles.heroTopOverlays}>
-            <CategoryBadge category={liveIssue.category} size="md" />
-            <StatusBadge status={liveIssue.status} size="md" />
-          </View>
-
-          {/* Bottom Gradient Scrim Overlay */}
-          <View style={styles.heroBottomScrim}>
-            <View style={styles.heroMetaPill}>
-              <Clock size={12} color="#FFFFFF" />
-              <Text style={styles.heroMetaText}>Reported {formatRelativeTime(liveIssue.createdAt)}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* 2. RESTORATION PROOF CARD (IF RESOLVED) */}
-        {isResolved && liveIssue.resolvedImageUrl && (
-          <View style={styles.resolvedProofCard}>
-            <View style={styles.resolvedProofHeader}>
-              <View style={styles.resolvedCheckCircle}>
-                <CheckCircle2 size={16} color="#FFFFFF" strokeWidth={2.8} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.resolvedProofTitle}>ISSUE RESOLVED • PHOTO EVIDENCE</Text>
-                <Text style={styles.resolvedProofSub}>
-                  Verified on-site camera evidence confirming safe road conditions.
-                </Text>
-              </View>
-            </View>
+        ) : (
+          <View style={styles.heroViewport}>
             <Image
-              source={{ uri: liveIssue.resolvedImageUrl }}
-              style={styles.resolvedProofImage}
+              source={{ uri: liveIssue.imageUrl }}
+              style={styles.heroImage}
               resizeMode="cover"
             />
+
+            {/* Top Overlays */}
+            <View style={styles.heroTopOverlays}>
+              <CategoryBadge category={liveIssue.category} size="md" />
+              <StatusBadge status={liveIssue.status} size="md" />
+            </View>
+
+            {/* Bottom Gradient Scrim Overlay */}
+            <View style={styles.heroBottomScrim}>
+              <View style={styles.heroMetaPill}>
+                <Clock size={12} color="#FFFFFF" />
+                <Text style={styles.heroMetaText}>Reported {formatRelativeTime(liveIssue.createdAt)}</Text>
+              </View>
+            </View>
           </View>
         )}
 
@@ -560,24 +548,15 @@ export default function IssueDetailsScreen() {
             </View>
           </View>
         ) : (
-          <View style={{ gap: 12 }}>
-            <ResolutionComparisonCard
-              beforeImageUrl={liveIssue.imageUrl}
-              afterImageUrl={liveIssue.resolvedImageUrl || liveIssue.imageUrl}
-              resolvedAt={liveIssue.resolvedAt}
-              resolvedBy={liveIssue.resolvedBy}
-              resolutionProofNote="Verified community repair on site."
-            />
-            <View style={styles.resolvedBannerCard}>
-              <View style={styles.resolvedBannerIcon}>
-                <CheckCircle2 size={24} color="#FFFFFF" strokeWidth={2.8} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.resolvedBannerTitle}>ISSUE RESOLVED</Text>
-                <Text style={styles.resolvedBannerSub}>
-                  Issue marked as resolved on {liveIssue.resolvedAt ? new Date(liveIssue.resolvedAt).toLocaleDateString() : 'recently'}. Verified by community evidence.
-                </Text>
-              </View>
+          <View style={styles.resolvedBannerCard}>
+            <View style={styles.resolvedBannerIcon}>
+              <CheckCircle2 size={24} color="#FFFFFF" strokeWidth={2.8} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.resolvedBannerTitle}>ISSUE RESOLVED</Text>
+              <Text style={styles.resolvedBannerSub}>
+                Issue marked as resolved on {liveIssue.resolvedAt ? new Date(liveIssue.resolvedAt).toLocaleDateString() : 'recently'}. Verified by community evidence.
+              </Text>
             </View>
           </View>
         )}

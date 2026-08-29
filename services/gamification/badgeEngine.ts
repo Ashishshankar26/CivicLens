@@ -28,69 +28,13 @@ export const DEMO_REPUTATION: UserReputation = {
   confirmationsCount: 0,
   resolvedCount: 0,
   impactRadiusKm: 0.0,
-  badges: ALL_CIVIC_BADGES.map((b) => {
-    // Unlock key introductory and progression badges for demo account
-    const unlockedIds = [
-      'first_step',
-      'sharp_eye',
-      'first_verifier',
-      'ready_scout',
-      'location_scout',
-      'pothole_novice',
-      'pothole_patrol',
-      'lamp_spotter',
-      'eco_starter',
-      'eco_warrior',
-      'verify_bronze',
-      'fix_witness',
-      'streak_3',
-      'milestone_10',
-      'ai_visionary',
-    ];
-
-    if (unlockedIds.includes(b.id)) {
-      return {
-        ...b,
-        isUnlocked: true,
-        unlockedAt: '2026-08-24',
-        currentCount: b.requiredCount,
-      };
-    }
-
-    // Set realistic progress on locked badges
-    let progress = 0;
-    if (b.category === 'potholes') progress = 8;
-    else if (b.category === 'lighting') progress = 3;
-    else if (b.category === 'waste') progress = 6;
-    else if (b.category === 'verification') progress = 22;
-    else if (b.category === 'resolution') progress = 6;
-    else if (b.category === 'streak') progress = 4;
-    else if (b.category === 'milestones') progress = 14;
-
-    return {
-      ...b,
-      currentCount: Math.min(progress, b.requiredCount || 1),
-      isUnlocked: false,
-    };
-  }),
-  activityLogs: [
-    {
-      id: 'act_1',
-      action: 'submit_report',
-      category: 'pothole',
-      title: 'Connaught Circus Pothole',
-      locationName: 'Connaught Circus & Janpath',
-      timestamp: new Date(Date.now() - 1000 * 3600 * 18).toISOString(),
-    },
-    {
-      id: 'act_2',
-      action: 'community_confirm',
-      category: 'streetlight',
-      title: 'Heritage Park Dark Lamp',
-      locationName: 'Heritage Park Avenue',
-      timestamp: new Date(Date.now() - 1000 * 3600 * 48).toISOString(),
-    },
-  ],
+  badges: ALL_CIVIC_BADGES.map((b) => ({
+    ...b,
+    currentCount: 0,
+    isUnlocked: false,
+    unlockedAt: undefined,
+  })),
+  activityLogs: [],
   privacySettings: DEFAULT_PRIVACY,
 };
 
@@ -126,10 +70,10 @@ export const INITIAL_REPUTATION = DEMO_REPUTATION;
 
 function getStorageKey(userId?: string): string {
   if (!userId || userId === 'user-demo-citizen') {
-    return '@civiclens_user_reputation_demo_v7';
+    return '@civiclens_user_reputation_demo_v8';
   }
   const cleanId = userId.replace(/[^a-zA-Z0-9_-]/g, '_');
-  return `@civiclens_user_reputation_${cleanId}_v7`;
+  return `@civiclens_user_reputation_${cleanId}_v8`;
 }
 
 function sanitizeForFirestore(obj: any): any {
@@ -190,23 +134,31 @@ export async function getLiveUserReputation(userId?: string): Promise<UserReputa
 }
 
 /**
- * Merges existing user badges with the latest 54 badge catalog
+ * Merges existing user badges with the latest 54 badge catalog and sanitizes old mock dates
  */
 function mergeBadgesWithCatalog(userBadges?: Badge[]): Badge[] {
   const userMap = new Map<string, Badge>();
-  (userBadges || []).forEach((b) => userMap.set(b.id, b));
+  (userBadges || []).forEach((b) => {
+    // Sanitize any legacy mock demo date
+    if (b.unlockedAt === '2026-08-24') {
+      userMap.set(b.id, { ...b, isUnlocked: false, currentCount: 0, unlockedAt: undefined });
+    } else {
+      userMap.set(b.id, b);
+    }
+  });
 
   return ALL_CIVIC_BADGES.map((catalogBadge) => {
     const existing = userMap.get(catalogBadge.id);
-    if (existing) {
+    if (existing && existing.unlockedAt !== '2026-08-24') {
+      const isLegitUnlocked = Boolean(existing.isUnlocked && existing.unlockedAt);
       return {
         ...catalogBadge,
-        isUnlocked: existing.isUnlocked,
-        unlockedAt: existing.unlockedAt,
+        isUnlocked: isLegitUnlocked,
+        unlockedAt: isLegitUnlocked ? existing.unlockedAt : undefined,
         currentCount: existing.currentCount ?? 0,
       };
     }
-    return { ...catalogBadge, currentCount: 0, isUnlocked: false };
+    return { ...catalogBadge, currentCount: 0, isUnlocked: false, unlockedAt: undefined };
   });
 }
 

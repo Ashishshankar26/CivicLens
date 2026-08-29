@@ -112,6 +112,14 @@ export default function ReportIssueScreen() {
       const analysis = await analyzeCivicImage(uri);
       if (analysis) {
         setAiSuggestion(analysis);
+        if (analysis.isValidCivicIssue && analysis.category) {
+          setCategory(analysis.category);
+          if (analysis.suggestedSeverity) setSeverity(analysis.suggestedSeverity);
+          if (analysis.suggestedDescription) setDescription(analysis.suggestedDescription);
+          setAiAccepted(true);
+        } else if (!analysis.isValidCivicIssue) {
+          setAiAccepted(false);
+        }
       }
     } catch (err) {
       console.warn('[Report] AI Vision failed:', err);
@@ -153,6 +161,25 @@ export default function ReportIssueScreen() {
         confirmText: 'Got It',
         confirmVariant: 'primary',
         onConfirm: () => setAlertConfig(null),
+      });
+      return;
+    }
+
+    // Gemini Quality-Control Cross Check
+    if (aiSuggestion && !aiSuggestion.isValidCivicIssue) {
+      setAlertConfig({
+        visible: true,
+        title: 'Invalid Photo Rejected',
+        message:
+          aiSuggestion.rejectionReason ||
+          'CivicLens AI verified that this photo does not show a valid civic or road hazard (e.g. selfie, blank, indoor room). Please take a photo of the actual issue.',
+        icon: 'warning',
+        confirmText: 'Retake Photo',
+        confirmVariant: 'danger',
+        onConfirm: () => {
+          setAlertConfig(null);
+          handleImageRemoved();
+        },
       });
       return;
     }
@@ -331,16 +358,19 @@ export default function ReportIssueScreen() {
             )}
           </View>
 
-          {/* AI VISION SUGGESTION BANNER */}
+          {/* AI VISION SUGGESTION / QUALITY-CONTROL REJECTION BANNER */}
           {aiSuggestion && imageUri && (
             <AiSuggestionCard
-              category={aiSuggestion.category}
+              isValidCivicIssue={aiSuggestion.isValidCivicIssue}
+              rejectionReason={aiSuggestion.rejectionReason}
+              category={aiSuggestion.category || category}
               confidence={aiSuggestion.confidence}
               label={aiSuggestion.label}
               suggestedSeverity={aiSuggestion.suggestedSeverity}
               suggestedDescription={aiSuggestion.suggestedDescription}
               onAccept={handleAcceptAiSuggestion}
               onReject={() => setAiAccepted(false)}
+              onRetakePhoto={handleImageRemoved}
               isAccepted={aiAccepted}
             />
           )}
@@ -492,21 +522,31 @@ export default function ReportIssueScreen() {
           </View>
 
           {/* SUBMIT BUTTON */}
-          <TouchableOpacity
-            style={[styles.submitBtn, isSubmitting && { opacity: 0.7 }]}
-            onPress={handlePreSubmit}
-            disabled={isSubmitting}
-            activeOpacity={0.88}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <>
-                <Send size={18} color="#FFFFFF" />
-                <Text style={styles.submitBtnText}>Submit Report</Text>
-              </>
-            )}
-          </TouchableOpacity>
+          {aiSuggestion && !aiSuggestion.isValidCivicIssue ? (
+            <TouchableOpacity
+              style={[styles.submitBtn, { backgroundColor: '#DC2626' }]}
+              onPress={handlePreSubmit}
+              activeOpacity={0.88}
+            >
+              <Text style={styles.submitBtnText}>Invalid Photo • Cannot Submit</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[styles.submitBtn, isSubmitting && { opacity: 0.7 }]}
+              onPress={handlePreSubmit}
+              disabled={isSubmitting}
+              activeOpacity={0.88}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <Send size={18} color="#FFFFFF" />
+                  <Text style={styles.submitBtnText}>Submit Report</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
 

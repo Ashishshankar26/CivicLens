@@ -2,17 +2,18 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { IssueCategory, IssueSeverity } from '@/types/issue';
 
 export interface AiVisionAnalysis {
-  category: IssueCategory;
+  isValidCivicIssue: boolean;
+  rejectionReason?: string;
+  category?: IssueCategory;
   confidence: number;
   label: string;
-  suggestedSeverity: IssueSeverity;
-  suggestedDescription: string;
+  suggestedSeverity?: IssueSeverity;
+  suggestedDescription?: string;
 }
 
 /**
- * Real AI Vision Classifier for CivicLens using Google Gemini Flash Multimodal Vision API.
- * Analyzes the captured photo in real-time and returns the civic category, confidence,
- * severity, and an AI-generated concise issue description.
+ * Real AI Vision Classifier & Quality Control Validator for CivicLens using Google Gemini Flash Multimodal Vision API.
+ * Cross-checks whether the photo shows a genuine civic hazard (rejecting selfies, blank photos, indoor rooms, pets, food, etc.).
  */
 export async function analyzeCivicImage(imageUri: string): Promise<AiVisionAnalysis | null> {
   try {
@@ -28,9 +29,27 @@ export async function analyzeCivicImage(imageUri: string): Promise<AiVisionAnaly
 
     // 2. Call Google Gemini Flash Multimodal Vision
     if (apiKey && base64Data) {
-      const prompt = `You are an automated civic infrastructure analyzer for CivicLens.
-Analyze this photo and identify the civic issue shown.
-Categories to choose from (pick strictly ONE):
+      const prompt = `You are an automated civic infrastructure quality-control and triage analyzer for CivicLens.
+Analyze this photo and determine whether it contains a genuine real-world public civic, road, sanitation, or infrastructure issue.
+
+STEP 1: VALIDATION CHECK
+Set "isValidCivicIssue": false if:
+- It is a selfie, portrait, face, or photo of people.
+- It is a blank, pitch black, solid color, screenshot, or severely blurry photo where no hazard is distinguishable.
+- It is an indoor photo (bedroom, kitchen, office, desk, ceiling, etc.).
+- It is a pet, animal, food, meme, document, or vehicle interior.
+- It shows clean, undamaged pavement/surroundings with NO visible defect or hazard.
+
+If "isValidCivicIssue" is false:
+- "rejectionReason": A clear, polite 1-sentence explanation of why it cannot be reported (e.g. "This photo appears to be a selfie/person photo rather than a civic hazard.", "The photo is too dark, blank, or blurry to verify a hazard.", "The image shows an indoor setting rather than a public civic area.", "No visible road, sanitation, or lighting hazard was detected.").
+- "category": null
+- "confidence": 0.95
+- "label": "Invalid Photo"
+- "suggestedSeverity": null
+- "suggestedDescription": null
+
+STEP 2: IF VALID CIVIC ISSUE ("isValidCivicIssue": true)
+Choose strictly ONE category:
 - 'pothole' (hole or depression in road/pavement)
 - 'garbage' (trash, garbage dump, uncollected waste, litter)
 - 'streetlight' (broken, damaged, or unlit streetlight/lamp post)
@@ -39,11 +58,13 @@ Categories to choose from (pick strictly ONE):
 
 Return strictly a JSON object with this exact schema:
 {
-  "category": "pothole" | "garbage" | "streetlight" | "road_damage" | "other",
+  "isValidCivicIssue": boolean,
+  "rejectionReason": string | null,
+  "category": "pothole" | "garbage" | "streetlight" | "road_damage" | "other" | null,
   "confidence": number between 0.75 and 0.99,
-  "label": "Short 2-4 word title/label of what is seen",
-  "suggestedSeverity": "low" | "medium" | "high",
-  "suggestedDescription": "A clear, concise 1-2 sentence description explaining the visible hazard and its impact on pedestrians or traffic."
+  "label": "Short 2-4 word label of what is seen",
+  "suggestedSeverity": "low" | "medium" | "high" | null,
+  "suggestedDescription": "A clear, concise 1-2 sentence description explaining the visible hazard." | null
 }`;
 
       // Primary model: gemini-3.5-flash with fallback to gemini-flash-latest
@@ -84,11 +105,23 @@ Return strictly a JSON object with this exact schema:
             const rawText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (rawText) {
               const parsed = JSON.parse(rawText);
+              
+              // Handle invalid photo rejection from Gemini
+              if (parsed.isValidCivicIssue === false) {
+                return {
+                  isValidCivicIssue: false,
+                  rejectionReason: parsed.rejectionReason || 'The uploaded photo does not show a valid civic or road hazard.',
+                  confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.95,
+                  label: 'Invalid Photo',
+                };
+              }
+
               const validCategories: IssueCategory[] = ['pothole', 'garbage', 'streetlight', 'road_damage', 'other'];
               const validSeverities: IssueSeverity[] = ['low', 'medium', 'high'];
 
-              if (validCategories.includes(parsed.category)) {
+              if (parsed.category && validCategories.includes(parsed.category)) {
                 return {
+                  isValidCivicIssue: true,
                   category: parsed.category,
                   confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.94,
                   label: parsed.label || formatCategoryLabel(parsed.category),
@@ -110,7 +143,7 @@ Return strictly a JSON object with this exact schema:
     await new Promise((resolve) => setTimeout(resolve, 300));
     
     const lowerUri = imageUri.toLowerCase();
-    let category: IssueCategory = 'garbage';
+    let category: IssueCategory = 'pothole';
     let confidence = 0.88;
     let suggestedSeverity: IssueSeverity = 'medium';
 
@@ -137,6 +170,7 @@ Return strictly a JSON object with this exact schema:
     }
 
     return {
+      isValidCivicIssue: true,
       category,
       confidence,
       label: formatCategoryLabel(category),

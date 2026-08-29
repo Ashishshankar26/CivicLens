@@ -139,8 +139,10 @@ export const PotholeHotspotModal: React.FC<PotholeHotspotModalProps> = ({
                   }}
                   activeOpacity={0.85}
                 >
-                  <Text style={styles.reportBtnText}>Report Early Warning</Text>
-                  <ArrowRight size={15} color="#FFFFFF" />
+                  <Text style={styles.reportBtnText} numberOfLines={1} adjustsFontSizeToFit={true}>
+                    Report Hazard
+                  </Text>
+                  <ArrowRight size={14} color="#FFFFFF" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -301,15 +303,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 13,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     borderRadius: RADIUS.md,
     backgroundColor: '#EFF6FF',
     borderWidth: 1,
     borderColor: '#BFDBFE',
-    gap: 5,
+    gap: 4,
   },
   navBtnText: {
-    fontSize: 13.5,
+    fontSize: 13,
     fontWeight: '800',
     color: '#0066FF',
   },
@@ -318,13 +320,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 8,
     borderRadius: RADIUS.md,
-    gap: 8,
+    gap: 5,
     ...SHADOWS.small,
   },
   reportBtnText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: '#FFFFFF',
   },

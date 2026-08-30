@@ -7,6 +7,7 @@ import {
   loginAsDemoUser,
   logoutUser,
   getPersistedSession,
+  updateUserProfileData,
   DEMO_USER,
 } from '@/services/auth/authService';
 
@@ -17,6 +18,7 @@ interface AuthContextType {
   register: (name: string, email: string, pass: string) => Promise<void>;
   loginGoogle: (mockUser?: { email: string; name: string; photoUrl?: string }) => Promise<void>;
   loginDemo: () => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -84,6 +86,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    if (!user) return;
+    try {
+      const updated = await updateUserProfileData(updates, user);
+      setUser(updated);
+    } catch (err) {
+      console.warn('[AuthContext updateProfile error]:', err);
+    }
+  };
+
   const logout = async () => {
     setIsLoading(true);
     try {
@@ -103,6 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         loginGoogle,
         loginDemo,
+        updateProfile,
         logout,
       }}
     >

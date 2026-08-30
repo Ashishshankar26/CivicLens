@@ -256,3 +256,28 @@ export async function getPersistedSession(): Promise<UserProfile | null> {
     return null;
   }
 }
+
+/**
+ * Updates user profile (display name, avatar, bio) in local storage & Firestore
+ */
+export async function updateUserProfileData(
+  updates: Partial<UserProfile>,
+  currentProfile: UserProfile
+): Promise<UserProfile> {
+  const updatedProfile: UserProfile = {
+    ...currentProfile,
+    ...updates,
+  };
+
+  if (isLiveFirebase && db && updatedProfile.uid) {
+    try {
+      const userRef = doc(db, 'users', updatedProfile.uid);
+      await setDoc(userRef, cleanFirestoreData(updatedProfile), { merge: true });
+    } catch (err) {
+      console.warn('[Firebase Auth updateProfile error]:', err);
+    }
+  }
+
+  await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedProfile));
+  return updatedProfile;
+}

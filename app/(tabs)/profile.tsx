@@ -23,6 +23,7 @@ import { scheduleCivicNotification } from '@/services/notifications/notification
 import { UserReputation, UserPrivacySettings, Badge } from '@/types/gamification';
 import { BadgeDetailModal } from '@/components/gamification/BadgeDetailModal';
 import { AllBadgesModal } from '@/components/gamification/AllBadgesModal';
+import { EditProfileModal, AVATAR_OPTIONS } from '@/components/profile/EditProfileModal';
 import { RealBadgeEmblem } from '@/components/ui/RealBadgeEmblem';
 import { ModernAlertModal, ModernAlertConfig } from '@/components/ui/ModernAlertModal';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
@@ -48,14 +49,21 @@ import {
   Bell,
   Layers,
   ArrowRight,
+  Pencil,
+  Zap,
+  Car,
+  Bike,
+  Star,
+  Camera,
 } from 'lucide-react-native';
 
 export default function ModernYouScreen() {
   const insets = useSafeAreaInsets();
-  const { user, logout, loginDemo } = useAuth();
+  const { user, logout, loginDemo, updateProfile } = useAuth();
   const { myReports, issues } = useIssues();
   const [reputation, setReputation] = useState<UserReputation | null>(null);
   const [exportModalVisible, setExportModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [allBadgesModalVisible, setAllBadgesModalVisible] = useState(false);
   const [alertConfig, setAlertConfig] = useState<ModernAlertConfig | null>(null);
@@ -68,6 +76,9 @@ export default function ModernYouScreen() {
     const rep = await getUserReputation(user?.uid, myReports);
     setReputation(rep);
   };
+
+  const activeAvatarObj = AVATAR_OPTIONS.find((a) => a.id === user?.avatarKey) || AVATAR_OPTIONS[0];
+  const AvatarIconComponent = activeAvatarObj.Icon;
 
   const totalCaught = myReports.length;
   const badgesCount = reputation?.badges.filter((b) => b.isUnlocked).length || 0;
@@ -237,10 +248,21 @@ export default function ModernYouScreen() {
         {/* 1. PUBLIC CITIZEN PROFILE HERO */}
         <View style={styles.spotterCard}>
           <View style={styles.spotterCardTopStripe} />
+          
+          {/* Edit Profile Action Pill */}
+          <TouchableOpacity
+            style={styles.editProfileBtn}
+            onPress={() => setEditModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <Pencil size={13} color="#007AFF" />
+            <Text style={styles.editProfileBtnText}>Edit Profile</Text>
+          </TouchableOpacity>
+
           <View style={styles.spotterTopRow}>
-            {/* Glowing Avatar */}
-            <View style={styles.glowAvatarCircle}>
-              <Compass size={34} color={COLORS.primary} strokeWidth={2.4} />
+            {/* Glowing Selected Avatar */}
+            <View style={[styles.glowAvatarCircle, { backgroundColor: activeAvatarObj.bg, borderColor: activeAvatarObj.color }]}>
+              <AvatarIconComponent size={34} color={activeAvatarObj.color} strokeWidth={2.4} />
             </View>
 
             <View style={styles.spotterInfoCol}>
@@ -251,6 +273,9 @@ export default function ModernYouScreen() {
                 </Text>
               </View>
               <Text style={styles.spotterName}>{user?.displayName || 'Active Citizen'}</Text>
+              {user?.bio ? (
+                <Text style={styles.spotterBioText} numberOfLines={2}>"{user.bio}"</Text>
+              ) : null}
               <View style={styles.verifiedRow}>
                 <ShieldCheck size={12} color="#059669" />
                 <Text style={styles.verifiedText}>Verified Citizen • Active Contributor</Text>
@@ -722,6 +747,25 @@ export default function ModernYouScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* EDIT PROFILE MODAL */}
+      <EditProfileModal
+        visible={editModalVisible}
+        user={user}
+        onClose={() => setEditModalVisible(false)}
+        onSave={async (updates) => {
+          await updateProfile(updates);
+          setAlertConfig({
+            visible: true,
+            title: 'Profile Updated',
+            message: 'Your display name, motto, and avatar emblem have been saved successfully.',
+            icon: 'success',
+            confirmText: 'Done',
+            confirmVariant: 'success',
+            onConfirm: () => setAlertConfig(null),
+          });
+        }}
+      />
     </View>
   );
 }
@@ -743,6 +787,33 @@ const styles = StyleSheet.create({
     letterSpacing: -0.6,
     paddingVertical: 8,
     paddingHorizontal: 4,
+  },
+  editProfileBtn: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    zIndex: 10,
+  },
+  editProfileBtnText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#007AFF',
+  },
+  spotterBioText: {
+    fontSize: 11.5,
+    fontStyle: 'italic',
+    color: '#64748B',
+    marginTop: 2,
+    lineHeight: 16,
   },
   spotterCard: {
     backgroundColor: '#FFFFFF',

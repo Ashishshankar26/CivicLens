@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  Animated,
-  PanResponder,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { CivicIssue } from '@/types/issue';
 import { StatusBadge } from '../ui/StatusBadge';
 import { CategoryBadge } from '../ui/CategoryBadge';
@@ -23,10 +22,11 @@ import {
   Flame,
   ShieldCheck,
   Compass,
+  Sparkles,
 } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width - 44;
+const CARD_WIDTH = width - 32;
 
 interface SwipeableCardStackProps {
   issues: CivicIssue[];
@@ -57,22 +57,28 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
   const activeIssue = issues[currentIndex] || issues[0];
   const nextIssue = issues[(currentIndex + 1) % issues.length];
 
+  // Helper title
+  const hazardTitle =
+    activeIssue.locationName ||
+    `${activeIssue.category.replace('_', ' ').toUpperCase()} HAZARD`;
+
   return (
     <View style={styles.stackContainer}>
-      {/* Cards Stack Header Controls */}
+      {/* Stack Deck Header Controls */}
       <View style={styles.stackControlsHeader}>
-        <View style={styles.indexBadge}>
-          <Text style={styles.indexBadgeText}>
-            {currentIndex + 1} of {issues.length} Hazards
+        <View style={styles.counterPill}>
+          <Sparkles size={11} color="#007AFF" />
+          <Text style={styles.counterPillText}>
+            HAZARD {currentIndex + 1} OF {issues.length}
           </Text>
         </View>
 
         <View style={styles.controlsBtnGroup}>
           <TouchableOpacity style={styles.navArrowBtn} onPress={handlePrev} activeOpacity={0.7}>
-            <ChevronLeft size={18} color="#007AFF" />
+            <ChevronLeft size={16} color="#007AFF" strokeWidth={2.5} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.navArrowBtn} onPress={handleNext} activeOpacity={0.7}>
-            <ChevronRight size={18} color="#007AFF" />
+            <ChevronRight size={16} color="#007AFF" strokeWidth={2.5} />
           </TouchableOpacity>
         </View>
       </View>
@@ -90,12 +96,7 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
               }}
               style={styles.bgImage}
             />
-            <View style={styles.cardGradientOverlay} />
-            <View style={styles.bgCardContentPreview}>
-              <Text style={styles.bgCardTitle} numberOfLines={1}>
-                {nextIssue.description || `${nextIssue.category} reported`}
-              </Text>
-            </View>
+            <View style={styles.bgCardOverlay} />
           </View>
         )}
 
@@ -103,7 +104,7 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
         <TouchableOpacity
           style={styles.activeCardLayer}
           onPress={() => onPressIssue(activeIssue.id)}
-          activeOpacity={0.92}
+          activeOpacity={0.93}
         >
           {/* Card Hero Image */}
           <Image
@@ -116,8 +117,12 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
             resizeMode="cover"
           />
 
-          {/* Dark Glass Gradient Overlay */}
-          <View style={styles.cardGradientOverlay} />
+          {/* Smooth Bottom Shadow Gradient */}
+          <LinearGradient
+            colors={['transparent', 'rgba(15, 23, 42, 0.4)', 'rgba(15, 23, 42, 0.85)']}
+            locations={[0, 0.5, 1]}
+            style={styles.cardGradientOverlay}
+          />
 
           {/* Top Badges Floating Strip */}
           <View style={styles.topBadgesStrip}>
@@ -125,32 +130,47 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
             <StatusBadge status={activeIssue.status} size="md" />
           </View>
 
-          {/* Bottom Content Info */}
-          <View style={styles.activeCardBody}>
-            <Text style={styles.activeCardTitle} numberOfLines={2}>
-              {activeIssue.description || `${activeIssue.category.replace('_', ' ')} detected`}
-            </Text>
-
-            {/* Location & Time */}
-            <View style={styles.metaRow}>
-              <MapPin size={13} color="#CBD5E1" />
-              <Text style={styles.locationText} numberOfLines={1}>
-                {activeIssue.locationName || `${activeIssue.latitude.toFixed(4)}, ${activeIssue.longitude.toFixed(4)}`}
+          {/* Compact Glassmorphic Bottom Info Sheet */}
+          <View style={styles.glassBottomSheet}>
+            {/* Title & Short Description */}
+            <View style={styles.sheetTitleRow}>
+              <Text style={styles.sheetTitleText} numberOfLines={1}>
+                {hazardTitle}
               </Text>
             </View>
 
-            <View style={styles.metaRow}>
-              <Users size={13} color="#CBD5E1" />
-              <Text style={styles.metaSubText}>
-                {activeIssue.confirmationCount || 0} Citizens Verified • {formatRelativeTime(activeIssue.createdAt)}
+            {activeIssue.description ? (
+              <Text style={styles.sheetDescText} numberOfLines={1}>
+                {activeIssue.description}
+              </Text>
+            ) : null}
+
+            {/* Meta Row: Location + Verifications + Time */}
+            <View style={styles.metaRowContainer}>
+              <View style={styles.metaPill}>
+                <MapPin size={11} color="#007AFF" />
+                <Text style={styles.metaPillText} numberOfLines={1}>
+                  {activeIssue.locationName || `${activeIssue.latitude.toFixed(3)}, ${activeIssue.longitude.toFixed(3)}`}
+                </Text>
+              </View>
+
+              <View style={styles.metaPill}>
+                <Flame size={11} color="#F97316" />
+                <Text style={styles.metaPillText}>
+                  {activeIssue.confirmationCount || 0} Verified
+                </Text>
+              </View>
+
+              <Text style={styles.timeAgoText}>
+                {formatRelativeTime(activeIssue.createdAt)}
               </Text>
             </View>
 
-            {/* Action Bar */}
-            <View style={styles.cardActionBar}>
-              <Text style={styles.actionBtnLabel}>Tap to Inspect Full Report</Text>
-              <View style={styles.actionArrowCircle}>
-                <ArrowRight size={14} color="#007AFF" strokeWidth={2.5} />
+            {/* Quick Action Button Strip */}
+            <View style={styles.inspectActionPill}>
+              <Text style={styles.inspectActionText}>Inspect Full Hazard Report</Text>
+              <View style={styles.actionArrowIconCircle}>
+                <ArrowRight size={12} color="#FFFFFF" strokeWidth={2.5} />
               </View>
             </View>
           </View>
@@ -162,16 +182,19 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
 
 const styles = StyleSheet.create({
   stackContainer: {
-    gap: 10,
-    marginTop: 4,
+    gap: 8,
+    marginTop: 2,
   },
   stackControlsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 2,
+    paddingHorizontal: 4,
   },
-  indexBadge: {
+  counterPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -179,10 +202,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(210, 210, 215, 0.6)',
   },
-  indexBadgeText: {
-    fontSize: 11.5,
-    fontWeight: '800',
+  counterPillText: {
+    fontSize: 10.5,
+    fontWeight: '900',
     color: '#007AFF',
+    letterSpacing: 0.6,
   },
   controlsBtnGroup: {
     flexDirection: 'row',
@@ -190,74 +214,66 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   navArrowBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(210, 210, 215, 0.6)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
     elevation: 2,
   },
   deckContainer: {
     position: 'relative',
-    height: 310,
+    height: 320,
     width: '100%',
     alignItems: 'center',
   },
   bgCardLayer: {
     position: 'absolute',
-    top: 14,
+    top: 12,
     width: CARD_WIDTH - 20,
-    height: 280,
+    height: 295,
     borderRadius: 24,
     backgroundColor: '#0F172A',
     overflow: 'hidden',
-    opacity: 0.7,
+    opacity: 0.65,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   bgImage: {
     ...StyleSheet.absoluteFillObject,
   },
-  bgCardContentPreview: {
-    position: 'absolute',
-    bottom: 12,
-    left: 14,
-    right: 14,
-  },
-  bgCardTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#FFFFFF',
+  bgCardOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(15, 23, 42, 0.4)',
   },
   activeCardLayer: {
     position: 'absolute',
     top: 0,
     width: CARD_WIDTH,
-    height: 295,
-    borderRadius: 24,
+    height: 310,
+    borderRadius: 26,
     backgroundColor: '#0F172A',
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 14,
+    elevation: 6,
   },
   activeCardImage: {
     ...StyleSheet.absoluteFillObject,
   },
   cardGradientOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15, 23, 42, 0.55)',
   },
   topBadgesStrip: {
     position: 'absolute',
@@ -268,62 +284,87 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  activeCardBody: {
+  glassBottomSheet: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.15)',
-    gap: 6,
-  },
-  activeCardTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    lineHeight: 20,
-    letterSpacing: -0.2,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    bottom: 12,
+    left: 12,
+    right: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    borderRadius: 20,
+    padding: 12,
     gap: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  locationText: {
-    fontSize: 11.5,
-    color: '#E2E8F0',
-    fontWeight: '600',
-    flex: 1,
-  },
-  metaSubText: {
-    fontSize: 11,
-    color: '#94A3B8',
-    fontWeight: '500',
-  },
-  cardActionBar: {
+  sheetTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  sheetTitleText: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#1C1C1E',
+    letterSpacing: -0.3,
+  },
+  sheetDescText: {
+    fontSize: 11.5,
+    color: '#475569',
+    fontWeight: '500',
+    lineHeight: 15,
+  },
+  metaRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  metaPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 8,
+    maxWidth: 120,
+  },
+  metaPillText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  timeAgoText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#8E8E93',
+    marginLeft: 'auto',
+  },
+  inspectActionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#007AFF',
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 14,
+    paddingVertical: 7,
+    borderRadius: 12,
     marginTop: 4,
   },
-  actionBtnLabel: {
-    fontSize: 12,
+  inspectActionText: {
+    fontSize: 11.5,
     fontWeight: '800',
     color: '#FFFFFF',
   },
-  actionArrowCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
+  actionArrowIconCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -19,6 +19,7 @@ import { fetchLiveAirQuality, AirQualityData } from '@/services/analytics/airQua
 import { UserReputation, Badge } from '@/types/gamification';
 import { BadgeDetailModal } from '@/components/gamification/BadgeDetailModal';
 import { AllBadgesModal } from '@/components/gamification/AllBadgesModal';
+import { AirQualityModal } from '@/components/map/AirQualityModal';
 import { SwipeableCardStack } from '@/components/cards/SwipeableCardStack';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import {
@@ -50,6 +51,7 @@ export default function SpotdexScreen() {
   const [registryScope, setRegistryScope] = useState<'my' | 'community'>('my');
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [allBadgesModalVisible, setAllBadgesModalVisible] = useState<boolean>(false);
+  const [aqiModalVisible, setAqiModalVisible] = useState<boolean>(false);
 
   // Dynamic Real Telemetry State
   const [realRainfallMm, setRealRainfallMm] = useState<number>(1845.8);
@@ -67,7 +69,6 @@ export default function SpotdexScreen() {
 
   const loadRealTelemetry = async () => {
     try {
-      // Default center coords (or fallback)
       const lat = issues[0]?.latitude || 28.6139;
       const lng = issues[0]?.longitude || 77.2090;
 
@@ -223,7 +224,7 @@ export default function SpotdexScreen() {
 
             <TouchableOpacity
               style={styles.toolbarBtn}
-              onPress={() => router.push('/(tabs)')}
+              onPress={() => setAqiModalVisible(true)}
               activeOpacity={0.7}
             >
               <Wind size={18} color="#007AFF" />
@@ -238,6 +239,64 @@ export default function SpotdexScreen() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* ==========================================
+            BEVEL / APPLE WEATHER AQI TELEMETRY CARD WIDGET
+            ========================================== */}
+        <TouchableOpacity
+          style={styles.appleAqiWidgetCard}
+          onPress={() => setAqiModalVisible(true)}
+          activeOpacity={0.9}
+        >
+          <View style={styles.aqiWidgetTopRow}>
+            <View style={styles.aqiWidgetHeaderGroup}>
+              <Wind size={15} color="#007AFF" />
+              <Text style={styles.aqiWidgetCategoryText}>AIR QUALITY INDEX</Text>
+            </View>
+            <View style={[styles.aqiStatusPill, { backgroundColor: (liveAqi?.color || '#10B981') + '1E' }]}>
+              <Text style={[styles.aqiStatusPillText, { color: liveAqi?.color || '#10B981' }]}>
+                {liveAqi?.label || 'Good'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.aqiWidgetMainRow}>
+            <View style={styles.aqiBigScoreCol}>
+              <Text style={styles.aqiWidgetBigNumber}>{liveAqi?.aqi || 42}</Text>
+              <Text style={styles.aqiWidgetSubText}>US AQI Telemetry</Text>
+            </View>
+
+            <View style={styles.aqiWidgetStatsCol}>
+              <View style={styles.aqiStatItem}>
+                <Text style={styles.aqiStatLabel}>PM 2.5</Text>
+                <Text style={styles.aqiStatVal}>{liveAqi?.pm2_5 || 12} µg/m³</Text>
+              </View>
+              <View style={styles.aqiStatItem}>
+                <Text style={styles.aqiStatLabel}>PM 10</Text>
+                <Text style={styles.aqiStatVal}>{liveAqi?.pm10 || 24} µg/m³</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Spectrum Bar Slider */}
+          <View style={styles.aqiWidgetSpectrumTrack}>
+            <LinearGradient
+              colors={['#10B981', '#F59E0B', '#F97316', '#EF4444', '#8B5CF6', '#7F1D1D']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.aqiWidgetSpectrumBar}
+            />
+            <View
+              style={[
+                styles.aqiWidgetThumb,
+                {
+                  left: `${Math.min(96, Math.max(4, Math.round(((liveAqi?.aqi || 42) / 300) * 100)))}%`,
+                  backgroundColor: liveAqi?.color || '#10B981',
+                },
+              ]}
+            />
+          </View>
+        </TouchableOpacity>
 
         {/* ==========================================
             WIDGET 2: NET SAFETY & GRADIENT SPECTRUM CARD
@@ -451,7 +510,8 @@ export default function SpotdexScreen() {
         </View>
       </ScrollView>
 
-      {/* Badges Modals */}
+      {/* AQI Modal & Badges Modals */}
+      <AirQualityModal visible={aqiModalVisible} data={liveAqi} onClose={() => setAqiModalVisible(false)} />
       <BadgeDetailModal visible={Boolean(selectedBadge)} badge={selectedBadge} onClose={() => setSelectedBadge(null)} />
       <AllBadgesModal
         visible={allBadgesModalVisible}
@@ -574,6 +634,105 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 12,
     backgroundColor: '#F8FAFC',
+  },
+
+  /* Apple Weather AQI Telemetry Widget Card */
+  appleAqiWidgetCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 16,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  aqiWidgetTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  aqiWidgetHeaderGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  aqiWidgetCategoryText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#007AFF',
+    letterSpacing: 1,
+  },
+  aqiStatusPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  aqiStatusPillText: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  aqiWidgetMainRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+  },
+  aqiBigScoreCol: {
+    gap: 1,
+  },
+  aqiWidgetBigNumber: {
+    fontSize: 34,
+    fontWeight: '900',
+    color: '#1C1C1E',
+    letterSpacing: -0.8,
+  },
+  aqiWidgetSubText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#8E8E93',
+  },
+  aqiWidgetStatsCol: {
+    flexDirection: 'row',
+    gap: 14,
+  },
+  aqiStatItem: {
+    alignItems: 'flex-end',
+  },
+  aqiStatLabel: {
+    fontSize: 10,
+    color: '#8E8E93',
+    fontWeight: '600',
+  },
+  aqiStatVal: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    color: '#1C1C1E',
+  },
+  aqiWidgetSpectrumTrack: {
+    height: 12,
+    marginTop: 4,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  aqiWidgetSpectrumBar: {
+    height: 6,
+    borderRadius: 3,
+    width: '100%',
+  },
+  aqiWidgetThumb: {
+    position: 'absolute',
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    marginLeft: -7,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
 
   /* Widget 2: Bevel Spectrum Widget */

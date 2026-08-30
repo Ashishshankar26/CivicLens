@@ -41,12 +41,12 @@ export const AirQualityModal: React.FC<AirQualityModalProps> = ({
           {/* Top Header */}
           <View style={styles.headerRow}>
             <View style={styles.headerTitleGroup}>
-              <Wind size={15} color="#94A3B8" />
-              <Text style={styles.headerCategoryText}>AIR QUALITY</Text>
+              <Wind size={16} color="#007AFF" />
+              <Text style={styles.headerCategoryText}>AIR QUALITY INDEX</Text>
             </View>
 
             <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
-              <X size={18} color="#94A3B8" />
+              <X size={18} color="#64748B" />
             </TouchableOpacity>
           </View>
 
@@ -56,7 +56,7 @@ export const AirQualityModal: React.FC<AirQualityModalProps> = ({
             showsVerticalScrollIndicator={false}
             nestedScrollEnabled={true}
           >
-            {/* Hero Apple Weather AQI Metric */}
+            {/* Hero Apple Weather AQI Metric Card */}
             <View style={styles.heroSection}>
               <View style={styles.aqiNumberRow}>
                 <Text style={styles.heroAqiNumber}>{data.aqi}</Text>
@@ -143,7 +143,7 @@ export const AirQualityModal: React.FC<AirQualityModalProps> = ({
             </View>
 
             {/* Apple Weather Health Advice Box */}
-            <View style={[styles.appleAdviceCard, { borderColor: data.color + '50' }]}>
+            <View style={[styles.appleAdviceCard, { borderColor: data.color + '40' }]}>
               <View style={styles.adviceHeaderRow}>
                 <ShieldAlert size={18} color={data.color} />
                 <Text style={[styles.adviceTitle, { color: data.color }]}>
@@ -172,28 +172,32 @@ export const AirQualityModal: React.FC<AirQualityModalProps> = ({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(10, 15, 30, 0.70)',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
     justifyContent: 'flex-end',
   },
   dismissOverlay: {
     ...StyleSheet.absoluteFillObject,
   },
   appleCard: {
-    backgroundColor: '#0F172A',
+    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: SPACING.lg,
     maxHeight: '88%',
     gap: 12,
     borderWidth: 1,
-    borderColor: '#334155',
-    ...SHADOWS.large,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 8,
   },
   handle: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#475569',
+    backgroundColor: '#CBD5E1',
     alignSelf: 'center',
   },
   headerRow: {
@@ -210,12 +214,12 @@ const styles = StyleSheet.create({
   headerCategoryText: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#94A3B8',
+    color: '#007AFF',
     letterSpacing: 1.2,
   },
   closeBtn: {
     padding: 6,
-    backgroundColor: '#1E293B',
+    backgroundColor: '#F1F5F9',
     borderRadius: 16,
   },
   scrollContent: {
@@ -226,11 +230,11 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   heroSection: {
-    backgroundColor: '#1E293B',
+    backgroundColor: '#F8FAFC',
     borderRadius: RADIUS.xl || 20,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#E2E8F0',
     gap: 10,
   },
   aqiNumberRow: {
@@ -241,7 +245,7 @@ const styles = StyleSheet.create({
   heroAqiNumber: {
     fontSize: 52,
     fontWeight: '900',
-    color: '#FFFFFF',
+    color: '#1C1C1E',
     letterSpacing: -1,
   },
   heroBadgeWrapper: {
@@ -254,11 +258,11 @@ const styles = StyleSheet.create({
   heroSubText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#64748B',
+    color: '#8E8E93',
   },
   heroDescText: {
     fontSize: 13,
-    color: '#94A3B8',
+    color: '#475569',
     lineHeight: 19,
     fontWeight: '500',
   },
@@ -284,7 +288,7 @@ const styles = StyleSheet.create({
     transform: [{ translateX: -7 }],
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 4,
   },
@@ -296,12 +300,12 @@ const styles = StyleSheet.create({
   spectrumLabel: {
     fontSize: 9.5,
     fontWeight: '700',
-    color: '#64748B',
+    color: '#8E8E93',
   },
   sectionHeader: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#F1F5F9',
+    color: '#1C1C1E',
     letterSpacing: 0.3,
     marginTop: 4,
   },
@@ -309,11 +313,11 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   pollutantCard: {
-    backgroundColor: '#1E293B',
+    backgroundColor: '#F8FAFC',
     borderRadius: RADIUS.lg,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#E2E8F0',
     gap: 6,
   },
   cardTopRow: {
@@ -324,12 +328,12 @@ const styles = StyleSheet.create({
   pollutantTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#1C1C1E',
   },
   pollutantValueText: {
     fontSize: 13.5,
     fontWeight: '800',
-    color: '#F1F5F9',
+    color: '#0F172A',
   },
   pollutantDesc: {
     fontSize: 11,
@@ -354,12 +358,12 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 2,
     borderColor: '#FFFFFF',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#475569',
     marginTop: -3,
     transform: [{ translateX: -5 }],
   },
   appleAdviceCard: {
-    backgroundColor: '#1E293B',
+    backgroundColor: '#F8FAFC',
     borderRadius: RADIUS.lg,
     padding: 16,
     borderWidth: 1,
@@ -376,27 +380,31 @@ const styles = StyleSheet.create({
   },
   adviceBodyText: {
     fontSize: 13,
-    color: '#CBD5E1',
+    color: '#334155',
     lineHeight: 19,
     fontWeight: '500',
   },
   attributionText: {
     fontSize: 10,
-    color: '#64748B',
+    color: '#94A3B8',
     fontStyle: 'italic',
     marginTop: 2,
   },
   doneBtn: {
-    backgroundColor: '#38BDF8',
+    backgroundColor: '#007AFF',
     paddingVertical: 14,
     borderRadius: RADIUS.md,
     alignItems: 'center',
     marginTop: 4,
-    ...SHADOWS.small,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 4,
   },
   doneBtnText: {
     fontSize: 15,
     fontWeight: '900',
-    color: '#0F172A',
+    color: '#FFFFFF',
   },
 });

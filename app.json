@@ -28,7 +28,6 @@
     },
     "android": {
       "package": "com.civiclens.app",
-      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#0F172A",
         "foregroundImage": "./assets/android-icon-foreground.png",

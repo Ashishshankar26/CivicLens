@@ -126,9 +126,17 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
 
           {/* BOTTOM SECTION: DESCRIPTION & DETAILS (Clean White Card) */}
           <View style={styles.cardDetailsSection}>
-            <Text style={styles.cardTitleText} numberOfLines={1}>
-              {hazardTitle}
-            </Text>
+            {/* Title & Small View Details Button */}
+            <View style={styles.cardHeaderRow}>
+              <Text style={styles.cardTitleText} numberOfLines={1}>
+                {hazardTitle}
+              </Text>
+              
+              <View style={styles.smallViewBtn}>
+                <Text style={styles.smallViewBtnText}>View Details</Text>
+                <ArrowRight size={10} color="#007AFF" strokeWidth={2.5} />
+              </View>
+            </View>
 
             {activeIssue.description ? (
               <Text style={styles.cardDescText} numberOfLines={1}>
@@ -139,14 +147,14 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
             {/* Location & Verifications Meta Row */}
             <View style={styles.metaRowContainer}>
               <View style={styles.metaPill}>
-                <MapPin size={11} color="#007AFF" />
+                <MapPin size={10} color="#007AFF" />
                 <Text style={styles.metaPillText} numberOfLines={1}>
                   {activeIssue.locationName || `${activeIssue.latitude.toFixed(3)}, ${activeIssue.longitude.toFixed(3)}`}
                 </Text>
               </View>
 
               <View style={styles.metaPill}>
-                <Flame size={11} color="#F97316" />
+                <Flame size={10} color="#F97316" />
                 <Text style={styles.metaPillText}>
                   {activeIssue.confirmationCount || 0} Verified
                 </Text>
@@ -155,14 +163,6 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
               <Text style={styles.timeAgoText}>
                 {formatRelativeTime(activeIssue.createdAt)}
               </Text>
-            </View>
-
-            {/* Action Bar */}
-            <View style={styles.inspectActionPill}>
-              <Text style={styles.inspectActionText}>Inspect Full Hazard Report</Text>
-              <View style={styles.actionArrowIconCircle}>
-                <ArrowRight size={12} color="#FFFFFF" strokeWidth={2.5} />
-              </View>
             </View>
           </View>
         </TouchableOpacity>
@@ -221,16 +221,16 @@ const styles = StyleSheet.create({
   },
   deckContainer: {
     position: 'relative',
-    height: 255,
+    height: 225,
     width: '100%',
     alignItems: 'center',
   },
   bgCardLayer: {
     position: 'absolute',
-    top: 10,
+    top: 8,
     width: CARD_WIDTH - 20,
-    height: 235,
-    borderRadius: 20,
+    height: 205,
+    borderRadius: 18,
     backgroundColor: '#F8FAFC',
     overflow: 'hidden',
     opacity: 0.6,
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   },
   bgCardImage: {
     width: '100%',
-    height: 125,
+    height: 110,
   },
   bgCardOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -249,21 +249,21 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     width: CARD_WIDTH,
-    height: 245,
-    borderRadius: 20,
+    height: 215,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(210, 210, 215, 0.6)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 3,
   },
   photoContainer: {
     width: '100%',
-    height: 130,
+    height: 120,
     position: 'relative',
     backgroundColor: '#0F172A',
   },
@@ -273,25 +273,48 @@ const styles = StyleSheet.create({
   },
   photoTopBadgesStrip: {
     position: 'absolute',
-    top: 10,
-    left: 10,
-    right: 10,
+    top: 8,
+    left: 8,
+    right: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   cardDetailsSection: {
     padding: 10,
-    gap: 3,
+    gap: 4,
     backgroundColor: '#FFFFFF',
     flex: 1,
     justifyContent: 'space-between',
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
   },
   cardTitleText: {
     fontSize: 13.5,
     fontWeight: '900',
     color: '#1C1C1E',
     letterSpacing: -0.3,
+    flex: 1,
+  },
+  smallViewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  smallViewBtnText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#007AFF',
   },
   cardDescText: {
     fontSize: 10.5,
@@ -303,7 +326,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    marginVertical: 1,
+    marginTop: 2,
   },
   metaPill: {
     flexDirection: 'row',
@@ -325,28 +348,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#8E8E93',
     marginLeft: 'auto',
-  },
-  inspectActionPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 10,
-  },
-  inspectActionText: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  actionArrowIconCircle: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   emptyCard: {
     backgroundColor: '#FFFFFF',

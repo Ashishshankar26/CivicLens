@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { CivicIssue } from '@/types/issue';
 import { StatusBadge } from '../ui/StatusBadge';
 import { CategoryBadge } from '../ui/CategoryBadge';
@@ -57,7 +56,6 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
   const activeIssue = issues[currentIndex] || issues[0];
   const nextIssue = issues[(currentIndex + 1) % issues.length];
 
-  // Helper title
   const hazardTitle =
     activeIssue.locationName ||
     `${activeIssue.category.replace('_', ' ').toUpperCase()} HAZARD`;
@@ -94,7 +92,8 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
                   nextIssue.imageUrl ||
                   'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&auto=format&fit=crop&q=80',
               }}
-              style={styles.bgImage}
+              style={styles.bgCardImage}
+              resizeMode="cover"
             />
             <View style={styles.bgCardOverlay} />
           </View>
@@ -104,48 +103,40 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
         <TouchableOpacity
           style={styles.activeCardLayer}
           onPress={() => onPressIssue(activeIssue.id)}
-          activeOpacity={0.93}
+          activeOpacity={0.94}
         >
-          {/* Card Hero Image */}
-          <Image
-            source={{
-              uri:
-                activeIssue.imageUrl ||
-                'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&auto=format&fit=crop&q=80',
-            }}
-            style={styles.activeCardImage}
-            resizeMode="cover"
-          />
+          {/* TOP SECTION: PHOTO IMAGE ONLY (Unobstructed Visibility) */}
+          <View style={styles.photoContainer}>
+            <Image
+              source={{
+                uri:
+                  activeIssue.imageUrl ||
+                  'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&auto=format&fit=crop&q=80',
+              }}
+              style={styles.heroPhoto}
+              resizeMode="cover"
+            />
 
-          {/* Smooth Bottom Shadow Gradient */}
-          <LinearGradient
-            colors={['transparent', 'rgba(15, 23, 42, 0.4)', 'rgba(15, 23, 42, 0.85)']}
-            locations={[0, 0.5, 1]}
-            style={styles.cardGradientOverlay}
-          />
-
-          {/* Top Badges Floating Strip */}
-          <View style={styles.topBadgesStrip}>
-            <CategoryBadge category={activeIssue.category} size="md" />
-            <StatusBadge status={activeIssue.status} size="md" />
+            {/* Floating Top Badges over photo */}
+            <View style={styles.photoTopBadgesStrip}>
+              <CategoryBadge category={activeIssue.category} size="sm" />
+              <StatusBadge status={activeIssue.status} size="sm" />
+            </View>
           </View>
 
-          {/* Compact Glassmorphic Bottom Info Sheet */}
-          <View style={styles.glassBottomSheet}>
-            {/* Title & Short Description */}
-            <View style={styles.sheetTitleRow}>
-              <Text style={styles.sheetTitleText} numberOfLines={1}>
-                {hazardTitle}
-              </Text>
-            </View>
+          {/* BOTTOM SECTION: DESCRIPTION & DETAILS (Clean White Card) */}
+          <View style={styles.cardDetailsSection}>
+            <Text style={styles.cardTitleText} numberOfLines={1}>
+              {hazardTitle}
+            </Text>
 
             {activeIssue.description ? (
-              <Text style={styles.sheetDescText} numberOfLines={1}>
+              <Text style={styles.cardDescText} numberOfLines={1}>
                 {activeIssue.description}
               </Text>
             ) : null}
 
-            {/* Meta Row: Location + Verifications + Time */}
+            {/* Location & Verifications Meta Row */}
             <View style={styles.metaRowContainer}>
               <View style={styles.metaPill}>
                 <MapPin size={11} color="#007AFF" />
@@ -166,7 +157,7 @@ export function SwipeableCardStack({ issues, onPressIssue }: SwipeableCardStackP
               </Text>
             </View>
 
-            {/* Quick Action Button Strip */}
+            {/* Action Bar */}
             <View style={styles.inspectActionPill}>
               <Text style={styles.inspectActionText}>Inspect Full Hazard Report</Text>
               <View style={styles.actionArrowIconCircle}>
@@ -230,7 +221,7 @@ const styles = StyleSheet.create({
   },
   deckContainer: {
     position: 'relative',
-    height: 320,
+    height: 345,
     width: '100%',
     alignItems: 'center',
   },
@@ -238,81 +229,71 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     width: CARD_WIDTH - 20,
-    height: 295,
+    height: 320,
     borderRadius: 24,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#F8FAFC',
     overflow: 'hidden',
-    opacity: 0.65,
+    opacity: 0.6,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(210, 210, 215, 0.6)',
   },
-  bgImage: {
-    ...StyleSheet.absoluteFillObject,
+  bgCardImage: {
+    width: '100%',
+    height: 180,
   },
   bgCardOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    backgroundColor: 'rgba(15, 23, 42, 0.2)',
   },
   activeCardLayer: {
     position: 'absolute',
     top: 0,
     width: CARD_WIDTH,
-    height: 310,
-    borderRadius: 26,
-    backgroundColor: '#0F172A',
+    height: 335,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
-    shadowRadius: 14,
-    elevation: 6,
-  },
-  activeCardImage: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  cardGradientOverlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  topBadgesStrip: {
-    position: 'absolute',
-    top: 14,
-    left: 14,
-    right: 14,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  glassBottomSheet: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    right: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.94)',
-    borderRadius: 20,
-    padding: 12,
-    gap: 5,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
+    borderColor: 'rgba(210, 210, 215, 0.6)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
     elevation: 4,
   },
-  sheetTitleRow: {
+  photoContainer: {
+    width: '100%',
+    height: 195,
+    position: 'relative',
+    backgroundColor: '#0F172A',
+  },
+  heroPhoto: {
+    width: '100%',
+    height: '100%',
+  },
+  photoTopBadgesStrip: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    right: 12,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  cardDetailsSection: {
+    padding: 14,
+    gap: 5,
+    backgroundColor: '#FFFFFF',
+    flex: 1,
     justifyContent: 'space-between',
   },
-  sheetTitleText: {
+  cardTitleText: {
     fontSize: 15,
     fontWeight: '900',
     color: '#1C1C1E',
     letterSpacing: -0.3,
   },
-  sheetDescText: {
+  cardDescText: {
     fontSize: 11.5,
     color: '#475569',
     fontWeight: '500',
@@ -322,7 +303,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 2,
+    marginVertical: 2,
   },
   metaPill: {
     flexDirection: 'row',
@@ -351,9 +332,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#007AFF',
     paddingHorizontal: 12,
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderRadius: 12,
-    marginTop: 4,
   },
   inspectActionText: {
     fontSize: 11.5,

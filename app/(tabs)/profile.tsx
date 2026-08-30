@@ -11,6 +11,7 @@ import {
   Modal,
   Image,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -285,6 +286,38 @@ export default function ModernYouScreen() {
                     {user?.bio || 'Active Civic Scout'}
                   </Text>
                 </View>
+              </View>
+            </View>
+
+            {/* Aesthetic XP Level Progress Bar */}
+            <View style={styles.cardXpSection}>
+              <View style={styles.cardXpHeaderRow}>
+                <View style={styles.cardXpBadgeGroup}>
+                  <Sparkles size={11} color="#007AFF" />
+                  <Text style={styles.cardXpBadgeText}>
+                    LEVEL {reputation?.level || 1} RANK XP
+                  </Text>
+                </View>
+                <Text style={styles.cardXpRatioText}>
+                  {reputation?.points || 120} / {((reputation?.level || 1) * 200)} XP
+                </Text>
+              </View>
+
+              <View style={styles.cardXpTrack}>
+                <LinearGradient
+                  colors={['#60A5FA', '#007AFF']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={[
+                    styles.cardXpFill,
+                    {
+                      width: `${Math.min(
+                        100,
+                        Math.max(8, (((reputation?.points || 120) % 200) / 200) * 100)
+                      )}%`,
+                    },
+                  ]}
+                />
               </View>
             </View>
 
@@ -882,6 +915,47 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: '600',
     color: '#64748B',
+  },
+  cardXpSection: {
+    gap: 6,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginTop: 2,
+  },
+  cardXpHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cardXpBadgeGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  cardXpBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#007AFF',
+    letterSpacing: 0.5,
+  },
+  cardXpRatioText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  cardXpTrack: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#E2E8F0',
+    overflow: 'hidden',
+  },
+  cardXpFill: {
+    height: '100%',
+    borderRadius: 3,
   },
   refCardActionsRow: {
     flexDirection: 'row',

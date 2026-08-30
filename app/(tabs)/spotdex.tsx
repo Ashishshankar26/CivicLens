@@ -19,6 +19,7 @@ import { fetchLiveAirQuality, AirQualityData } from '@/services/analytics/airQua
 import { UserReputation, Badge } from '@/types/gamification';
 import { BadgeDetailModal } from '@/components/gamification/BadgeDetailModal';
 import { AllBadgesModal } from '@/components/gamification/AllBadgesModal';
+import { RealBadgeEmblem } from '@/components/ui/RealBadgeEmblem';
 import { AirQualityModal } from '@/components/map/AirQualityModal';
 import { SwipeableCardStack } from '@/components/cards/SwipeableCardStack';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
@@ -371,36 +372,34 @@ export default function SpotdexScreen() {
             WIDGETS 3 & 4: MIDDLE 2-COLUMN GRID
             ========================================== */}
         <View style={styles.gridTwoColumns}>
-          {/* Left Square Card (3 Concentric Progress Gauge Rings) */}
-          <View style={styles.squareCardWidget}>
+          {/* Left Square Card: Today's Date & Earned Badges Showcase */}
+          <TouchableOpacity
+            style={styles.squareCardWidget}
+            onPress={() => setAllBadgesModalVisible(true)}
+            activeOpacity={0.85}
+          >
             <View style={styles.tripleGaugeHeader}>
               <Text style={styles.gaugeDateTitle}>Today</Text>
               <Text style={styles.gaugeDateSub}>{todayDateStr}</Text>
             </View>
 
-            <View style={styles.tripleRingsContainer}>
-              {/* Ring 1 (Top Right): Pothole Ratio */}
-              <View style={[styles.miniRingWrapper, styles.miniRingTopRight]}>
-                <View style={[styles.miniRingCircle, { borderColor: '#F59E0B' }]}>
-                  <Text style={styles.miniRingText}>{potholeRatio}%</Text>
-                </View>
-              </View>
-
-              {/* Ring 2 (Bottom Left): Verification Rate */}
-              <View style={[styles.miniRingWrapper, styles.miniRingBottomLeft]}>
-                <View style={[styles.miniRingCircle, { borderColor: '#10B981' }]}>
-                  <Text style={styles.miniRingText}>{verificationRate}%</Text>
-                </View>
-              </View>
-
-              {/* Ring 3 (Bottom Right): Badges Rate */}
-              <View style={[styles.miniRingWrapper, styles.miniRingBottomRight]}>
-                <View style={[styles.miniRingCircle, { borderColor: '#6366F1' }]}>
-                  <Text style={styles.miniRingText}>{badgePercent}%</Text>
-                </View>
-              </View>
+            {/* Earned Badges Showcase Row */}
+            <View style={styles.todayBadgesRow}>
+              {((reputation?.badges.filter((b) => b.isUnlocked).length || 0) > 0
+                ? reputation!.badges.filter((b) => b.isUnlocked)
+                : (reputation?.badges || []).slice(0, 3)
+              )
+                .slice(0, 3)
+                .map((badge) => (
+                  <View key={badge.id} style={styles.todayBadgeItem}>
+                    <RealBadgeEmblem id={badge.id} size={38} isUnlocked={badge.isUnlocked} />
+                    <Text style={styles.todayBadgeTitle} numberOfLines={1}>
+                      {badge.title}
+                    </Text>
+                  </View>
+                ))}
             </View>
-          </View>
+          </TouchableOpacity>
 
           {/* Right Square Card (Single Focus Ring & Metrics) */}
           <View style={styles.squareCardWidget}>
@@ -952,38 +951,23 @@ const styles = StyleSheet.create({
     color: '#1C1C1E',
     letterSpacing: -0.3,
   },
-  tripleRingsContainer: {
-    height: 80,
-    position: 'relative',
-  },
-  miniRingWrapper: {
-    position: 'absolute',
-  },
-  miniRingTopRight: {
-    top: 0,
-    right: 4,
-  },
-  miniRingBottomLeft: {
-    bottom: 0,
-    left: 4,
-  },
-  miniRingBottomRight: {
-    bottom: 0,
-    right: 4,
-  },
-  miniRingCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 3,
+  todayBadgesRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    justifyContent: 'space-around',
+    marginTop: 8,
+    gap: 4,
   },
-  miniRingText: {
-    fontSize: 10,
+  todayBadgeItem: {
+    alignItems: 'center',
+    gap: 3,
+    width: 44,
+  },
+  todayBadgeTitle: {
+    fontSize: 9,
     fontWeight: '800',
     color: '#1C1C1E',
+    textAlign: 'center',
   },
 
   /* Single Focus Ring Card */

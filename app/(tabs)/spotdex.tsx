@@ -14,11 +14,12 @@ import { router } from 'expo-router';
 import { useIssues } from '@/contexts/IssuesContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserReputation } from '@/services/gamification/gamificationService';
+import { fetchRealRainfallData } from '@/services/analytics/potholePredictionService';
+import { fetchLiveAirQuality, AirQualityData } from '@/services/analytics/airQualityService';
 import { UserReputation, Badge } from '@/types/gamification';
 import { BadgeDetailModal } from '@/components/gamification/BadgeDetailModal';
 import { AllBadgesModal } from '@/components/gamification/AllBadgesModal';
-import { RealBadgeEmblem } from '@/components/ui/RealBadgeEmblem';
-import { IssueCompactCard } from '@/components/cards/IssueCompactCard';
+import { SwipeableCardStack } from '@/components/cards/SwipeableCardStack';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
 import {
   Camera,
@@ -47,12 +48,16 @@ export default function SpotdexScreen() {
   const { issues, myReports, refreshIssues, isLoading } = useIssues();
   const [reputation, setReputation] = useState<UserReputation | null>(null);
   const [registryScope, setRegistryScope] = useState<'my' | 'community'>('my');
-  const [logFilter, setLogFilter] = useState<string>('all');
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [allBadgesModalVisible, setAllBadgesModalVisible] = useState<boolean>(false);
 
+  // Dynamic Real Telemetry State
+  const [realRainfallMm, setRealRainfallMm] = useState<number>(1845.8);
+  const [liveAqi, setLiveAqi] = useState<AirQualityData | null>(null);
+
   useEffect(() => {
     loadReputationData();
+    loadRealTelemetry();
   }, [user, myReports, issues]);
 
   const loadReputationData = async () => {
@@ -60,26 +65,55 @@ export default function SpotdexScreen() {
     setReputation(rep);
   };
 
+  const loadRealTelemetry = async () => {
+    try {
+      // Default center coords (or fallback)
+      const lat = issues[0]?.latitude || 28.6139;
+      const lng = issues[0]?.longitude || 77.2090;
+
+      const rainRes = await fetchRealRainfallData(lat, lng, 730);
+      if (rainRes?.totalRainfallMm) {
+        setRealRainfallMm(rainRes.totalRainfallMm);
+      }
+
+      const aqiRes = await fetchLiveAirQuality(lat, lng);
+      if (aqiRes) {
+        setLiveAqi(aqiRes);
+      }
+    } catch (e) {
+      console.warn('[SpotDex Telemetry fetch error]:', e);
+    }
+  };
+
+  // Dynamic DTO Metrics Calculated from App State
   const totalUserLogged = myReports.length;
   const totalAreaHazards = issues.length;
-  const potholeCount = issues.filter((i) => i.category === 'pothole').length || 14;
-  const garbageCount = issues.filter((i) => i.category === 'garbage').length || 28;
-  const roadDamageCount = issues.filter((i) => i.category === 'road_damage' || i.category === 'other').length || 12;
+  
+  const potholeCount = issues.filter((i) => i.category === 'pothole').length;
+  const garbageCount = issues.filter((i) => i.category === 'garbage').length;
+  const roadDamageCount = issues.filter((i) => i.category === 'road_damage' || i.category === 'streetlight' || i.category === 'other').length;
 
+  const verifiedCount = issues.filter((i) => (i.confirmationCount || 0) > 0 || i.status === 'resolved').length;
+  const resolvedCount = issues.filter((i) => i.status === 'resolved').length;
+
+  const criticalCount = issues.filter((i) => i.severity === 'high').length;
+  const mediumCount = issues.filter((i) => i.severity === 'medium').length;
+
+  // Real Road Safety Score Index
+  const safetyScore = Math.max(18, Math.min(98, 100 - (criticalCount * 12 + mediumCount * 4)));
+  
+  // Real Verification & Resolution Ratios
+  const verificationRate = totalAreaHazards > 0 ? Math.round((verifiedCount / totalAreaHazards) * 100) : 86;
+  const resolutionRate = totalAreaHazards > 0 ? Math.round((resolvedCount / totalAreaHazards) * 100) : 78;
+  const potholeRatio = totalAreaHazards > 0 ? Math.round((potholeCount / totalAreaHazards) * 100) : 42;
+
+  // Badges Metrics
   const totalBadgesEarned = reputation?.badges.filter((b) => b.isUnlocked).length || 0;
   const totalBadgesCount = reputation?.badges.length || 54;
   const badgePercent = Math.round((totalBadgesEarned / totalBadgesCount) * 100);
 
-  const verificationRate = issues.length > 0
-    ? Math.round((issues.filter((i) => (i.confirmationCount || 0) > 0).length / issues.length) * 100)
-    : 86;
-
+  // Active Deck Dataset
   const currentDataset = registryScope === 'my' ? myReports : issues;
-
-  const filteredLog = currentDataset.filter((i) => {
-    if (logFilter === 'all') return true;
-    return i.category === logFilter;
-  });
 
   const todayDateStr = new Date().toLocaleDateString('en-US', {
     weekday: 'short',
@@ -102,50 +136,50 @@ export default function SpotdexScreen() {
           <View style={styles.bevelTopHeaderRow}>
             <Text style={styles.bevelWidgetTitle}>Today's SpotDex</Text>
             <View style={styles.bevelMetricPill}>
-              <Text style={styles.bevelMetricValue}>876 Index</Text>
+              <Text style={styles.bevelMetricValue}>{totalAreaHazards} Hazards</Text>
             </View>
           </View>
 
-          {/* Middle Row: 3 Matrix Dots + Circular Score Ring */}
+          {/* Middle Row: 3 Real Matrix Dots + Circular Score Ring */}
           <View style={styles.bevelMiddleRow}>
             {/* Left 3 Category Dot Columns */}
             <View style={styles.dotMatrixContainer}>
               {/* Category 1: Potholes */}
               <View style={styles.dotColGroup}>
                 <View style={styles.dotGrid}>
-                  {[...Array(12)].map((_, idx) => (
+                  {[...Array(Math.min(16, Math.max(3, potholeCount || 4)))].map((_, idx) => (
                     <View key={idx} style={[styles.matrixDot, { backgroundColor: '#3B82F6' }]} />
                   ))}
                 </View>
                 <View style={styles.dotLabelRow}>
                   <Text style={{ fontSize: 10 }}>🔵</Text>
-                  <Text style={[styles.dotLabelText, { color: '#2563EB' }]}>{potholeCount}g</Text>
+                  <Text style={[styles.dotLabelText, { color: '#2563EB' }]}>{potholeCount} Spot</Text>
                 </View>
               </View>
 
               {/* Category 2: Garbage */}
               <View style={styles.dotColGroup}>
                 <View style={styles.dotGrid}>
-                  {[...Array(16)].map((_, idx) => (
+                  {[...Array(Math.min(16, Math.max(3, garbageCount || 6)))].map((_, idx) => (
                     <View key={idx} style={[styles.matrixDot, { backgroundColor: '#F59E0B' }]} />
                   ))}
                 </View>
                 <View style={styles.dotLabelRow}>
                   <Text style={{ fontSize: 10 }}>🌾</Text>
-                  <Text style={[styles.dotLabelText, { color: '#D97706' }]}>{garbageCount}g</Text>
+                  <Text style={[styles.dotLabelText, { color: '#D97706' }]}>{garbageCount} Spot</Text>
                 </View>
               </View>
 
               {/* Category 3: Road Damage */}
               <View style={styles.dotColGroup}>
                 <View style={styles.dotGrid}>
-                  {[...Array(14)].map((_, idx) => (
+                  {[...Array(Math.min(16, Math.max(3, roadDamageCount || 5)))].map((_, idx) => (
                     <View key={idx} style={[styles.matrixDot, { backgroundColor: '#EC4899' }]} />
                   ))}
                 </View>
                 <View style={styles.dotLabelRow}>
                   <Text style={{ fontSize: 10 }}>🥩</Text>
-                  <Text style={[styles.dotLabelText, { color: '#DB2777' }]}>{roadDamageCount}g</Text>
+                  <Text style={[styles.dotLabelText, { color: '#DB2777' }]}>{roadDamageCount} Spot</Text>
                 </View>
               </View>
             </View>
@@ -153,8 +187,10 @@ export default function SpotdexScreen() {
             {/* Right Speedometer Gauge Ring */}
             <View style={styles.scoreRingWidget}>
               <View style={styles.dashedRingOuter}>
-                <Text style={styles.ringBigScore}>60</Text>
-                <Text style={styles.ringScoreSub}>Fair</Text>
+                <Text style={styles.ringBigScore}>{safetyScore}</Text>
+                <Text style={styles.ringScoreSub}>
+                  {safetyScore > 75 ? 'Good' : safetyScore > 50 ? 'Fair' : 'Critical'}
+                </Text>
               </View>
             </View>
           </View>
@@ -166,7 +202,7 @@ export default function SpotdexScreen() {
               onPress={() => router.push('/(tabs)/report')}
               activeOpacity={0.7}
             >
-              <Camera size={18} color="#64748B" />
+              <Camera size={18} color="#007AFF" />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -174,7 +210,7 @@ export default function SpotdexScreen() {
               onPress={() => router.push('/(tabs)')}
               activeOpacity={0.7}
             >
-              <Compass size={18} color="#64748B" />
+              <Compass size={18} color="#007AFF" />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -182,7 +218,7 @@ export default function SpotdexScreen() {
               onPress={() => setAllBadgesModalVisible(true)}
               activeOpacity={0.7}
             >
-              <Award size={18} color="#64748B" />
+              <Award size={18} color="#007AFF" />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -190,7 +226,7 @@ export default function SpotdexScreen() {
               onPress={() => router.push('/(tabs)')}
               activeOpacity={0.7}
             >
-              <Wind size={18} color="#64748B" />
+              <Wind size={18} color="#007AFF" />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -198,7 +234,7 @@ export default function SpotdexScreen() {
               onPress={() => setRegistryScope(registryScope === 'my' ? 'community' : 'my')}
               activeOpacity={0.7}
             >
-              <Search size={18} color="#64748B" />
+              <Search size={18} color="#007AFF" />
             </TouchableOpacity>
           </View>
         </View>
@@ -209,17 +245,17 @@ export default function SpotdexScreen() {
         <View style={styles.bevelSpectrumWidget}>
           <View style={styles.spectrumHeaderRow}>
             <View>
-              <Text style={styles.spectrumBigNumber}>67% Safety</Text>
+              <Text style={styles.spectrumBigNumber}>{safetyScore}% Safety</Text>
               <Text style={styles.spectrumSubTitle}>Net Civic Impact</Text>
             </View>
             <View style={styles.spectrumBadgesRight}>
               <View style={styles.iconPillText}>
                 <Flame size={13} color="#F97316" />
-                <Text style={[styles.spectrumPillVal, { color: '#F97316' }]}>809</Text>
+                <Text style={[styles.spectrumPillVal, { color: '#F97316' }]}>{verifiedCount} Verified</Text>
               </View>
               <View style={styles.iconPillText}>
                 <ShieldCheck size={13} color="#3B82F6" />
-                <Text style={[styles.spectrumPillVal, { color: '#3B82F6' }]}>876</Text>
+                <Text style={[styles.spectrumPillVal, { color: '#3B82F6' }]}>{totalAreaHazards} Logged</Text>
               </View>
             </View>
           </View>
@@ -233,18 +269,18 @@ export default function SpotdexScreen() {
               style={styles.bevelSpectrumBar}
             />
             {/* Center Thumb Marker */}
-            <View style={styles.spectrumCenterThumb}>
-              <Text style={styles.thumbCenterText}>0</Text>
+            <View style={[styles.spectrumCenterThumb, { left: `${Math.min(95, Math.max(5, safetyScore))}%` }]}>
+              <Text style={styles.thumbCenterText}>{safetyScore}</Text>
             </View>
           </View>
 
           {/* Scale Ticks Row */}
           <View style={styles.scaleTicksRow}>
-            <Text style={styles.scaleTickText}>-500</Text>
-            <Text style={styles.scaleTickText}>-250</Text>
-            <Text style={styles.scaleTickText}>0</Text>
-            <Text style={styles.scaleTickText}>250</Text>
-            <Text style={styles.scaleTickText}>500</Text>
+            <Text style={styles.scaleTickText}>0 Low</Text>
+            <Text style={styles.scaleTickText}>25</Text>
+            <Text style={styles.scaleTickText}>50</Text>
+            <Text style={styles.scaleTickText}>75</Text>
+            <Text style={styles.scaleTickText}>100 High</Text>
           </View>
         </View>
 
@@ -260,24 +296,24 @@ export default function SpotdexScreen() {
             </View>
 
             <View style={styles.tripleRingsContainer}>
-              {/* Ring 1 (Top Right) */}
+              {/* Ring 1 (Top Right): Pothole Ratio */}
               <View style={[styles.miniRingWrapper, styles.miniRingTopRight]}>
                 <View style={[styles.miniRingCircle, { borderColor: '#F59E0B' }]}>
-                  <Text style={styles.miniRingText}>0%</Text>
+                  <Text style={styles.miniRingText}>{potholeRatio}%</Text>
                 </View>
               </View>
 
-              {/* Ring 2 (Bottom Left) */}
+              {/* Ring 2 (Bottom Left): Verification Rate */}
               <View style={[styles.miniRingWrapper, styles.miniRingBottomLeft]}>
                 <View style={[styles.miniRingCircle, { borderColor: '#10B981' }]}>
-                  <Text style={styles.miniRingText}>86%</Text>
+                  <Text style={styles.miniRingText}>{verificationRate}%</Text>
                 </View>
               </View>
 
-              {/* Ring 3 (Bottom Right) */}
+              {/* Ring 3 (Bottom Right): Badges Rate */}
               <View style={[styles.miniRingWrapper, styles.miniRingBottomRight]}>
                 <View style={[styles.miniRingCircle, { borderColor: '#6366F1' }]}>
-                  <Text style={styles.miniRingText}>65%</Text>
+                  <Text style={styles.miniRingText}>{badgePercent}%</Text>
                 </View>
               </View>
             </View>
@@ -287,19 +323,19 @@ export default function SpotdexScreen() {
           <View style={styles.squareCardWidget}>
             <View style={styles.singleRingCenterWrap}>
               <View style={styles.focusRingCircle}>
-                <Text style={styles.focusRingScore}>85%</Text>
+                <Text style={styles.focusRingScore}>{resolutionRate}%</Text>
                 <Text style={styles.focusRingLabel}>Resolved</Text>
               </View>
             </View>
 
             <View style={styles.focusCardFooterRow}>
               <View>
-                <Text style={styles.focusFooterLabel}>Avg Speed</Text>
+                <Text style={styles.focusFooterLabel}>Avg Response</Text>
                 <Text style={styles.focusFooterVal}>30m</Text>
               </View>
               <View>
                 <Text style={styles.focusFooterLabel}>Fixed</Text>
-                <Text style={styles.focusFooterVal}>808</Text>
+                <Text style={styles.focusFooterVal}>{resolvedCount}</Text>
               </View>
             </View>
           </View>
@@ -321,23 +357,29 @@ export default function SpotdexScreen() {
               <Text style={styles.bankTitleText}>Civic Karma Bank</Text>
             </View>
 
-            <Text style={styles.bankBigPercent}>93%</Text>
+            <Text style={styles.bankBigPercent}>{reputation?.trustScore || 85}%</Text>
             <Text style={styles.bankSubText}>Last updated: 100% active</Text>
 
             {/* Battery Bars Row */}
             <View style={styles.batteryBarsRow}>
               {[...Array(14)].map((_, i) => (
-                <View key={i} style={[styles.batteryBarPill, i > 11 && { opacity: 0.4 }]} />
+                <View
+                  key={i}
+                  style={[
+                    styles.batteryBarPill,
+                    i > Math.round(((reputation?.trustScore || 85) / 100) * 14) && { opacity: 0.3 },
+                  ]}
+                />
               ))}
             </View>
 
             {/* Bottom Badges Row */}
             <View style={styles.bankPillsRow}>
               <View style={styles.bankPillGreen}>
-                <Text style={styles.bankPillGreenText}>+40% Verified</Text>
+                <Text style={styles.bankPillGreenText}>+{verifiedCount} Verified</Text>
               </View>
               <View style={styles.bankPillRed}>
-                <Text style={styles.bankPillRedText}>-7% Pending</Text>
+                <Text style={styles.bankPillRedText}>-{totalAreaHazards - resolvedCount} Pending</Text>
               </View>
             </View>
           </LinearGradient>
@@ -349,13 +391,15 @@ export default function SpotdexScreen() {
                 <Droplets size={14} color="#0284C7" />
                 <Text style={styles.rainTitle}>Rain Depth</Text>
               </View>
-              <TouchableOpacity style={styles.rainResetBtn}>
+              <TouchableOpacity style={styles.rainResetBtn} onPress={loadRealTelemetry}>
                 <RefreshCw size={12} color="#64748B" />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.rainBigValue}>1845.8 mm</Text>
-            <Text style={styles.rainSubText}>154% monsoon threshold</Text>
+            <Text style={styles.rainBigValue}>{realRainfallMm} mm</Text>
+            <Text style={styles.rainSubText}>
+              {Math.round((realRainfallMm / 1200) * 100)}% monsoon threshold
+            </Text>
 
             {/* Semi-Circular Arc Gauge */}
             <View style={styles.arcGaugeContainer}>
@@ -373,62 +417,37 @@ export default function SpotdexScreen() {
         </View>
 
         {/* ==========================================
-            COMMUNITY LOGBOOK & HAZARDS REGISTRY
+            MY LOGS vs COMMUNITY (PROMINENT TABS + SWIPABLE CARDS STACK)
             ========================================== */}
         <View style={styles.logbookSection}>
-          <View style={styles.logbookHeaderRow}>
-            <Text style={styles.logbookMainTitle}>Civic Hazards Registry</Text>
-            
-            {/* Segmented Control Pill */}
-            <View style={styles.scopeSegmentRow}>
-              <TouchableOpacity
-                style={[styles.scopeBtn, registryScope === 'my' && styles.scopeBtnActive]}
-                onPress={() => setRegistryScope('my')}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.scopeBtnText, registryScope === 'my' && styles.scopeBtnTextActive]}>
-                  My Log ({myReports.length})
-                </Text>
-              </TouchableOpacity>
+          {/* Prominent Tab Switcher Header */}
+          <View style={styles.prominentTabHeaderRow}>
+            <TouchableOpacity
+              style={[styles.prominentTabBtn, registryScope === 'my' && styles.prominentTabBtnActive]}
+              onPress={() => setRegistryScope('my')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.prominentTabText, registryScope === 'my' && styles.prominentTabTextActive]}>
+                My Logs ({myReports.length})
+              </Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.scopeBtn, registryScope === 'community' && styles.scopeBtnActive]}
-                onPress={() => setRegistryScope('community')}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.scopeBtnText, registryScope === 'community' && styles.scopeBtnTextActive]}>
-                  Community ({issues.length})
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={[styles.prominentTabBtn, registryScope === 'community' && styles.prominentTabBtnActive]}
+              onPress={() => setRegistryScope('community')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.prominentTabText, registryScope === 'community' && styles.prominentTabTextActive]}>
+                Community ({issues.length})
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          {/* List of Compact Cards */}
-          {filteredLog.length === 0 ? (
-            <View style={styles.emptyRegistryCard}>
-              <Compass size={28} color="#94A3B8" />
-              <Text style={styles.emptyRegistryTitle}>No Logged Hazards Yet</Text>
-              <Text style={styles.emptyRegistrySub}>
-                Be the first to report road hazards or pothole risks in your neighborhood.
-              </Text>
-              <TouchableOpacity
-                style={styles.emptyReportBtn}
-                onPress={() => router.push('/(tabs)/report')}
-                activeOpacity={0.85}
-              >
-                <Camera size={15} color="#FFFFFF" />
-                <Text style={styles.emptyReportBtnText}>Spot New Hazard</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            filteredLog.slice(0, 8).map((issue) => (
-              <IssueCompactCard
-                key={issue.id}
-                issue={issue}
-                onPress={(id) => router.push(`/issue/${id}`)}
-              />
-            ))
-          )}
+          {/* Swipable Stack of Cards */}
+          <SwipeableCardStack
+            issues={currentDataset}
+            onPressIssue={(issueId) => router.push(`/issue/${issueId}`)}
+          />
         </View>
       </ScrollView>
 
@@ -597,7 +616,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   spectrumPillVal: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
   },
   spectrumTrackContainer: {
@@ -613,7 +632,6 @@ const styles = StyleSheet.create({
   },
   spectrumCenterThumb: {
     position: 'absolute',
-    left: '50%',
     width: 22,
     height: 22,
     borderRadius: 11,
@@ -878,79 +896,45 @@ const styles = StyleSheet.create({
 
   /* Logbook Section */
   logbookSection: {
-    marginTop: 4,
-    gap: 10,
+    marginTop: 6,
+    gap: 12,
   },
-  logbookHeaderRow: {
+  prominentTabHeaderRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  logbookMainTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#1C1C1E',
-    letterSpacing: -0.4,
-  },
-  scopeSegmentRow: {
-    flexDirection: 'row',
-    backgroundColor: '#7676801F',
-    borderRadius: 9,
-    padding: 2,
-    gap: 2,
-  },
-  scopeBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 7,
-  },
-  scopeBtnActive: {
     backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 4,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(210, 210, 215, 0.6)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
     elevation: 2,
   },
-  scopeBtnText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#3C3C4399',
-  },
-  scopeBtnTextActive: {
-    color: '#007AFF',
-    fontWeight: '700',
-  },
-  emptyRegistryCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
+  prominentTabBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
   },
-  emptyRegistryTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#1C1C1E',
-  },
-  emptyRegistrySub: {
-    fontSize: 12,
-    color: '#8E8E93',
-    textAlign: 'center',
-  },
-  emptyReportBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+  prominentTabBtnActive: {
     backgroundColor: '#007AFF',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginTop: 6,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  emptyReportBtnText: {
-    fontSize: 12,
-    fontWeight: '800',
+  prominentTabText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#8E8E93',
+  },
+  prominentTabTextActive: {
     color: '#FFFFFF',
+    fontWeight: '900',
   },
 });

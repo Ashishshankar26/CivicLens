@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { UserProfile } from '@/types/user';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
@@ -27,15 +28,57 @@ import {
 } from 'lucide-react-native';
 
 export const AVATAR_OPTIONS = [
+  {
+    id: 'alms_enoch',
+    label: 'Enoch Scout',
+    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Enoch&backgroundColor=e0f2fe',
+    Icon: Compass,
+    color: '#0284C7',
+    bg: '#E0F2FE',
+  },
+  {
+    id: 'alms_sophia',
+    label: 'Sophia Vision',
+    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Sophia&backgroundColor=fef3c7',
+    Icon: Star,
+    color: '#D97706',
+    bg: '#FEF3C7',
+  },
+  {
+    id: 'alms_oliver',
+    label: 'Oliver Safety',
+    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Oliver&backgroundColor=d1fae5',
+    Icon: ShieldCheck,
+    color: '#059669',
+    bg: '#ECFDF5',
+  },
+  {
+    id: 'alms_emma',
+    label: 'Emma Leader',
+    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Emma&backgroundColor=fce7f3',
+    Icon: Crown,
+    color: '#DB2777',
+    bg: '#FCE7F3',
+  },
+  {
+    id: 'alms_lucas',
+    label: 'Lucas Sentinel',
+    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Lucas&backgroundColor=eef2ff',
+    Icon: Car,
+    color: '#2563EB',
+    bg: '#EFF6FF',
+  },
+  {
+    id: 'alms_ava',
+    label: 'Ava Cyclist',
+    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Ava&backgroundColor=fee2e2',
+    Icon: Bike,
+    color: '#DC2626',
+    bg: '#FEE2E2',
+  },
   { id: 'compass', label: 'Pioneer Scout', Icon: Compass, color: '#0284C7', bg: '#E0F2FE' },
   { id: 'shield', label: 'Safety Shield', Icon: ShieldCheck, color: '#059669', bg: '#ECFDF5' },
   { id: 'zap', label: 'Lightning Scout', Icon: Zap, color: '#F59E0B', bg: '#FEF3C7' },
-  { id: 'crown', label: 'Civic Leader', Icon: Crown, color: '#7C3AED', bg: '#F3E8FF' },
-  { id: 'car', label: 'Road Sentinel', Icon: Car, color: '#2563EB', bg: '#EFF6FF' },
-  { id: 'bike', label: 'Urban Cyclist', Icon: Bike, color: '#10B981', bg: '#D1FAE5' },
-  { id: 'star', label: 'Community Star', Icon: Star, color: '#EC4899', bg: '#FCE7F3' },
-  { id: 'camera', label: 'Vision Scout', Icon: Camera, color: '#6366F1', bg: '#EEF2FF' },
-  { id: 'flame', label: 'Hazard Hunter', Icon: Flame, color: '#EF4444', bg: '#FEE2E2' },
 ];
 
 interface EditProfileModalProps {
@@ -53,14 +96,14 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 }) => {
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState('compass');
+  const [selectedAvatar, setSelectedAvatar] = useState('alms_enoch');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (user) {
       setDisplayName(user.displayName || '');
       setBio(user.bio || '');
-      setSelectedAvatar(user.avatarKey || 'compass');
+      setSelectedAvatar(user.avatarKey || 'alms_enoch');
     }
   }, [user, visible]);
 
@@ -118,7 +161,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                     activeOpacity={0.8}
                   >
                     <View style={[styles.iconCircle, { backgroundColor: isSelected ? opt.color : '#F1F5F9' }]}>
-                      <IconComp size={22} color={isSelected ? '#FFFFFF' : '#64748B'} strokeWidth={2.2} />
+                      {opt.uri ? (
+                        <Image source={{ uri: opt.uri }} style={styles.avatarGridImg} />
+                      ) : (
+                        <IconComp size={22} color={isSelected ? '#FFFFFF' : '#64748B'} strokeWidth={2.2} />
+                      )}
                     </View>
                     <Text style={[styles.avatarLabel, isSelected && { color: opt.color, fontWeight: '800' }]}>
                       {opt.label}
@@ -268,6 +315,11 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  avatarGridImg: {
+    width: '100%',
+    height: '100%',
   },
   avatarLabel: {
     fontSize: 10,

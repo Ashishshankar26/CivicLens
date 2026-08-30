@@ -9,6 +9,7 @@ import {
   Platform,
   Switch,
   Modal,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -266,7 +267,11 @@ export default function ModernYouScreen() {
             <View style={styles.cardProfileMainRow}>
               {/* Circular Avatar */}
               <View style={[styles.refAvatarCircle, { backgroundColor: activeAvatarObj.bg }]}>
-                <AvatarIconComponent size={32} color={activeAvatarObj.color} strokeWidth={2.4} />
+                {'uri' in activeAvatarObj && activeAvatarObj.uri ? (
+                  <Image source={{ uri: (activeAvatarObj as any).uri }} style={styles.refAvatarImg} />
+                ) : (
+                  <AvatarIconComponent size={32} color={activeAvatarObj.color} strokeWidth={2.4} />
+                )}
               </View>
 
               {/* User Name & Status */}
@@ -846,6 +851,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.06)',
+    overflow: 'hidden',
+  },
+  refAvatarImg: {
+    width: '100%',
+    height: '100%',
   },
   refProfileInfoCol: {
     flex: 1,

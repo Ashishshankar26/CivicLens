@@ -427,7 +427,7 @@ export default function SpotdexScreen() {
             WIDGETS 5 & 6: BOTTOM 2-COLUMN GRID
             ========================================== */}
         <View style={styles.gridTwoColumns}>
-          {/* Left Square Card (Lush Green Karma Bank) */}
+          {/* Left Square Card (Lush Green Citizen Trust Rating) */}
           <LinearGradient
             colors={['#10B981', '#059669']}
             start={{ x: 0, y: 0 }}
@@ -435,12 +435,12 @@ export default function SpotdexScreen() {
             style={styles.greenBankWidget}
           >
             <View style={styles.bankHeaderRow}>
-              <Zap size={14} color="#FFFFFF" />
-              <Text style={styles.bankTitleText}>Civic Karma Bank</Text>
+              <ShieldCheck size={14} color="#FFFFFF" />
+              <Text style={styles.bankTitleText}>Citizen Trust Rating</Text>
             </View>
 
             <Text style={styles.bankBigPercent}>{reputation?.trustScore || 85}%</Text>
-            <Text style={styles.bankSubText}>Last updated: 100% active</Text>
+            <Text style={styles.bankSubText}>{reputation?.trustTier || 'Verified Guardian'} Tier</Text>
 
             {/* Battery Bars Row */}
             <View style={styles.batteryBarsRow}>

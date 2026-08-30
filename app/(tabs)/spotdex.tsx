@@ -22,6 +22,7 @@ import { AllBadgesModal } from '@/components/gamification/AllBadgesModal';
 import { AirQualityModal } from '@/components/map/AirQualityModal';
 import { SwipeableCardStack } from '@/components/cards/SwipeableCardStack';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
+import { formatRelativeTime } from '@/utils/formatters';
 import {
   Camera,
   Compass,
@@ -41,6 +42,11 @@ import {
   MapPin,
   Sparkles,
   Lock,
+  CircleDotDashed,
+  Recycle,
+  Lightbulb,
+  Construction,
+  TriangleAlert,
 } from 'lucide-react-native';
 
 export default function SpotdexScreen() {
@@ -113,6 +119,9 @@ export default function SpotdexScreen() {
   const totalBadgesCount = reputation?.badges.length || 54;
   const badgePercent = Math.round((totalBadgesEarned / totalBadgesCount) * 100);
 
+  // Latest Personal Sighting / Report
+  const newestPersonalEntry = myReports[0];
+
   // Active Deck Dataset
   const currentDataset = registryScope === 'my' ? myReports : issues;
 
@@ -121,6 +130,21 @@ export default function SpotdexScreen() {
     month: 'short',
     day: 'numeric',
   });
+
+  const renderCategoryIcon = (cat: string, size = 22, color = '#0066FF') => {
+    switch (cat) {
+      case 'pothole':
+        return <CircleDotDashed size={size} color={color} strokeWidth={2.4} />;
+      case 'garbage':
+        return <Recycle size={size} color={color} strokeWidth={2.4} />;
+      case 'streetlight':
+        return <Lightbulb size={size} color={color} strokeWidth={2.4} />;
+      case 'road_damage':
+        return <Construction size={size} color={color} strokeWidth={2.4} />;
+      default:
+        return <TriangleAlert size={size} color={color} strokeWidth={2.4} />;
+    }
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + (Platform.OS === 'ios' ? 4 : 8) }]}>
@@ -474,6 +498,80 @@ export default function SpotdexScreen() {
             </View>
           </View>
         </View>
+
+        {/* ==========================================
+            LATEST PERSONAL REPORT CARD (RESTORED EXACTLY)
+            ========================================== */}
+        {newestPersonalEntry ? (
+          <TouchableOpacity
+            style={styles.newestCard}
+            onPress={() => router.push(`/issue/${newestPersonalEntry.id}`)}
+            activeOpacity={0.85}
+          >
+            <View style={styles.newestBadge}>
+              <Sparkles size={11} color="#007AFF" />
+              <Text style={styles.newestBadgeText}>LATEST REPORT</Text>
+            </View>
+
+            <View style={styles.newestIconCenter}>
+              <View
+                style={[
+                  styles.newestIconWrap,
+                  {
+                    backgroundColor:
+                      newestPersonalEntry.category === 'pothole'
+                        ? '#EFF6FF'
+                        : newestPersonalEntry.category === 'garbage'
+                        ? '#ECFDF5'
+                        : newestPersonalEntry.category === 'streetlight'
+                        ? '#FEF3C7'
+                        : '#FEE2E2',
+                  },
+                ]}
+              >
+                {renderCategoryIcon(
+                  newestPersonalEntry.category,
+                  34,
+                  newestPersonalEntry.category === 'pothole'
+                    ? '#0066FF'
+                    : newestPersonalEntry.category === 'garbage'
+                    ? '#059669'
+                    : newestPersonalEntry.category === 'streetlight'
+                    ? '#D97706'
+                    : '#DC2626'
+                )}
+              </View>
+            </View>
+
+            <Text style={styles.newestTitle} numberOfLines={1}>
+              {newestPersonalEntry.locationName || 'Local Roadway Issue'}
+            </Text>
+            <View style={styles.newestFooterRow}>
+              <Text style={styles.newestSub}>
+                {newestPersonalEntry.category.toUpperCase()} • Priority {newestPersonalEntry.priorityScore || 75}/100
+              </Text>
+              <Text style={styles.newestTime}>{formatRelativeTime(newestPersonalEntry.createdAt)}</Text>
+            </View>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.starterDiscoveryCard}>
+            <View style={styles.starterIconCircle}>
+              <Compass size={28} color="#007AFF" strokeWidth={2.2} />
+            </View>
+            <Text style={styles.starterTitle}>No Reports Recorded Yet</Text>
+            <Text style={styles.starterSub}>
+              Report a pothole, waste overflow, or dark street lamp to start your district logbook.
+            </Text>
+            <TouchableOpacity
+              style={styles.starterActionBtn}
+              onPress={() => router.push('/(tabs)/report')}
+              activeOpacity={0.8}
+            >
+              <Plus size={15} color="#FFFFFF" strokeWidth={2.4} />
+              <Text style={styles.starterActionText}>Report an Issue</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* ==========================================
             MY LOGS vs COMMUNITY (PROMINENT TABS + SWIPABLE CARDS STACK)
@@ -1051,6 +1149,126 @@ const styles = StyleSheet.create({
     backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  /* Restored Latest Report Card Styles */
+  newestCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(210, 210, 215, 0.6)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  newestBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    gap: 4,
+    marginBottom: 12,
+  },
+  newestBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: '#007AFF',
+    letterSpacing: 0.6,
+  },
+  newestIconCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+  },
+  newestIconWrap: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  newestTitle: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: '#1C1C1E',
+    marginTop: 6,
+  },
+  newestFooterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  newestSub: {
+    fontSize: 11,
+    color: '#8E8E93',
+    fontWeight: '700',
+  },
+  newestTime: {
+    fontSize: 11,
+    color: '#8E8E93',
+  },
+  starterDiscoveryCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(210, 210, 215, 0.6)',
+    alignItems: 'center',
+    textAlign: 'center',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  starterIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  starterTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#1C1C1E',
+  },
+  starterSub: {
+    fontSize: 12,
+    color: '#8E8E93',
+    textAlign: 'center',
+    lineHeight: 18,
+    paddingHorizontal: 12,
+  },
+  starterActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginTop: 6,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  starterActionText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
 
   /* Logbook Section */

@@ -80,6 +80,12 @@ export default function ModernYouScreen() {
   const activeAvatarObj = AVATAR_OPTIONS.find((a) => a.id === user?.avatarKey) || AVATAR_OPTIONS[0];
   const AvatarIconComponent = activeAvatarObj.Icon;
 
+  const formattedTime = new Date().toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).toLowerCase();
+
   const totalCaught = myReports.length;
   const badgesCount = reputation?.badges.filter((b) => b.isUnlocked).length || 0;
   const impactRadius = reputation?.impactRadiusKm || 0.0;
@@ -245,89 +251,66 @@ export default function ModernYouScreen() {
         {/* Top Header Title */}
         <Text style={styles.topPageTitle}>Profile</Text>
 
-        {/* 1. PUBLIC CITIZEN PROFILE HERO */}
-        <View style={styles.spotterCard}>
-          <View style={styles.spotterCardTopStripe} />
-          
-          {/* Edit Profile Action Pill */}
-          <TouchableOpacity
-            style={styles.editProfileBtn}
-            onPress={() => setEditModalVisible(true)}
-            activeOpacity={0.8}
-          >
-            <Pencil size={13} color="#007AFF" />
-            <Text style={styles.editProfileBtnText}>Edit Profile</Text>
-          </TouchableOpacity>
-
-          <View style={styles.spotterTopRow}>
-            {/* Glowing Selected Avatar */}
-            <View style={[styles.glowAvatarCircle, { backgroundColor: activeAvatarObj.bg, borderColor: activeAvatarObj.color }]}>
-              <AvatarIconComponent size={34} color={activeAvatarObj.color} strokeWidth={2.4} />
-            </View>
-
-            <View style={styles.spotterInfoCol}>
-              <View style={styles.spotterBadge}>
-                <Sparkles size={11} color={COLORS.primary} />
-                <Text style={styles.spotterBadgeText}>
-                  LEVEL {reputation?.level || 1} • {reputation?.levelTitle?.toUpperCase() || 'NOVICE SCOUT'}
-                </Text>
-              </View>
-              <Text style={styles.spotterName}>{user?.displayName || 'Active Citizen'}</Text>
-              {user?.bio ? (
-                <Text style={styles.spotterBioText} numberOfLines={2}>"{user.bio}"</Text>
-              ) : null}
-              <View style={styles.verifiedRow}>
-                <ShieldCheck size={12} color="#059669" />
-                <Text style={styles.verifiedText}>Verified Citizen • Active Contributor</Text>
-              </View>
-              <View style={styles.trustMeterRow}>
-                <Shield size={11} color={COLORS.primary} />
-                <Text style={styles.trustMeterText}>
-                  Trust Rating: {reputation?.trustScore || 85}% • {reputation?.trustTier || 'Verified Guardian'}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* 3 Telemetry Counts */}
-          <View style={styles.spotterStatsRow}>
-            <View style={styles.statCol}>
-              <Text style={styles.statNumber}>{totalCaught}</Text>
-              <Text style={styles.statLabel}>Reported</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statCol}>
-              <Text style={styles.statNumber}>{reputation?.confirmationsCount || 0}</Text>
-              <Text style={styles.statLabel}>Verified</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statCol}>
-              <Text style={styles.statNumber}>{badgesCount}</Text>
-              <Text style={styles.statLabel}>Badges</Text>
-            </View>
-          </View>
-
-          {/* Level XP Progress Bar */}
-          <View style={styles.xpProgressContainer}>
-            <View style={styles.xpLabelRow}>
-              <Text style={styles.xpLabelText}>Rank XP Progress</Text>
-              <Text style={styles.xpValueText}>
-                {reputation?.points || 120} / {((reputation?.level || 1) * 200)} XP
+        {/* 1. ELEGANT WHITE USER PROFILE CARD (MATCHING REFERENCE UI) */}
+        <View style={styles.cardOuterWrapper}>
+          <View style={styles.whiteProfileCard}>
+            {/* Top Header Row */}
+            <View style={styles.cardHeaderTopRow}>
+              <Text style={styles.cardHeaderRole}>
+                {reputation?.levelTitle || 'Civic Scout'}
               </Text>
+              <Text style={styles.cardHeaderTime}>{formattedTime}</Text>
             </View>
-            <View style={styles.xpTrack}>
-              <View
-                style={[
-                  styles.xpFill,
-                  {
-                    width: `${Math.min(
-                      100,
-                      Math.max(10, (((reputation?.points || 120) % 200) / 200) * 100)
-                    )}%`,
-                  },
-                ]}
-              />
+
+            {/* Middle Profile Row */}
+            <View style={styles.cardProfileMainRow}>
+              {/* Circular Avatar */}
+              <View style={[styles.refAvatarCircle, { backgroundColor: activeAvatarObj.bg }]}>
+                <AvatarIconComponent size={32} color={activeAvatarObj.color} strokeWidth={2.4} />
+              </View>
+
+              {/* User Name & Status */}
+              <View style={styles.refProfileInfoCol}>
+                <Text style={styles.refUserName} numberOfLines={1}>
+                  {user?.displayName || 'Active Citizen'}
+                </Text>
+                <View style={styles.refStatusRow}>
+                  <View style={styles.greenStatusDot} />
+                  <Text style={styles.refStatusText} numberOfLines={1}>
+                    {user?.bio || 'Active Civic Scout'}
+                  </Text>
+                </View>
+              </View>
             </View>
+
+            {/* Action Buttons Row */}
+            <View style={styles.refCardActionsRow}>
+              <TouchableOpacity
+                style={styles.refPrimaryBtn}
+                onPress={() => setEditModalVisible(true)}
+                activeOpacity={0.85}
+              >
+                <Pencil size={14} color="#FFFFFF" />
+                <Text style={styles.refPrimaryBtnText}>Edit Profile</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.refSecondaryBtn}
+                onPress={() => setExportModalVisible(true)}
+                activeOpacity={0.85}
+              >
+                <Download size={14} color="#1C1C1E" />
+                <Text style={styles.refSecondaryBtnText}>Summary</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Bottom Tucked Accent Stripe */}
+          <View style={styles.tuckedAccentBadge}>
+            <Sparkles size={13} color="#FFFFFF" />
+            <Text style={styles.tuckedAccentBadgeText}>
+              Currently High On Civic Impact • Level {reputation?.level || 1}
+            </Text>
           </View>
         </View>
 
@@ -815,157 +798,137 @@ const styles = StyleSheet.create({
     marginTop: 2,
     lineHeight: 16,
   },
-  spotterCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(210, 210, 215, 0.5)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  spotterCardTopStripe: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 4,
-    backgroundColor: COLORS.primary,
-  },
-  trustMeterRow: {
-    flexDirection: 'row',
+  cardOuterWrapper: {
+    marginBottom: 20,
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#EFF6FF',
-    paddingHorizontal: 8,
-    paddingVertical: 2.5,
-    borderRadius: RADIUS.full,
-    alignSelf: 'flex-start',
-    marginTop: 4,
+  },
+  whiteProfileCard: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    gap: 16,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: 'rgba(210, 210, 215, 0.6)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
+    zIndex: 2,
   },
-  trustMeterText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: COLORS.primaryDark,
-  },
-  xpProgressContainer: {
-    marginTop: 14,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    gap: 6,
-  },
-  xpLabelRow: {
+  cardHeaderTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  xpLabelText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: COLORS.textMuted,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
+  cardHeaderRole: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#475569',
+    letterSpacing: -0.2,
   },
-  xpValueText: {
-    fontSize: 10.5,
-    fontWeight: '900',
-    color: COLORS.primaryDark,
+  cardHeaderTime: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#94A3B8',
   },
-  xpTrack: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#EFF6FF',
-    overflow: 'hidden',
-  },
-  xpFill: {
-    height: '100%',
-    borderRadius: 3,
-    backgroundColor: COLORS.primary,
-  },
-  spotterTopRow: {
+  cardProfileMainRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    marginBottom: 16,
   },
-  glowAvatarCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: COLORS.primaryLight,
+  refAvatarCircle: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-    ...SHADOWS.small,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.06)',
   },
-  glowAvatarEmoji: {
-    fontSize: 30,
-  },
-  spotterInfoCol: {
+  refProfileInfoCol: {
     flex: 1,
-    gap: 2,
-  },
-  spotterBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 4,
   },
-  spotterBadgeText: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: COLORS.primary,
-    letterSpacing: 0.6,
-  },
-  spotterName: {
+  refUserName: {
     fontSize: 19,
     fontWeight: '900',
-    color: COLORS.textPrimary,
+    color: '#0F172A',
+    letterSpacing: -0.4,
   },
-  verifiedRow: {
+  refStatusRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
+    gap: 6,
   },
-  verifiedText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#059669',
+  greenStatusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
   },
-  spotterStatsRow: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingTop: 12,
-  },
-  statCol: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 17,
-    fontWeight: '900',
-    color: COLORS.textPrimary,
-  },
-  statLabel: {
-    fontSize: 10,
-    color: COLORS.textMuted,
-    marginTop: 2,
+  refStatusText: {
+    fontSize: 12.5,
     fontWeight: '600',
+    color: '#64748B',
   },
-  statDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: COLORS.border,
+  refCardActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 4,
+  },
+  refPrimaryBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    borderRadius: 18,
+  },
+  refPrimaryBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  refSecondaryBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  refSecondaryBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1C1C1E',
+  },
+  tuckedAccentBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#10B981',
+    width: '92%',
+    paddingVertical: 9,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+    marginTop: -8,
+    zIndex: 1,
+  },
+  tuckedAccentBadgeText: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.2,
   },
   githubCard: {
     backgroundColor: '#FFFFFF',

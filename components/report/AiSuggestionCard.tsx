@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { IssueCategory, IssueSeverity } from '@/types/issue';
 import { CATEGORIES } from '@/constants/categories';
 import { COLORS, RADIUS, SPACING, SHADOWS } from '@/constants/theme';
-import { Sparkles, Check, Edit3, ShieldAlert, RefreshCw, XCircle } from 'lucide-react-native';
+import { Sparkles, Check, Edit3, ShieldAlert, RefreshCw, XCircle, Layers } from 'lucide-react-native';
 
 interface AiSuggestionCardProps {
   isValidCivicIssue?: boolean;
@@ -13,6 +13,9 @@ interface AiSuggestionCardProps {
   label: string;
   suggestedSeverity?: IssueSeverity;
   suggestedDescription?: string;
+  estimatedDepthCm?: number;
+  estimatedWidthCm?: number;
+  dimensionsText?: string;
   onAccept: (category: IssueCategory, severity?: IssueSeverity, description?: string) => void;
   onReject: () => void;
   onRetakePhoto?: () => void;
@@ -27,6 +30,9 @@ export const AiSuggestionCard: React.FC<AiSuggestionCardProps> = ({
   label,
   suggestedSeverity,
   suggestedDescription,
+  estimatedDepthCm,
+  estimatedWidthCm,
+  dimensionsText,
   onAccept,
   onReject,
   onRetakePhoto,
@@ -95,8 +101,17 @@ export const AiSuggestionCard: React.FC<AiSuggestionCardProps> = ({
           {suggestedDescription && (
             <View style={styles.descPreviewBox}>
               <Text style={styles.descPreviewLabel}>AI GENERATED SUMMARY:</Text>
-              <Text style={styles.descPreviewText} numberOfLines={2}>
+              <Text style={styles.descPreviewText} numberOfLines={3}>
                 "{suggestedDescription}"
+              </Text>
+            </View>
+          )}
+
+          {(dimensionsText || (estimatedWidthCm && estimatedDepthCm)) && (
+            <View style={styles.dimensionsPillBox}>
+              <Layers size={12} color="#007AFF" />
+              <Text style={styles.dimensionsPillText}>
+                AI Dimensions: {dimensionsText || `Width ~${estimatedWidthCm} cm • Depth ~${estimatedDepthCm} cm`}
               </Text>
             </View>
           )}
@@ -276,6 +291,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textPrimary,
     fontStyle: 'italic',
+  },
+  dimensionsPillBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    marginTop: 6,
+  },
+  dimensionsPillText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#007AFF',
   },
   actionsRow: {
     flexDirection: 'row',

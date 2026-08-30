@@ -51,9 +51,9 @@ export default function RegisterScreen() {
 
   // Real Google Auth Session Provider
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '207567085375-5f9tgbkigp9mm8blqjf116bh6lu8719r.apps.googleusercontent.com',
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '207567085375-5f9tgbkigp9mm8blqjf116bh6lu8719r.apps.googleusercontent.com',
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '207567085375-5f9tgbkigp9mm8blqjf116bh6lu8719r.apps.googleusercontent.com',
+    clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '',
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '',
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '',
     scopes: ['openid', 'profile', 'email'],
     redirectUri,
   });

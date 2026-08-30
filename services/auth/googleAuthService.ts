@@ -5,9 +5,7 @@ import { loginWithGoogle } from './authService';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const GOOGLE_CLIENT_ID =
-  process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ||
-  '207567085375-5f9tgbkigp9mm8blqjf116bh6lu8719r.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '';
 
 /**
  * Executes Google OAuth sign-in flow

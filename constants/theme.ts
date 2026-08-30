@@ -1,4 +1,8 @@
-// CivicLens — Premium Curated Design System & Luxury Mineral/Gemstone Palette
+/**
+ * @author Ashish Shankar <ashishshankar26>
+ * @copyright (c) 2026 Ashish Shankar. All rights reserved.
+ * @description CivicLens — Premium Curated Design System & Luxury Mineral/Gemstone Palette
+ */
 
 export const COLORS = {
   // Brand Primary & Glow (Deep Sapphire & Royal Indigo)

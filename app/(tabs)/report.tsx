@@ -341,6 +341,9 @@ export default function ReportIssueScreen() {
               label={aiSuggestion.label}
               suggestedSeverity={aiSuggestion.suggestedSeverity}
               suggestedDescription={aiSuggestion.suggestedDescription}
+              dimensionsText={aiSuggestion.dimensionsText}
+              estimatedDepthCm={aiSuggestion.estimatedDepthCm}
+              estimatedWidthCm={aiSuggestion.estimatedWidthCm}
               onAccept={handleAcceptAiSuggestion}
               onReject={() => setAiAccepted(false)}
               onRetakePhoto={handleImageRemoved}

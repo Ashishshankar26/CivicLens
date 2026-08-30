@@ -170,42 +170,42 @@ export default function SpotdexScreen() {
           <View style={styles.bevelMiddleRow}>
             {/* Left 3 Category Dot Columns */}
             <View style={styles.dotMatrixContainer}>
-              {/* Category 1: Potholes */}
+              {/* Category 1: Potholes (Blue) */}
               <View style={styles.dotColGroup}>
+                <Text style={[styles.dotColCategoryTitle, { color: '#2563EB' }]}>Potholes</Text>
                 <View style={styles.dotGrid}>
                   {[...Array(Math.min(16, Math.max(3, potholeCount || 4)))].map((_, idx) => (
                     <View key={idx} style={[styles.matrixDot, { backgroundColor: '#3B82F6' }]} />
                   ))}
                 </View>
                 <View style={styles.dotLabelRow}>
-                  <Text style={{ fontSize: 10 }}>🔵</Text>
-                  <Text style={[styles.dotLabelText, { color: '#2563EB' }]}>{potholeCount} Spot</Text>
+                  <Text style={[styles.dotLabelText, { color: '#2563EB' }]}>{potholeCount} Logged</Text>
                 </View>
               </View>
 
-              {/* Category 2: Garbage */}
+              {/* Category 2: Garbage (Yellow) */}
               <View style={styles.dotColGroup}>
+                <Text style={[styles.dotColCategoryTitle, { color: '#D97706' }]}>Garbage</Text>
                 <View style={styles.dotGrid}>
                   {[...Array(Math.min(16, Math.max(3, garbageCount || 6)))].map((_, idx) => (
                     <View key={idx} style={[styles.matrixDot, { backgroundColor: '#F59E0B' }]} />
                   ))}
                 </View>
                 <View style={styles.dotLabelRow}>
-                  <Text style={{ fontSize: 10 }}>🌾</Text>
-                  <Text style={[styles.dotLabelText, { color: '#D97706' }]}>{garbageCount} Spot</Text>
+                  <Text style={[styles.dotLabelText, { color: '#D97706' }]}>{garbageCount} Logged</Text>
                 </View>
               </View>
 
-              {/* Category 3: Road Damage */}
+              {/* Category 3: Damage (Red) */}
               <View style={styles.dotColGroup}>
+                <Text style={[styles.dotColCategoryTitle, { color: '#DC2626' }]}>Damage</Text>
                 <View style={styles.dotGrid}>
                   {[...Array(Math.min(16, Math.max(3, roadDamageCount || 5)))].map((_, idx) => (
-                    <View key={idx} style={[styles.matrixDot, { backgroundColor: '#EC4899' }]} />
+                    <View key={idx} style={[styles.matrixDot, { backgroundColor: '#EF4444' }]} />
                   ))}
                 </View>
                 <View style={styles.dotLabelRow}>
-                  <Text style={{ fontSize: 10 }}>🥩</Text>
-                  <Text style={[styles.dotLabelText, { color: '#DB2777' }]}>{roadDamageCount} Spot</Text>
+                  <Text style={[styles.dotLabelText, { color: '#DC2626' }]}>{roadDamageCount} Logged</Text>
                 </View>
               </View>
             </View>
@@ -670,6 +670,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 14,
     alignItems: 'flex-end',
+  },
+  dotColCategoryTitle: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    letterSpacing: 0.2,
+    marginBottom: 2,
+    textAlign: 'center',
   },
   dotColGroup: {
     gap: 6,

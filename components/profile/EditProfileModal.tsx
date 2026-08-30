@@ -27,9 +27,21 @@ import {
   Check,
 } from 'lucide-react-native';
 
-export const AVATAR_OPTIONS = [
+export interface AvatarOption {
+  id: string;
+  gender: 'male' | 'female' | 'all';
+  label: string;
+  uri?: string;
+  Icon: any;
+  color: string;
+  bg: string;
+}
+
+export const AVATAR_OPTIONS: AvatarOption[] = [
+  // Male Alms Avatars
   {
     id: 'alms_enoch',
+    gender: 'male',
     label: 'Enoch Scout',
     uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Enoch&backgroundColor=e0f2fe',
     Icon: Compass,
@@ -37,31 +49,8 @@ export const AVATAR_OPTIONS = [
     bg: '#E0F2FE',
   },
   {
-    id: 'alms_sophia',
-    label: 'Sophia Vision',
-    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Sophia&backgroundColor=fef3c7',
-    Icon: Star,
-    color: '#D97706',
-    bg: '#FEF3C7',
-  },
-  {
-    id: 'alms_oliver',
-    label: 'Oliver Safety',
-    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Oliver&backgroundColor=d1fae5',
-    Icon: ShieldCheck,
-    color: '#059669',
-    bg: '#ECFDF5',
-  },
-  {
-    id: 'alms_emma',
-    label: 'Emma Leader',
-    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Emma&backgroundColor=fce7f3',
-    Icon: Crown,
-    color: '#DB2777',
-    bg: '#FCE7F3',
-  },
-  {
     id: 'alms_lucas',
+    gender: 'male',
     label: 'Lucas Sentinel',
     uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Lucas&backgroundColor=eef2ff',
     Icon: Car,
@@ -69,23 +58,91 @@ export const AVATAR_OPTIONS = [
     bg: '#EFF6FF',
   },
   {
+    id: 'alms_oliver',
+    gender: 'male',
+    label: 'Oliver Safety',
+    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Oliver&backgroundColor=d1fae5',
+    Icon: ShieldCheck,
+    color: '#059669',
+    bg: '#ECFDF5',
+  },
+  {
+    id: 'alms_sam',
+    gender: 'male',
+    label: 'Sam Hunter',
+    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Felix&backgroundColor=fef3c7',
+    Icon: Flame,
+    color: '#D97706',
+    bg: '#FEF3C7',
+  },
+  {
+    id: 'alms_leo',
+    gender: 'male',
+    label: 'Leo Cyclist',
+    uri: 'https://api.dicebear.com/7.x/open-peeps/png?seed=Leo&backgroundColor=fee2e2',
+    Icon: Bike,
+    color: '#DC2626',
+    bg: '#FEE2E2',
+  },
+
+  // Female Alms Avatars
+  {
+    id: 'alms_sophia',
+    gender: 'female',
+    label: 'Sophia Vision',
+    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Sophia&backgroundColor=fce7f3',
+    Icon: Star,
+    color: '#DB2777',
+    bg: '#FCE7F3',
+  },
+  {
+    id: 'alms_emma',
+    gender: 'female',
+    label: 'Emma Leader',
+    uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Emma&backgroundColor=f3e8ff',
+    Icon: Crown,
+    color: '#7C3AED',
+    bg: '#F3E8FF',
+  },
+  {
     id: 'alms_ava',
+    gender: 'female',
     label: 'Ava Cyclist',
     uri: 'https://api.dicebear.com/7.x/notionists/png?seed=Ava&backgroundColor=fee2e2',
     Icon: Bike,
     color: '#DC2626',
     bg: '#FEE2E2',
   },
-  { id: 'compass', label: 'Pioneer Scout', Icon: Compass, color: '#0284C7', bg: '#E0F2FE' },
-  { id: 'shield', label: 'Safety Shield', Icon: ShieldCheck, color: '#059669', bg: '#ECFDF5' },
-  { id: 'zap', label: 'Lightning Scout', Icon: Zap, color: '#F59E0B', bg: '#FEF3C7' },
+  {
+    id: 'alms_mia',
+    gender: 'female',
+    label: 'Mia Scout',
+    uri: 'https://api.dicebear.com/7.x/open-peeps/png?seed=Mia&backgroundColor=e0f2fe',
+    Icon: Compass,
+    color: '#0284C7',
+    bg: '#E0F2FE',
+  },
+  {
+    id: 'alms_chloe',
+    gender: 'female',
+    label: 'Chloe Guardian',
+    uri: 'https://api.dicebear.com/7.x/open-peeps/png?seed=Chloe&backgroundColor=d1fae5',
+    Icon: ShieldCheck,
+    color: '#059669',
+    bg: '#ECFDF5',
+  },
+
+  // Generic Vector Emblems
+  { id: 'compass', gender: 'all', label: 'Pioneer Scout', Icon: Compass, color: '#0284C7', bg: '#E0F2FE' },
+  { id: 'shield', gender: 'all', label: 'Safety Shield', Icon: ShieldCheck, color: '#059669', bg: '#ECFDF5' },
+  { id: 'zap', gender: 'all', label: 'Lightning Scout', Icon: Zap, color: '#F59E0B', bg: '#FEF3C7' },
 ];
 
 interface EditProfileModalProps {
   visible: boolean;
   user: UserProfile | null;
   onClose: () => void;
-  onSave: (updates: { displayName: string; bio: string; avatarKey: string }) => Promise<void>;
+  onSave: (updates: { displayName: string; bio: string; avatarKey: string; gender?: 'male' | 'female' }) => Promise<void>;
 }
 
 export const EditProfileModal: React.FC<EditProfileModalProps> = ({
@@ -96,6 +153,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 }) => {
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
+  const [gender, setGender] = useState<'male' | 'female'>('male');
   const [selectedAvatar, setSelectedAvatar] = useState('alms_enoch');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -103,9 +161,19 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     if (user) {
       setDisplayName(user.displayName || '');
       setBio(user.bio || '');
-      setSelectedAvatar(user.avatarKey || 'alms_enoch');
+      const userGender = user.gender || 'male';
+      setGender(userGender);
+      setSelectedAvatar(user.avatarKey || (userGender === 'male' ? 'alms_enoch' : 'alms_sophia'));
     }
   }, [user, visible]);
+
+  const handleGenderChange = (g: 'male' | 'female') => {
+    setGender(g);
+    const available = AVATAR_OPTIONS.filter((a) => a.gender === g);
+    if (available.length > 0) {
+      setSelectedAvatar(available[0].id);
+    }
+  };
 
   const handleSave = async () => {
     if (!displayName.trim()) return;
@@ -115,28 +183,32 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         displayName: displayName.trim(),
         bio: bio.trim(),
         avatarKey: selectedAvatar,
+        gender: gender,
       });
       onClose();
-    } catch (err) {
-      console.warn('[Edit Profile error]:', err);
+    } catch (e) {
+      console.error('Error saving profile:', e);
     } finally {
       setIsSaving(false);
     }
   };
 
+  if (!visible) return null;
+
+  const filteredAvatars = AVATAR_OPTIONS.filter((opt) => opt.gender === gender || opt.gender === 'all');
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.backdrop}>
-        <TouchableOpacity style={styles.dismissOverlay} activeOpacity={1} onPress={onClose} />
+        <TouchableOpacity style={styles.dismissOverlay} onPress={onClose} activeOpacity={1} />
         <View style={styles.modalCard}>
-          {/* Header handle */}
           <View style={styles.handle} />
 
-          {/* Title row */}
+          {/* Header */}
           <View style={styles.headerRow}>
             <View>
               <Text style={styles.headerTitle}>Customize Profile</Text>
-              <Text style={styles.headerSub}>Update your display name, motto & citizen avatar emblem</Text>
+              <Text style={styles.headerSub}>Select gender & pick your Alms avatar portrait</Text>
             </View>
             <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
               <X size={18} color="#64748B" />
@@ -144,10 +216,34 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
           </View>
 
           <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            {/* 1. Select Avatar Emblem */}
-            <Text style={styles.sectionHeader}>Choose Citizen Avatar Emblem</Text>
+            {/* Gender Selection Segmented Control */}
+            <Text style={styles.sectionHeader}>SELECT GENDER</Text>
+            <View style={styles.genderToggleContainer}>
+              <TouchableOpacity
+                style={[styles.genderSegment, gender === 'male' && styles.genderSegmentActive]}
+                onPress={() => handleGenderChange('male')}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.genderText, gender === 'male' && styles.genderTextActive]}>
+                  👨 Male Avatars
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.genderSegment, gender === 'female' && styles.genderSegmentActive]}
+                onPress={() => handleGenderChange('female')}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.genderText, gender === 'female' && styles.genderTextActive]}>
+                  👩 Female Avatars
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Select Avatar Grid */}
+            <Text style={styles.sectionHeader}>CHOOSE YOUR ALMS PORTRAIT</Text>
             <View style={styles.avatarGrid}>
-              {AVATAR_OPTIONS.map((opt) => {
+              {filteredAvatars.map((opt) => {
                 const IconComp = opt.Icon;
                 const isSelected = selectedAvatar === opt.id;
                 return (
@@ -180,7 +276,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
               })}
             </View>
 
-            {/* 2. Display Name Input */}
+            {/* Display Name Input */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>DISPLAY NAME</Text>
               <View style={styles.inputWrapper}>
@@ -196,7 +292,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
               </View>
             </View>
 
-            {/* 3. Bio / Motto Input */}
+            {/* Bio / Motto Input */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>CIVIC MOTTO / BIO</Text>
               <View style={styles.inputWrapper}>
@@ -245,7 +341,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: SPACING.lg,
-    maxHeight: '86%',
+    maxHeight: '88%',
     gap: 12,
     ...SHADOWS.large,
   },
@@ -265,37 +361,68 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#1C1C1E',
-    letterSpacing: -0.4,
+    color: '#0F172A',
   },
   headerSub: {
-    fontSize: 11.5,
-    color: '#8E8E93',
-    fontWeight: '500',
+    fontSize: 12,
+    color: '#64748B',
     marginTop: 2,
   },
   closeBtn: {
-    padding: 6,
-    backgroundColor: '#F1F5F9',
+    width: 32,
+    height: 32,
     borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scrollContent: {
-    maxHeight: 440,
+    flexGrow: 0,
   },
   sectionHeader: {
-    fontSize: 12,
+    fontSize: 10.5,
     fontWeight: '800',
-    color: '#475569',
-    letterSpacing: 0.5,
+    color: '#64748B',
+    letterSpacing: 0.6,
     marginTop: 8,
-    marginBottom: 10,
-    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  genderToggleContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 14,
+    padding: 3,
+    gap: 4,
+  },
+  genderSegment: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+  },
+  genderSegmentActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  genderText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  genderTextActive: {
+    color: '#007AFF',
+    fontWeight: '800',
   },
   avatarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   avatarOptionCard: {
     width: '30%',
@@ -310,9 +437,9 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -344,42 +471,38 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 10.5,
     fontWeight: '800',
-    color: '#475569',
+    color: '#64748B',
     letterSpacing: 0.6,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
-    borderRadius: 14,
-    paddingHorizontal: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    height: 48,
+    borderRadius: 14,
+    paddingHorizontal: 12,
   },
   inputLeadingIcon: {
     marginRight: 8,
   },
   textInput: {
     flex: 1,
+    paddingVertical: 12,
     fontSize: 14,
-    color: '#1C1C1E',
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#0F172A',
   },
   saveBtn: {
     backgroundColor: '#007AFF',
     paddingVertical: 14,
-    borderRadius: RADIUS.md,
+    borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 4,
-    shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.24,
-    shadowRadius: 10,
-    elevation: 4,
   },
   saveBtnDisabled: {
-    opacity: 0.6,
+    opacity: 0.7,
   },
   saveBtnText: {
     fontSize: 15,

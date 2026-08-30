@@ -3,7 +3,8 @@ export interface UserProfile {
   email: string;
   displayName: string;
   photoUrl?: string;
-  avatarKey?: string; // 'compass' | 'shield' | 'zap' | 'crown' | 'car' | 'bike' | 'star' | 'camera' | 'flame'
+  avatarKey?: string;
+  gender?: 'male' | 'female';
   bio?: string;
   createdAt: string;
   reportsCount: number;

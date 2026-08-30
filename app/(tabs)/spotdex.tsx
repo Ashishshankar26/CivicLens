@@ -324,52 +324,7 @@ export default function SpotdexScreen() {
         </TouchableOpacity>
 
         {/* ==========================================
-            WIDGET 2: NET SAFETY & GRADIENT SPECTRUM CARD
-            ========================================== */}
-        <View style={styles.bevelSpectrumWidget}>
-          <View style={styles.spectrumHeaderRow}>
-            <View>
-              <Text style={styles.spectrumBigNumber}>{safetyScore}% Safety</Text>
-              <Text style={styles.spectrumSubTitle}>Net Civic Impact</Text>
-            </View>
-            <View style={styles.spectrumBadgesRight}>
-              <View style={styles.iconPillText}>
-                <Flame size={13} color="#F97316" />
-                <Text style={[styles.spectrumPillVal, { color: '#F97316' }]}>{verifiedCount} Verified</Text>
-              </View>
-              <View style={styles.iconPillText}>
-                <ShieldCheck size={13} color="#3B82F6" />
-                <Text style={[styles.spectrumPillVal, { color: '#3B82F6' }]}>{totalAreaHazards} Logged</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Continuous Multi-Color Spectrum Slider */}
-          <View style={styles.spectrumTrackContainer}>
-            <LinearGradient
-              colors={['#FF9500', '#FCD34D', '#FFFFFF', '#A5B4FC', '#4F46E5']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.bevelSpectrumBar}
-            />
-            {/* Center Thumb Marker */}
-            <View style={[styles.spectrumCenterThumb, { left: `${Math.min(95, Math.max(5, safetyScore))}%` }]}>
-              <Text style={styles.thumbCenterText}>{safetyScore}</Text>
-            </View>
-          </View>
-
-          {/* Scale Ticks Row */}
-          <View style={styles.scaleTicksRow}>
-            <Text style={styles.scaleTickText}>0 Low</Text>
-            <Text style={styles.scaleTickText}>25</Text>
-            <Text style={styles.scaleTickText}>50</Text>
-            <Text style={styles.scaleTickText}>75</Text>
-            <Text style={styles.scaleTickText}>100 High</Text>
-          </View>
-        </View>
-
-        {/* ==========================================
-            WIDGETS 3 & 4: MIDDLE 2-COLUMN GRID
+            MIDDLE 2-COLUMN GRID (TODAY BADGES + RESOLUTION FOCUS RING)
             ========================================== */}
         <View style={styles.gridTwoColumns}>
           {/* Left Square Card: Today's Date & Earned Badges Showcase */}
@@ -420,6 +375,51 @@ export default function SpotdexScreen() {
                 <Text style={styles.focusFooterVal}>{resolvedCount}</Text>
               </View>
             </View>
+          </View>
+        </View>
+
+        {/* ==========================================
+            NET SAFETY & GRADIENT SPECTRUM CARD
+            ========================================== */}
+        <View style={styles.bevelSpectrumWidget}>
+          <View style={styles.spectrumHeaderRow}>
+            <View>
+              <Text style={styles.spectrumBigNumber}>{safetyScore}% Safety</Text>
+              <Text style={styles.spectrumSubTitle}>Net Civic Impact</Text>
+            </View>
+            <View style={styles.spectrumBadgesRight}>
+              <View style={styles.iconPillText}>
+                <Flame size={13} color="#F97316" />
+                <Text style={[styles.spectrumPillVal, { color: '#F97316' }]}>{verifiedCount} Verified</Text>
+              </View>
+              <View style={styles.iconPillText}>
+                <ShieldCheck size={13} color="#3B82F6" />
+                <Text style={[styles.spectrumPillVal, { color: '#3B82F6' }]}>{totalAreaHazards} Logged</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Continuous Multi-Color Spectrum Slider */}
+          <View style={styles.spectrumTrackContainer}>
+            <LinearGradient
+              colors={['#FF9500', '#FCD34D', '#FFFFFF', '#A5B4FC', '#4F46E5']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.bevelSpectrumBar}
+            />
+            {/* Center Thumb Marker */}
+            <View style={[styles.spectrumCenterThumb, { left: `${Math.min(95, Math.max(5, safetyScore))}%` }]}>
+              <Text style={styles.thumbCenterText}>{safetyScore}</Text>
+            </View>
+          </View>
+
+          {/* Scale Ticks Row */}
+          <View style={styles.scaleTicksRow}>
+            <Text style={styles.scaleTickText}>0 Low</Text>
+            <Text style={styles.scaleTickText}>25</Text>
+            <Text style={styles.scaleTickText}>50</Text>
+            <Text style={styles.scaleTickText}>75</Text>
+            <Text style={styles.scaleTickText}>100 High</Text>
           </View>
         </View>
 

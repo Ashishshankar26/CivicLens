@@ -1,11 +1,20 @@
 # CivicLens (Android Mobile Application)
 
-> **"See it. Report it. Improve it."**  
+> **"See it. Snap it. Fix it."**  
 > *A citizen-first civic intelligence and reporting layer that turns visual, location-based citizen observations into structured, verifiable, and prioritized civic issues.*
 
 ---
 
-## 🌟 Core Features Built for Hackathon Demo
+## 📱 Download & Test the Android App
+
+Install the standalone Android build directly on any Android device or emulator:
+
+- ⚡ **[📥 Download CivicLens Android APK (Direct Download)](https://expo.dev/artifacts/eas/t1GUVS_DG4VZwup4TQhfX5AKKxq0_mEi7twxWiYAEZ8.apk)**
+- 🏷️ **[View GitHub Release v1.0.0 (APK Assets)](https://github.com/Ashishshankar26/CivicLens/releases/tag/v1.0.0)**
+
+---
+
+## 🌟 Core Features
 
 1. **Shared Civic Map (Google Maps):**
    - Live rendering of community civic issues with category-coded pins (Potholes, Garbage, Streetlights, Road Damage, Other).

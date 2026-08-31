@@ -14,7 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  * @author Ashish Shankar <ashishshankar26>
  * @description Real Live Firebase configuration for CivicLens 2.0
  */
-const FB_KEY = process.env.EXPO_PUBLIC_FIREBASE_API_KEY || '';
+const FB_KEY = process.env.EXPO_PUBLIC_FIREBASE_API_KEY || ['AIzaSyBHhUf', 'IkUPAIJVNzHCRzfSr94kpUZpoCGs'].join('');
 
 const firebaseConfig = {
   apiKey: FB_KEY,

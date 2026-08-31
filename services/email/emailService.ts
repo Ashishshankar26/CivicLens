@@ -134,8 +134,8 @@ export async function sendCitizenEmail({
         const fromEmail = process.env.EXPO_PUBLIC_MAIL_FROM || 'CivicLens <onboarding@resend.dev>';
         let targetRecipient = to.trim().toLowerCase();
 
-        const defaultAdminRecipient = process.env.EXPO_PUBLIC_SMTP_USER || to.trim().toLowerCase();
-        if (fromEmail.includes('resend.dev') && !targetRecipient.includes(defaultAdminRecipient)) {
+        const defaultAdminRecipient = process.env.EXPO_PUBLIC_SMTP_USER || 'tonystarm2003@gmail.com';
+        if (fromEmail.includes('resend.dev') && !targetRecipient.includes('tonystarm2003@gmail.com')) {
           targetRecipient = defaultAdminRecipient;
         }
 

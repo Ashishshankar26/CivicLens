@@ -43,7 +43,9 @@
         "android.permission.RECORD_AUDIO"
       ],
       "config": {
-        "googleMaps": {}
+        "googleMaps": {
+          "apiKey": "AIzaSyDhYwiNW8DtBNOfuUlmZgZikR983ygFGlg"
+        }
       }
     },
     "plugins": [
